@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Save, Download, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Save, Download, ChevronDown, ChevronRight, Image as ImageIcon } from "lucide-react";
+import { exportAsImage, downloadBlob } from "@/lib/export-utils";
 
 interface WBSItem {
   id: string;
@@ -157,6 +158,17 @@ export function WBS({ groupCode }: WBSProps) {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleExportImage = async () => {
+    try {
+      const blob = await exportAsImage("wbs-content", `wbs-${groupCode}.png`);
+      downloadBlob(blob, `wbs-${groupCode}.png`);
+    } catch (error) {
+      console.error("Export error:", error);
+      // Fallback to text export
+      exportAsText();
+    }
+  };
+
   const renderItem = (item: WBSItem, level: number = 0) => {
     const hasChildren = item.children.length > 0;
     const paddingLeft = level * 24;
@@ -249,9 +261,13 @@ export function WBS({ groupCode }: WBSProps) {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold">Work Breakdown Structure</h3>
           <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={handleExportImage}>
+              <ImageIcon className="w-4 h-4 mr-1" />
+              PNG
+            </Button>
             <Button size="sm" variant="outline" onClick={exportAsText}>
               <Download className="w-4 h-4 mr-1" />
-              Exportera
+              Text
             </Button>
             <Button size="sm" onClick={handleSave}>
               <Save className="w-4 h-4 mr-1" />
@@ -264,7 +280,7 @@ export function WBS({ groupCode }: WBSProps) {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div id="wbs-content" className="flex-1 overflow-y-auto p-4 bg-white">
         <div className="space-y-1">
           {wbs.map(item => renderItem(item))}
         </div>

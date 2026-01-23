@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Save, Download, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Save, Download, AlertTriangle, FileSpreadsheet } from "lucide-react";
+import { exportAsExcel, downloadBlob } from "@/lib/export-utils";
 
 interface Risk {
   id: string;
@@ -118,22 +119,21 @@ export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
     setSaved(false);
   };
 
-  const exportAsExcel = () => {
-    // Simple CSV export
-    const headers = "Risk,Sannolikhet,Konsekvens,Riskvärde,Nivå,Åtgärd\n";
-    const rows = risks.map(r => {
+  const handleExportExcel = () => {
+    const data = risks.map(r => {
       const value = getRiskValue(r.probability, r.consequence);
-      return `"${r.description}",${r.probability},${r.consequence},${value},"${getRiskLevel(value)}","${r.mitigation}"`;
-    }).join("\n");
+      return {
+        Risk: r.description,
+        Sannolikhet: r.probability,
+        Konsekvens: r.consequence,
+        Riskvärde: value,
+        Nivå: getRiskLevel(value),
+        Åtgärd: r.mitigation || ""
+      };
+    });
 
-    const content = headers + rows;
-    const blob = new Blob([content], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `riskanalys-${groupCode}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    const blob = exportAsExcel(data, `riskanalys-${groupCode}.xlsx`, "Riskanalys");
+    downloadBlob(blob, `riskanalys-${groupCode}.xlsx`);
   };
 
   // Sort risks by risk value (highest first)
@@ -147,9 +147,9 @@ export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold">Riskanalys</h3>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={exportAsExcel}>
-              <Download className="w-4 h-4 mr-1" />
-              Exportera CSV
+            <Button size="sm" variant="outline" onClick={handleExportExcel}>
+              <FileSpreadsheet className="w-4 h-4 mr-1" />
+              Exportera Excel
             </Button>
             <Button size="sm" variant="outline" onClick={() => setShowForm(!showForm)}>
               <Plus className="w-4 h-4 mr-1" />

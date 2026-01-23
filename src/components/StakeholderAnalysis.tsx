@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { roles } from "@/lib/roles";
-import { Save, Download } from "lucide-react";
+import { Save, Download, Image as ImageIcon, FileText } from "lucide-react";
+import { exportAsImage, exportAsPDF, downloadBlob } from "@/lib/export-utils";
 
 interface StakeholderData {
   roleId: string;
@@ -17,6 +18,7 @@ interface StakeholderAnalysisProps {
 }
 
 export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
   const [stakeholders, setStakeholders] = useState<StakeholderData[]>(
     roles.map(role => ({
       roleId: role.id,
@@ -64,20 +66,30 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
     }
   };
 
-  const exportAsImage = () => {
-    // Create a simple text export since canvas is complex
-    const content = stakeholders.map(s => {
-      const role = roles.find(r => r.id === s.roleId);
-      return `${role?.name} (${role?.title}): Power=${s.power}, Interest=${s.interest}, Quadrant=${getQuadrant(s.power, s.interest)}, Strategy: ${s.strategy || "Ej angiven"}`;
-    }).join("\n");
+  const handleExportImage = async () => {
+    try {
+      const blob = await exportAsImage("stakeholder-content", `intressentanalys-${groupCode}.png`);
+      downloadBlob(blob, `intressentanalys-${groupCode}.png`);
+    } catch (error) {
+      console.error("Export error:", error);
+      // Fallback to text export
+      const content = stakeholders.map(s => {
+        const role = roles.find(r => r.id === s.roleId);
+        return `${role?.name} (${role?.title}): Power=${s.power}, Interest=${s.interest}, Quadrant=${getQuadrant(s.power, s.interest)}, Strategy: ${s.strategy || "Ej angiven"}`;
+      }).join("\n");
+      const blob = new Blob([content], { type: "text/plain" });
+      downloadBlob(blob, `intressentanalys-${groupCode}.txt`);
+    }
+  };
 
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `intressentanalys-${groupCode}.txt`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+  const handleExportPDF = async () => {
+    try {
+      const blob = await exportAsPDF("stakeholder-content", `intressentanalys-${groupCode}.pdf`, "Intressentanalys");
+      downloadBlob(blob, `intressentanalys-${groupCode}.pdf`);
+    } catch (error) {
+      console.error("PDF export error:", error);
+      alert("Kunde inte exportera som PDF");
+    }
   };
 
   return (
@@ -86,9 +98,13 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold">Intressentanalys</h3>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={exportAsImage}>
-              <Download className="w-4 h-4 mr-1" />
-              Exportera
+            <Button size="sm" variant="outline" onClick={handleExportImage}>
+              <ImageIcon className="w-4 h-4 mr-1" />
+              PNG
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleExportPDF}>
+              <FileText className="w-4 h-4 mr-1" />
+              PDF
             </Button>
             <Button size="sm" onClick={handleSave}>
               <Save className="w-4 h-4 mr-1" />
@@ -101,7 +117,7 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div id="stakeholder-content" className="flex-1 overflow-y-auto p-4" ref={contentRef}>
         {/* Power/Interest Matrix visualization */}
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
           <h4 className="font-medium mb-3 text-center">Power/Interest-matris</h4>
