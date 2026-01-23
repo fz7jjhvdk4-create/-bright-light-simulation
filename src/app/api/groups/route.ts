@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createGroup } from '@/lib/db';
+import { createGroup, initializeDatabase } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +12,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const group = await createGroup(name, studentNames);
+    // Try to create the group - if tables don't exist, initialize them first
+    let group;
+    try {
+      group = await createGroup(name, studentNames);
+    } catch (dbError: unknown) {
+      // Check if it's a "relation does not exist" error
+      const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
+      if (errorMessage.includes('relation') && errorMessage.includes('does not exist')) {
+        console.log('Tables do not exist, initializing database...');
+        await initializeDatabase();
+        // Retry creating the group
+        group = await createGroup(name, studentNames);
+      } else {
+        throw dbError;
+      }
+    }
 
     return NextResponse.json({
       success: true,
