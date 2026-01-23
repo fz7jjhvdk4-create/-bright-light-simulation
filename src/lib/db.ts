@@ -111,6 +111,17 @@ export async function initializeDatabase() {
       )
     `;
 
+    // Create document_views table
+    await sql`
+      CREATE TABLE IF NOT EXISTS document_views (
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
+        document_id VARCHAR(50) NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(group_id, document_id)
+      )
+    `;
+
     return { success: true };
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -263,4 +274,12 @@ export async function getGroupStats(groupId: number) {
     interviewsCount: parseInt(interviews.rows[0].count),
     downloadsCount: parseInt(downloads.rows[0].count)
   };
+}
+
+// Document view operations
+export async function getDocumentViews(groupId: number) {
+  const result = await sql`
+    SELECT document_id FROM document_views WHERE group_id = ${groupId}
+  `;
+  return result.rows.map(r => r.document_id);
 }

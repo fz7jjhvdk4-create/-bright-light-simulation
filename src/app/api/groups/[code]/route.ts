@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGroupByCode, getGroupStats, getInterviews, getDownloads, getActivityLog } from '@/lib/db';
+import { getGroupByCode, getGroupStats, getInterviews, getDownloads, getActivityLog, getDocumentViews } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -20,6 +20,8 @@ export async function GET(
     const stats = await getGroupStats(group.id);
     const interviews = await getInterviews(group.id);
     const downloads = await getDownloads(group.id);
+    const activityLog = await getActivityLog(group.id);
+    const viewedDocuments = await getDocumentViews(group.id);
 
     return NextResponse.json({
       success: true,
@@ -41,7 +43,14 @@ export async function GET(
       downloads: downloads.map(d => ({
         fileId: d.file_id,
         timestamp: d.timestamp
-      }))
+      })),
+      activityLog: activityLog.map(a => ({
+        id: a.id,
+        timestamp: a.timestamp,
+        action: a.action,
+        detail: a.detail
+      })),
+      viewedDocuments
     });
   } catch (error) {
     console.error('Error fetching group:', error);
