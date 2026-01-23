@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { rootCauses } from "@/lib/root-causes";
 import { roles } from "@/lib/roles";
@@ -52,12 +52,9 @@ interface Proposal {
   createdAt: string;
 }
 
-export default function TeacherGroupDetailPage({
-  params,
-}: {
-  params: Promise<{ code: string }>;
-}) {
-  const resolvedParams = use(params);
+export default function TeacherGroupDetailPage() {
+  const params = useParams();
+  const code = params.code as string;
   const router = useRouter();
   const [group, setGroup] = useState<GroupDetail | null>(null);
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
@@ -78,14 +75,16 @@ export default function TeacherGroupDetailPage({
       return;
     }
 
-    fetchGroupData();
-  }, [resolvedParams.code, router]);
+    if (code) {
+      fetchGroupData();
+    }
+  }, [code, router]);
 
   const fetchGroupData = async () => {
     try {
       const [groupRes, proposalsRes] = await Promise.all([
-        fetch(`/api/groups/${resolvedParams.code}`),
-        fetch(`/api/groups/${resolvedParams.code}/proposals`),
+        fetch(`/api/groups/${code}`),
+        fetch(`/api/groups/${code}/proposals`),
       ]);
 
       const groupData = await groupRes.json();

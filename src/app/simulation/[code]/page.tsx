@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef, use } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { roleCategories, getRoleById, getRolesForPhase, Role } from "@/lib/roles";
 import { Send, Users, FileText, ClipboardList, Download, X, BookOpen, Menu } from "lucide-react";
@@ -46,8 +46,9 @@ interface ActivityLogItem {
   detail: string;
 }
 
-export default function SimulationPage({ params }: { params: Promise<{ code: string }> }) {
-  const resolvedParams = use(params);
+export default function SimulationPage() {
+  const params = useParams();
+  const code = params.code as string;
   const router = useRouter();
   const [group, setGroup] = useState<GroupData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,8 +87,10 @@ export default function SimulationPage({ params }: { params: Promise<{ code: str
   }>>([]);
 
   useEffect(() => {
-    fetchGroupData();
-  }, [resolvedParams.code]);
+    if (code) {
+      fetchGroupData();
+    }
+  }, [code]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -95,7 +98,7 @@ export default function SimulationPage({ params }: { params: Promise<{ code: str
 
   const fetchGroupData = async () => {
     try {
-      const response = await fetch(`/api/groups/${resolvedParams.code}`);
+      const response = await fetch(`/api/groups/${code}`);
       const data = await response.json();
 
       if (data.success) {
@@ -107,7 +110,7 @@ export default function SimulationPage({ params }: { params: Promise<{ code: str
 
         // Fetch proposals if in phase 2
         if (data.group.phase === 2) {
-          const proposalsRes = await fetch(`/api/groups/${resolvedParams.code}/proposals`);
+          const proposalsRes = await fetch(`/api/groups/${code}/proposals`);
           const proposalsData = await proposalsRes.json();
           if (proposalsData.success) {
             setProposals(proposalsData.proposals);
