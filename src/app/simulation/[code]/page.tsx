@@ -71,6 +71,10 @@ export default function SimulationPage() {
   // Document modal
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
+  // Data/document offers from chat
+  const [offeredData, setOfferedData] = useState<string[]>([]);
+  const [offeredDocuments, setOfferedDocuments] = useState<string[]>([]);
+
   // Active tab and tool tab
   const [activeTab, setActiveTab] = useState<"interview" | "tools" | "log">("interview");
   const [activeTool, setActiveTool] = useState<"overview" | "proposals" | "stakeholders" | "risks" | "wbs" | "implementation" | "events" | "results" | "export" | null>(null);
@@ -155,6 +159,20 @@ export default function SimulationPage() {
 
       if (data.response) {
         setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+
+        // Handle offered data/documents
+        if (data.offeredData) {
+          setOfferedData(prev => {
+            const combined = [...prev, ...data.offeredData];
+            return combined.filter((item, index) => combined.indexOf(item) === index);
+          });
+        }
+        if (data.offeredDocuments) {
+          setOfferedDocuments(prev => {
+            const combined = [...prev, ...data.offeredDocuments];
+            return combined.filter((item, index) => combined.indexOf(item) === index);
+          });
+        }
       }
     } catch {
       setMessages(prev => [
@@ -452,74 +470,16 @@ export default function SimulationPage() {
 
           {activeTab === "interview" && (
             <>
-              {/* Chat header */}
+              {/* Chat header - enkel utan synliga data/dokument */}
               {selectedRole && (
                 <div className="border-b px-4 py-3 bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{selectedRole.avatar}</span>
-                      <div>
-                        <h3 className="font-semibold">{selectedRole.name}</h3>
-                        <p className="text-sm text-gray-500">
-                          {selectedRole.title} • {selectedRole.projectRole}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {/* Data files available from this role */}
-                      {selectedRole.hasData && selectedRole.dataFiles && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Data:</span>
-                          {selectedRole.dataFiles.map((fileId) => {
-                            const file = dataFiles[fileId as keyof typeof dataFiles];
-                            if (!file) return null;
-                            const downloaded = isFileDownloaded(fileId);
-                            return (
-                              <button
-                                key={fileId}
-                                onClick={() => handleDownload(fileId)}
-                                disabled={isDownloading === fileId}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                                  downloaded
-                                    ? "bg-green-100 text-green-700 border border-green-200"
-                                    : "bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200"
-                                }`}
-                                title={file.description}
-                              >
-                                <Download className="w-3 h-3" />
-                                {file.name}
-                                {isDownloading === fileId && " ..."}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {/* Documents available from this role */}
-                      {selectedRole.documents && selectedRole.documents.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Dokument:</span>
-                          {selectedRole.documents.map((docId) => {
-                            const doc = documents[docId];
-                            if (!doc) return null;
-                            const viewed = isDocumentViewed(docId);
-                            return (
-                              <button
-                                key={docId}
-                                onClick={() => handleViewDocument(doc)}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                                  viewed
-                                    ? "bg-purple-100 text-purple-700 border border-purple-200"
-                                    : "bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200"
-                                }`}
-                                title={doc.description}
-                              >
-                                <BookOpen className="w-3 h-3" />
-                                {doc.name}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{selectedRole.avatar}</span>
+                    <div>
+                      <h3 className="font-semibold">{selectedRole.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        {selectedRole.title}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -571,6 +531,59 @@ export default function SimulationPage() {
                 <div ref={chatEndRef} />
               </div>
 
+              {/* Offered data/documents */}
+              {selectedRole && (offeredData.length > 0 || offeredDocuments.length > 0) && (
+                <div className="border-t bg-green-50 px-4 py-3">
+                  <p className="text-sm text-green-800 font-medium mb-2">
+                    📎 {selectedRole.name} har delat material med dig:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {offeredData.map((fileId) => {
+                      const file = dataFiles[fileId as keyof typeof dataFiles];
+                      if (!file) return null;
+                      const downloaded = isFileDownloaded(fileId);
+                      return (
+                        <button
+                          key={fileId}
+                          onClick={() => handleDownload(fileId)}
+                          disabled={isDownloading === fileId}
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm transition-colors ${
+                            downloaded
+                              ? "bg-green-200 text-green-800 border border-green-300"
+                              : "bg-white text-green-700 border border-green-300 hover:bg-green-100"
+                          }`}
+                        >
+                          <Download className="w-4 h-4" />
+                          {file.name}
+                          {downloaded && " ✓"}
+                          {isDownloading === fileId && " ..."}
+                        </button>
+                      );
+                    })}
+                    {offeredDocuments.map((docId) => {
+                      const doc = documents[docId];
+                      if (!doc) return null;
+                      const viewed = isDocumentViewed(docId);
+                      return (
+                        <button
+                          key={docId}
+                          onClick={() => handleViewDocument(doc)}
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm transition-colors ${
+                            viewed
+                              ? "bg-purple-200 text-purple-800 border border-purple-300"
+                              : "bg-white text-purple-700 border border-purple-300 hover:bg-purple-100"
+                          }`}
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          {doc.name}
+                          {viewed && " ✓"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Chat input */}
               {selectedRole && (
                 <div className="border-t p-4">
@@ -599,51 +612,27 @@ export default function SimulationPage() {
                 <div className="p-6">
                   {group.phase === 1 ? (
                     <>
-                      <h3 className="text-lg font-semibold mb-4">Fas 1 - Utredningsverktyg</h3>
+                      <h3 className="text-lg font-semibold mb-2">Verktyg</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Använd dessa verktyg för att dokumentera er utredning.
+                      </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <button
-                          onClick={() => setActiveTool("stakeholders")}
-                          className="text-left border rounded-lg p-4 hover:border-yellow-300 transition-colors"
-                        >
-                          <h4 className="font-medium mb-2">Intressentanalys</h4>
-                          <p className="text-sm text-gray-500">
-                            Kartlägg intressenter med Power/Interest-matris
-                          </p>
-                        </button>
-                        <button
-                          onClick={() => setActiveTool("risks")}
-                          className="text-left border rounded-lg p-4 hover:border-yellow-300 transition-colors"
-                        >
-                          <h4 className="font-medium mb-2">Riskanalys</h4>
-                          <p className="text-sm text-gray-500">
-                            Identifiera och bedöm projektrisker
-                          </p>
-                        </button>
-                        <button
-                          onClick={() => setActiveTool("wbs")}
-                          className="text-left border rounded-lg p-4 hover:border-yellow-300 transition-colors"
-                        >
-                          <h4 className="font-medium mb-2">WBS</h4>
-                          <p className="text-sm text-gray-500">
-                            Skapa Work Breakdown Structure
-                          </p>
-                        </button>
-                        <button
                           onClick={() => setActiveTool("proposals")}
-                          className="text-left border rounded-lg p-4 hover:border-yellow-300 transition-colors"
+                          className="text-left border-2 border-yellow-300 rounded-lg p-4 hover:bg-yellow-50 transition-colors bg-yellow-50"
                         >
-                          <h4 className="font-medium mb-2">Åtgärdsförslag</h4>
-                          <p className="text-sm text-gray-500">
-                            Formulera och lämna in åtgärdsförslag
+                          <h4 className="font-medium mb-2">📋 Åtgärdsförslag</h4>
+                          <p className="text-sm text-gray-600">
+                            Dokumentera rotorsaker och föreslå åtgärder
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("export")}
-                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
+                          onClick={() => setActiveTool("overview")}
+                          className="text-left border rounded-lg p-4 hover:border-gray-300 transition-colors"
                         >
-                          <h4 className="font-medium mb-2">📦 Exportera</h4>
+                          <h4 className="font-medium mb-2">📊 Nedladdade filer</h4>
                           <p className="text-sm text-gray-500">
-                            Ladda ner rapporter och dokumentation
+                            Se vilka datafiler ni har fått ({downloads.length} st)
                           </p>
                         </button>
                       </div>
@@ -782,6 +771,48 @@ export default function SimulationPage() {
                       downloads={downloads}
                       proposals={proposals}
                     />
+                  )}
+                  {activeTool === "overview" && (
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold mb-4">Nedladdade filer</h3>
+                      {downloads.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                          <p className="mb-2">Ni har inte fått några datafiler än.</p>
+                          <p className="text-sm">Intervjua medarbetare och fråga om data för att få tillgång till filer.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {downloads.map((download) => {
+                            const file = dataFiles[download.fileId as keyof typeof dataFiles];
+                            if (!file) return null;
+                            return (
+                              <div
+                                key={download.fileId}
+                                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <FileText className="w-8 h-8 text-green-600" />
+                                  <div>
+                                    <p className="font-medium">{file.name}</p>
+                                    <p className="text-sm text-gray-500">{file.filename}</p>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDownload(download.fileId)}
+                                  disabled={isDownloading === download.fileId}
+                                >
+                                  <Download className="w-4 h-4 mr-1" />
+                                  {isDownloading === download.fileId ? "Laddar..." : "Ladda ner igen"}
+                                </Button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               )}

@@ -1,126 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const ROLES: Record<string, {
-  name: string;
-  title: string;
-  personality: string;
-  knowledge: string[];
-  stance: string;
-}> = {
-  maria: {
-    name: 'Maria Lindberg',
-    title: 'VD',
-    personality: 'Professionell, resultatfokuserad, lite stressad över situationen',
-    knowledge: [
-      'Reklamationerna har ökat från 412 till 847 på ett år (106%)',
-      'Kostnaderna har gått från 2,1 till 4,8 MSEK',
-      'Styrelsen kräver 50% reduktion inom 12 månader',
-      'Budget för förbättringsprojekt: 800 000 SEK'
-    ],
-    stance: 'stödjande'
-  },
-  karin: {
-    name: 'Karin Ström',
-    title: 'Kvalitetschef',
-    personality: 'Analytisk, datadriven, frustrerad över att inte hittat lösningen',
-    knowledge: [
-      'Har detaljerad reklamationsdata i Excel',
-      'Ser mönster: kvällsskiftet står för 60% av felen',
-      'Misstänker att det finns koppling till leverantörsbyte',
-      'Kan dela reklamationsdata, leverantörsdata och skiftdata'
-    ],
-    stance: 'stödjande'
-  },
-  thomas: {
-    name: 'Thomas Berg',
-    title: 'Inköpschef',
-    personality: 'Defensiv, kostnadsfokuserad, vill inte erkänna misstag',
-    knowledge: [
-      'Bytte till AsiaCore-drivdon för 18 månader sedan för att spara 15%',
-      'Har sett mejl om kvalitetsproblem men ignorerat dem',
-      'AsiaCore har MTBF på 35 000h istället för 50 000h',
-      'Vill inte gå tillbaka till dyrare leverantör'
-    ],
-    stance: 'motståndare'
-  },
-  mikael: {
-    name: 'Mikael Svensson',
-    title: 'Produktionschef',
-    personality: 'Praktisk, lösningsorienterad, skyddar sitt team',
-    knowledge: [
-      'Utbildningen på nya JUKI-maskiner var bara 2 halvdagar',
-      'Kvällsskiftet fick ingen utbildning alls',
-      'Har märkt att dagskiftet gör färre fel',
-      'Behöver mer resurser för ordentlig upplärning'
-    ],
-    stance: 'skeptisk'
-  },
-  peter: {
-    name: 'Peter Nilsson',
-    title: 'HR-chef',
-    personality: 'Empatisk, orolig för personalen, ser kulturproblem',
-    knowledge: [
-      'Personalomsättningen på kvällsskiftet är 35%',
-      'Många nyanställda får bara 2 veckors introduktion',
-      'Det finns spänningar mellan skiften',
-      'Har försökt få budget för bättre onboarding'
-    ],
-    stance: 'stödjande'
-  },
-  kenneth: {
-    name: 'Kenneth Ek',
-    title: 'Operatör, dagskift',
-    personality: 'Erfaren, stolt över sitt arbete, lite nedlåtande mot kvällsskiftet',
-    knowledge: [
-      'Har jobbat i 12 år och kan maskinerna utan och innan',
-      'Dagskiftet har sina egna knep som de lärt sig över tid',
-      'Tycker kvällsskiftet slarvar',
-      'Vet att överlämningen mellan skiften är dålig'
-    ],
-    stance: 'skeptisk'
-  },
-  emma: {
-    name: 'Emma Lindqvist',
-    title: 'Operatör, kvällsskift',
-    personality: 'Frustrerad, känner sig orättvist behandlad, vill göra bra ifrån sig',
-    knowledge: [
-      'Fick bara 2 veckors upplärning',
-      'Dagskiftet delar inte med sig av sina kunskaper',
-      'Skiftloggen är ofta tom eller oläslig',
-      'Många på kvällsskiftet är nya och osäkra'
-    ],
-    stance: 'stödjande'
-  }
-};
+import { getRoleById } from '@/lib/roles';
+import { generateSystemPrompt } from '@/lib/prompts';
+import { getGroupByCode, startInterview, incrementQuestions, saveChatMessage, getChatHistory, logActivity } from '@/lib/db';
+import { dataFiles } from '@/lib/data-generator';
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, roleId } = await request.json();
-    
-    const role = ROLES[roleId];
+    const { groupId, roleId, messages } = await request.json();
+
+    const role = getRoleById(roleId);
     if (!role) {
       return NextResponse.json({ error: 'Okänd roll' }, { status: 400 });
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {
       console.error('ANTHROPIC_API_KEY saknas');
-      return NextResponse.json({ error: 'API-konfiguration saknas' }, { status: 500 });
+      return NextResponse.json({
+        response: `[${role.name} är inte tillgänglig just nu. Kontakta läraren.]`,
+        error: 'API-konfiguration saknas'
+      }, { status: 200 });
     }
 
-    const systemPrompt = `Du är ${role.name}, ${role.title} på Bright Light Solutions AB.
+    // Get the last user message
+    const lastUserMessage = messages[messages.length - 1];
 
-PERSONLIGHET: ${role.personality}
+    // Log the interview start if first message
+    if (groupId && messages.length === 1) {
+      try {
+        await startInterview(groupId, roleId);
+        await logActivity(groupId, 'interview_started', `Intervju startad med ${role.name}`);
+      } catch (e) {
+        console.error('Could not log interview:', e);
+      }
+    }
 
-DIN KUNSKAP:
-${role.knowledge.map(k => `- ${k}`).join('\n')}
+    // Increment question count
+    if (groupId) {
+      try {
+        await incrementQuestions(groupId, roleId);
+        await saveChatMessage(groupId, roleId, 'user', lastUserMessage.content);
+      } catch (e) {
+        console.error('Could not save message:', e);
+      }
+    }
 
-REGLER:
-- Svara kort (2-4 meningar)
-- Stance: ${role.stance}
-- Avslöja information gradvis
-- Prata svenska
+    // Build system prompt with data availability info
+    let systemPrompt = generateSystemPrompt(role);
 
-KONTEXT: Reklamationer ökat 106%, kostnader 4,8 MSEK, mål 50% reduktion.`;
+    // Add data sharing instructions if this role has data
+    if (role.hasData && role.dataFiles) {
+      const availableData = role.dataFiles.map(id => {
+        const file = dataFiles[id as keyof typeof dataFiles];
+        return file ? file.name : id;
+      }).join(', ');
+
+      systemPrompt += `\n\n## DATA DU KAN DELA
+Om studenten frågar om data, statistik eller vill se siffror, säg att du kan dela relevant data.
+Använd formuleringen: "Jag kan skicka dig [datanamn] om du vill ha det."
+Tillgänglig data: ${availableData}
+
+När du erbjuder data, lägg till taggen [ERBJUD_DATA:${role.dataFiles.join(',')}] i slutet av ditt svar.`;
+    }
+
+    // Add document sharing instructions
+    if (role.documents && role.documents.length > 0) {
+      systemPrompt += `\n\n## DOKUMENT DU KAN DELA
+Om studenten frågar djupgående frågor eller vill ha bevis, kan du nämna att du har dokument.
+Lägg till taggen [ERBJUD_DOKUMENT:${role.documents.join(',')}] när du erbjuder dokument.`;
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -133,23 +80,54 @@ KONTEXT: Reklamationer ökat 106%, kostnader 4,8 MSEK, mål 50% reduktion.`;
         model: 'claude-sonnet-4-20250514',
         max_tokens: 500,
         system: systemPrompt,
-        messages: messages.slice(-10)
+        messages: messages.slice(-10).map((m: { role: string; content: string }) => ({
+          role: m.role,
+          content: m.content
+        }))
       })
     });
 
     if (!response.ok) {
-      console.error('API error:', response.status);
-      return NextResponse.json({ error: 'AI-fel' }, { status: 500 });
+      const errorText = await response.text();
+      console.error('Anthropic API error:', response.status, errorText);
+      return NextResponse.json({
+        response: `${role.name}: Ursäkta, jag måste tänka på det. Kan du fråga igen?`,
+      }, { status: 200 });
     }
 
     const data = await response.json();
+    let responseText = data.content[0]?.text || 'Inget svar.';
+
+    // Parse data/document offers from response
+    const dataOfferMatch = responseText.match(/\[ERBJUD_DATA:([^\]]+)\]/);
+    const docOfferMatch = responseText.match(/\[ERBJUD_DOKUMENT:([^\]]+)\]/);
+
+    // Remove tags from visible response
+    responseText = responseText
+      .replace(/\[ERBJUD_DATA:[^\]]+\]/g, '')
+      .replace(/\[ERBJUD_DOKUMENT:[^\]]+\]/g, '')
+      .trim();
+
+    // Save assistant message
+    if (groupId) {
+      try {
+        await saveChatMessage(groupId, roleId, 'assistant', responseText);
+      } catch (e) {
+        console.error('Could not save assistant message:', e);
+      }
+    }
+
     return NextResponse.json({
-      content: data.content[0]?.text || 'Inget svar.',
-      role: 'assistant'
+      response: responseText,
+      offeredData: dataOfferMatch ? dataOfferMatch[1].split(',') : null,
+      offeredDocuments: docOfferMatch ? docOfferMatch[1].split(',') : null,
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: 'Ett fel uppstod' }, { status: 500 });
+    console.error('Chat error:', error);
+    return NextResponse.json({
+      response: 'Ett tekniskt fel uppstod. Försök igen.',
+      error: 'server_error'
+    }, { status: 200 });
   }
 }
