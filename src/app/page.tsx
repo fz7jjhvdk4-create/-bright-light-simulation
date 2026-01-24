@@ -86,10 +86,42 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Login for existing groups */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm mb-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
+            Har du redan en gruppkod?
+          </h3>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const codeInput = (e.target as HTMLFormElement).elements.namedItem('groupCode') as HTMLInputElement;
+              const code = codeInput.value.trim().toUpperCase();
+              if (code) {
+                router.push(`/simulation/${code}`);
+              }
+            }}
+            className="flex gap-2"
+            aria-label="Logga in med gruppkod"
+          >
+            <input
+              type="text"
+              name="groupCode"
+              placeholder="Ange gruppkod (t.ex. 8DQAFC)"
+              className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none text-base uppercase"
+              maxLength={6}
+              pattern="[A-Za-z0-9]{6}"
+              required
+            />
+            <Button type="submit" variant="outline">
+              Fortsätt
+            </Button>
+          </form>
+        </div>
+
         {/* Registration form */}
         <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
-            Registrera er grupp
+            Ny grupp? Registrera er här
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-4" aria-label="Gruppregistrering">

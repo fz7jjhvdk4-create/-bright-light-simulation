@@ -1,4 +1,4 @@
-import { getGroupByCode, updateGroupPhase, updateGroupStatus, logActivity } from '@/lib/db';
+import { getGroupByCode, updateGroupPhase, updateGroupStatus, logActivity, approveProjectPlan, approveInvestigation, updateSubPhase } from '@/lib/db';
 
 export async function POST(
   request: Request,
@@ -25,6 +25,20 @@ export async function POST(
     if (approved) {
       // Approve: update phase to 2 and status to approved
       console.log('Approving group, updating phase to 2 and status to approved');
+
+      // Also approve project plan and investigation if not already done
+      if (!group.project_plan_approved) {
+        await approveProjectPlan(group.id);
+        console.log('Project plan auto-approved');
+      }
+      if (!group.investigation_approved) {
+        await approveInvestigation(group.id);
+        console.log('Investigation auto-approved');
+      }
+
+      // Set sub_phase to intro for Phase 2
+      await updateSubPhase(group.id, 'intro');
+
       await updateGroupPhase(group.id, 2);
       await updateGroupStatus(group.id, 'approved');
       await logActivity(
