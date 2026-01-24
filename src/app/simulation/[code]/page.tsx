@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { roleCategories, getRoleById, getRolesForPhase, Role } from "@/lib/roles";
-import { Send, Users, FileText, ClipboardList, Download, X, BookOpen, Menu } from "lucide-react";
+import { Send, Users, FileText, ClipboardList, Download, X, BookOpen, Menu, Lock, CheckCircle, ChevronRight } from "lucide-react";
 import { dataFiles } from "@/lib/data-generator";
 import { documents, getDocumentsForRole, Document } from "@/lib/documents";
 import { ActionProposals } from "@/components/ActionProposals";
@@ -15,6 +15,10 @@ import { ImplementationPlan } from "@/components/ImplementationPlan";
 import { Phase2Events } from "@/components/Phase2Events";
 import { ResultsCalculation } from "@/components/ResultsCalculation";
 import { ExportPanel } from "@/components/ExportPanel";
+import { IntroMeeting } from "@/components/IntroMeeting";
+import { ProjectDefinition } from "@/components/ProjectDefinition";
+
+type SubPhase = 'intro' | 'prestudy' | 'planning' | 'execution' | 'closing';
 
 interface GroupData {
   id: number;
@@ -22,6 +26,8 @@ interface GroupData {
   name: string;
   studentNames: string;
   phase: number;
+  subPhase: SubPhase;
+  projectPlanApproved: boolean;
   status: string;
 }
 
@@ -291,6 +297,44 @@ export default function SimulationPage() {
     return getDocumentsForRole(roleId);
   };
 
+  const updateSubPhase = async (newSubPhase: SubPhase) => {
+    if (!group) return;
+    try {
+      const response = await fetch(`/api/groups/${group.code}/sub-phase`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subPhase: newSubPhase }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setGroup(prev => prev ? { ...prev, subPhase: newSubPhase } : null);
+      }
+    } catch (error) {
+      console.error("Error updating sub-phase:", error);
+    }
+  };
+
+  const subPhaseLabels: Record<SubPhase, string> = {
+    intro: "Uppdragsmöte",
+    prestudy: "Förstudie",
+    planning: "Planering",
+    execution: "Genomförande",
+    closing: "Avslut"
+  };
+
+  const subPhaseOrder: SubPhase[] = ['intro', 'prestudy', 'planning', 'execution', 'closing'];
+
+  const canAccessSubPhase = (phase: SubPhase): boolean => {
+    if (!group) return false;
+    const currentIndex = subPhaseOrder.indexOf(group.subPhase);
+    const targetIndex = subPhaseOrder.indexOf(phase);
+    return targetIndex <= currentIndex;
+  };
+
+  // Check if interviews are locked (need project plan approval first)
+  const interviewsLocked = group?.phase === 1 && !group?.projectPlanApproved &&
+    ['intro', 'prestudy', 'planning'].includes(group?.subPhase || 'intro');
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -316,129 +360,212 @@ export default function SimulationPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-80px)]">
       {/* Status bar */}
-      <div className="bg-white border-b px-2 sm:px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-          <div className="text-xs sm:text-sm">
-            <span className="text-gray-500">Grupp:</span>{" "}
-            <span className="font-semibold">{group.name}</span>
-            <span className="text-gray-400 ml-1 sm:ml-2">({group.code})</span>
+      <div className="bg-white border-b px-2 sm:px-4 py-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <div className="text-xs sm:text-sm">
+              <span className="text-gray-500">Grupp:</span>{" "}
+              <span className="font-semibold">{group.name}</span>
+              <span className="text-gray-400 ml-1 sm:ml-2">({group.code})</span>
+            </div>
+            <div className="hidden sm:block h-4 border-l border-gray-300" />
+            <div className="text-xs sm:text-sm">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                group.phase === 1
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-green-100 text-green-700"
+              }`} role="status" aria-label={`Fas ${group.phase}`}>
+                Fas {group.phase}: {group.phase === 1 ? "Utredning" : "Implementering"}
+              </span>
+            </div>
           </div>
-          <div className="hidden sm:block h-4 border-l border-gray-300" />
-          <div className="text-xs sm:text-sm">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              group.phase === 1
-                ? "bg-blue-100 text-blue-700"
-                : "bg-green-100 text-green-700"
-            }`} role="status" aria-label={`Fas ${group.phase}`}>
-              Fas {group.phase}: {group.phase === 1 ? "Utredning" : "Implementering"}
-            </span>
+          <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+            <div className="flex items-center gap-1" aria-label={`${interviews.length} intervjuer genomförda`}>
+              <Users className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
+              <span className="hidden xs:inline">{interviews.length} intervjuade</span>
+              <span className="xs:hidden">{interviews.length}</span>
+            </div>
+            <div className="flex items-center gap-1" aria-label={`${downloads.length} filer nedladdade`}>
+              <FileText className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
+              <span className="hidden xs:inline">{downloads.length} filer</span>
+              <span className="xs:hidden">{downloads.length}</span>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
-          <div className="flex items-center gap-1" aria-label={`${interviews.length} intervjuer genomförda`}>
-            <Users className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
-            <span className="hidden xs:inline">{interviews.length} intervjuade</span>
-            <span className="xs:hidden">{interviews.length}</span>
+
+        {/* Sub-phase navigation */}
+        {group.phase === 1 && (
+          <div className="mt-2 pt-2 border-t">
+            <div className="flex items-center gap-1 overflow-x-auto pb-1">
+              {subPhaseOrder.map((phase, index) => {
+                const isActive = group.subPhase === phase;
+                const isCompleted = subPhaseOrder.indexOf(group.subPhase) > index;
+                const isAccessible = canAccessSubPhase(phase);
+
+                return (
+                  <div key={phase} className="flex items-center">
+                    <button
+                      onClick={() => isAccessible && updateSubPhase(phase)}
+                      disabled={!isAccessible}
+                      className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
+                        isActive
+                          ? "bg-yellow-500 text-white"
+                          : isCompleted
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : isAccessible
+                          ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          : "bg-gray-50 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      {isCompleted && <CheckCircle className="w-3 h-3" />}
+                      {!isAccessible && <Lock className="w-3 h-3" />}
+                      {subPhaseLabels[phase]}
+                    </button>
+                    {index < subPhaseOrder.length - 1 && (
+                      <ChevronRight className="w-4 h-4 text-gray-300 mx-1 flex-shrink-0" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {!group.projectPlanApproved && group.subPhase === 'planning' && (
+              <p className="text-xs text-orange-600 mt-1">
+                <Lock className="w-3 h-3 inline mr-1" />
+                Intervjuer är låsta tills läraren godkänner er projektplan
+              </p>
+            )}
           </div>
-          <div className="flex items-center gap-1" aria-label={`${downloads.length} filer nedladdade`}>
-            <FileText className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
-            <span className="hidden xs:inline">{downloads.length} filer</span>
-            <span className="xs:hidden">{downloads.length}</span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-30 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Sidebar - Role list */}
-        <aside
-          className={`fixed md:relative inset-y-0 left-0 z-40 w-72 bg-gray-50 border-r overflow-y-auto transform transition-transform duration-200 ease-in-out ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          }`}
-          aria-label="Rollista"
-        >
-          <div className="p-4">
-            {/* Close button for mobile */}
-            <div className="flex items-center justify-between mb-3 md:mb-0">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-                Tillgängliga roller
-              </h3>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="md:hidden p-2 -mr-2 hover:bg-gray-200 rounded-lg"
-                aria-label="Stäng meny"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        {/* Show IntroMeeting for intro sub-phase */}
+        {group.phase === 1 && group.subPhase === 'intro' ? (
+          <div className="flex-1 p-4 overflow-y-auto">
+            <div className="max-w-3xl mx-auto h-full">
+              <IntroMeeting
+                groupName={group.name}
+                onComplete={() => updateSubPhase('prestudy')}
+              />
             </div>
-            {roleCategories.map(category => (
-              <div key={category.id} className="mb-4">
-                <h4 className="text-xs font-medium text-gray-400 uppercase mb-2">
-                  {category.name}
-                </h4>
-                <div className="space-y-1" role="list">
-                  {category.roles.map(role => {
-                    const isAvailable = availableRoles.some(r => r.id === role.id);
-                    const isInterviewed = isRoleInterviewed(role.id);
-                    const isSelected = selectedRole?.id === role.id;
-
-                    return (
-                      <button
-                        key={role.id}
-                        onClick={() => {
-                          if (isAvailable) {
-                            handleSelectRole(role);
-                            setSidebarOpen(false);
-                          }
-                        }}
-                        disabled={!isAvailable}
-                        className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
-                          isSelected
-                            ? "bg-yellow-100 border border-yellow-300"
-                            : isAvailable
-                            ? "hover:bg-gray-100"
-                            : "opacity-50 cursor-not-allowed"
-                        }`}
-                        title={!isAvailable ? "Låst till Fas 2" : role.title}
-                        aria-selected={isSelected}
-                        aria-disabled={!isAvailable}
-                        role="listitem"
-                      >
-                        <span className="text-xl" aria-hidden="true">{role.avatar}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-gray-900 truncate">
-                            {role.name}
-                          </div>
-                          <div className="text-xs text-gray-500 truncate">
-                            {role.title}
-                          </div>
-                        </div>
-                        {isInterviewed && (
-                          <span className="w-2 h-2 bg-green-500 rounded-full" title="Intervjuad" aria-label="Intervjuad" />
-                        )}
-                        {!isAvailable && (
-                          <span className="text-xs text-gray-400" aria-hidden="true">🔒</span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
           </div>
-        </aside>
+        ) : group.phase === 1 && group.subPhase === 'prestudy' ? (
+          <div className="flex-1 overflow-y-auto">
+            <ProjectDefinition
+              groupCode={group.code}
+              onSave={() => {}}
+            />
+            <div className="p-6 max-w-3xl mx-auto">
+              <Button
+                onClick={() => updateSubPhase('planning')}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                Gå vidare till planering
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Mobile sidebar overlay */}
+            {sidebarOpen && (
+              <div
+                className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                onClick={() => setSidebarOpen(false)}
+                aria-hidden="true"
+              />
+            )}
 
-        {/* Main area - Chat */}
-        <main className="flex-1 flex flex-col bg-white min-w-0">
+            {/* Sidebar - Role list */}
+            <aside
+              className={`fixed md:relative inset-y-0 left-0 z-40 w-72 bg-gray-50 border-r overflow-y-auto transform transition-transform duration-200 ease-in-out ${
+                sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+              }`}
+              aria-label="Rollista"
+            >
+              <div className="p-4">
+                {/* Close button for mobile */}
+                <div className="flex items-center justify-between mb-3 md:mb-0">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                    {interviewsLocked ? "Roller (låsta)" : "Tillgängliga roller"}
+                  </h3>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="md:hidden p-2 -mr-2 hover:bg-gray-200 rounded-lg"
+                    aria-label="Stäng meny"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                {interviewsLocked && (
+                  <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <p className="text-xs text-orange-700">
+                      <Lock className="w-3 h-3 inline mr-1" />
+                      Intervjuer låses upp när läraren godkänner er projektplan.
+                    </p>
+                  </div>
+                )}
+                {roleCategories.map(category => (
+                  <div key={category.id} className="mb-4">
+                    <h4 className="text-xs font-medium text-gray-400 uppercase mb-2">
+                      {category.name}
+                    </h4>
+                    <div className="space-y-1" role="list">
+                      {category.roles.map(role => {
+                        const isPhaseAvailable = availableRoles.some(r => r.id === role.id);
+                        const isAvailable = isPhaseAvailable && !interviewsLocked;
+                        const isInterviewed = isRoleInterviewed(role.id);
+                        const isSelected = selectedRole?.id === role.id;
+
+                        return (
+                          <button
+                            key={role.id}
+                            onClick={() => {
+                              if (isAvailable) {
+                                handleSelectRole(role);
+                                setSidebarOpen(false);
+                              }
+                            }}
+                            disabled={!isAvailable}
+                            className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
+                              isSelected
+                                ? "bg-yellow-100 border border-yellow-300"
+                                : isAvailable
+                                ? "hover:bg-gray-100"
+                                : "opacity-50 cursor-not-allowed"
+                            }`}
+                            title={!isAvailable ? (interviewsLocked ? "Väntar på godkännande" : "Låst till Fas 2") : role.title}
+                            aria-selected={isSelected}
+                            aria-disabled={!isAvailable}
+                            role="listitem"
+                          >
+                            <span className="text-xl" aria-hidden="true">{role.avatar}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm text-gray-900 truncate">
+                                {role.name}
+                              </div>
+                              <div className="text-xs text-gray-500 truncate">
+                                {role.title}
+                              </div>
+                            </div>
+                            {isInterviewed && (
+                              <span className="w-2 h-2 bg-green-500 rounded-full" title="Intervjuad" aria-label="Intervjuad" />
+                            )}
+                            {!isAvailable && (
+                              <span className="text-xs text-gray-400" aria-hidden="true">🔒</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </aside>
+
+            {/* Main area - Chat */}
+            <main className="flex-1 flex flex-col bg-white min-w-0">
           {/* Tabs with mobile menu button */}
           <div className="border-b px-2 sm:px-4">
             <div className="flex items-center gap-2 sm:gap-4">
@@ -641,10 +768,45 @@ export default function SimulationPage() {
                 <div className="p-6">
                   {group.phase === 1 ? (
                     <>
-                      <h3 className="text-lg font-semibold mb-2">Verktyg</h3>
+                      <h3 className="text-lg font-semibold mb-2">Projektverktyg</h3>
                       <p className="text-sm text-gray-500 mb-4">
-                        Använd dessa verktyg för att dokumentera er utredning.
+                        Använd dessa verktyg för att planera och dokumentera er utredning.
                       </p>
+
+                      {/* Planning tools */}
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Planering</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <button
+                          onClick={() => setActiveTool("wbs")}
+                          className="text-left border rounded-lg p-4 hover:border-blue-300 transition-colors border-blue-200 bg-blue-50"
+                        >
+                          <h4 className="font-medium mb-2">📊 WBS</h4>
+                          <p className="text-sm text-gray-600">
+                            Work Breakdown Structure - strukturera arbetet
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("stakeholders")}
+                          className="text-left border rounded-lg p-4 hover:border-purple-300 transition-colors border-purple-200 bg-purple-50"
+                        >
+                          <h4 className="font-medium mb-2">👥 Intressentanalys</h4>
+                          <p className="text-sm text-gray-600">
+                            Identifiera och analysera intressenter
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("risks")}
+                          className="text-left border rounded-lg p-4 hover:border-orange-300 transition-colors border-orange-200 bg-orange-50"
+                        >
+                          <h4 className="font-medium mb-2">⚠️ Riskanalys</h4>
+                          <p className="text-sm text-gray-600">
+                            Identifiera och hantera projektrisker
+                          </p>
+                        </button>
+                      </div>
+
+                      {/* Documentation tools */}
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Dokumentation</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <button
                           onClick={() => setActiveTool("proposals")}
@@ -659,7 +821,7 @@ export default function SimulationPage() {
                           onClick={() => setActiveTool("overview")}
                           className="text-left border rounded-lg p-4 hover:border-gray-300 transition-colors"
                         >
-                          <h4 className="font-medium mb-2">📊 Nedladdade filer</h4>
+                          <h4 className="font-medium mb-2">📁 Nedladdade filer</h4>
                           <p className="text-sm text-gray-500">
                             Se vilka datafiler ni har fått ({downloads.length} st)
                           </p>
@@ -900,6 +1062,8 @@ export default function SimulationPage() {
             </div>
           )}
         </main>
+          </>
+        )}
       </div>
 
       {/* Document Modal */}

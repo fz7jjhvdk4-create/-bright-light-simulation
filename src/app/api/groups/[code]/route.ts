@@ -31,6 +31,8 @@ export async function GET(
         name: group.name,
         studentNames: group.student_names,
         phase: group.phase,
+        subPhase: group.sub_phase || 'intro',
+        projectPlanApproved: group.project_plan_approved || false,
         status: group.status,
         createdAt: group.created_at
       },

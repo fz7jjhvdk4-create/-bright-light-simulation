@@ -21,8 +21,18 @@ interface GroupDetail {
   name: string;
   studentNames: string;
   phase: number;
+  subPhase: string;
+  projectPlanApproved: boolean;
   status: string;
   createdAt: string;
+}
+
+interface ProjectDefinition {
+  purpose: string;
+  goals: string;
+  scope: string;
+  exclusions: string;
+  success_criteria: string;
 }
 
 interface ActivityLog {
@@ -63,10 +73,11 @@ export default function TeacherGroupDetailPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "activity" | "interviews" | "data" | "proposals"
-  >("proposals");
+    "activity" | "interviews" | "data" | "proposals" | "projectplan"
+  >("projectplan");
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [projectDefinition, setProjectDefinition] = useState<ProjectDefinition | null>(null);
 
   useEffect(() => {
     const session = localStorage.getItem("teacher_session");
@@ -82,13 +93,15 @@ export default function TeacherGroupDetailPage() {
 
   const fetchGroupData = async () => {
     try {
-      const [groupRes, proposalsRes] = await Promise.all([
+      const [groupRes, proposalsRes, definitionRes] = await Promise.all([
         fetch(`/api/groups/${code}`),
         fetch(`/api/groups/${code}/proposals`),
+        fetch(`/api/groups/${code}/project-definition`),
       ]);
 
       const groupData = await groupRes.json();
       const proposalsData = await proposalsRes.json();
+      const definitionData = await definitionRes.json();
 
       if (groupData.success) {
         setGroup(groupData.group);
@@ -99,6 +112,10 @@ export default function TeacherGroupDetailPage() {
 
       if (proposalsData.success) {
         setProposals(proposalsData.proposals);
+      }
+
+      if (definitionData.success && definitionData.definition) {
+        setProjectDefinition(definitionData.definition);
       }
     } catch (error) {
       console.error("Error fetching group data:", error);
@@ -127,6 +144,30 @@ export default function TeacherGroupDetailPage() {
       }
     } catch (error) {
       console.error("Error submitting approval:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleProjectPlanApproval = async () => {
+    if (!group) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/groups/${group.code}/approve-project-plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feedback }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        await fetchGroupData();
+        setFeedback("");
+        alert("Projektplanen har godkänts! Studenterna kan nu börja intervjua.");
+      }
+    } catch (error) {
+      console.error("Error approving project plan:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -276,10 +317,24 @@ export default function TeacherGroupDetailPage() {
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow">
           <div className="border-b px-4">
-            <div className="flex gap-4">
+            <div className="flex gap-4 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab("projectplan")}
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === "projectplan"
+                    ? "border-yellow-500 text-yellow-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <FileText className="w-4 h-4 inline mr-1" />
+                Projektplan
+                {!group.projectPlanApproved && projectDefinition && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">Ny</span>
+                )}
+              </button>
               <button
                 onClick={() => setActiveTab("proposals")}
-                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "proposals"
                     ? "border-yellow-500 text-yellow-600"
                     : "border-transparent text-gray-500 hover:text-gray-700"
@@ -290,7 +345,7 @@ export default function TeacherGroupDetailPage() {
               </button>
               <button
                 onClick={() => setActiveTab("interviews")}
-                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "interviews"
                     ? "border-yellow-500 text-yellow-600"
                     : "border-transparent text-gray-500 hover:text-gray-700"
@@ -301,7 +356,7 @@ export default function TeacherGroupDetailPage() {
               </button>
               <button
                 onClick={() => setActiveTab("data")}
-                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "data"
                     ? "border-yellow-500 text-yellow-600"
                     : "border-transparent text-gray-500 hover:text-gray-700"
@@ -312,7 +367,7 @@ export default function TeacherGroupDetailPage() {
               </button>
               <button
                 onClick={() => setActiveTab("activity")}
-                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "activity"
                     ? "border-yellow-500 text-yellow-600"
                     : "border-transparent text-gray-500 hover:text-gray-700"
@@ -325,6 +380,85 @@ export default function TeacherGroupDetailPage() {
           </div>
 
           <div className="p-6">
+            {activeTab === "projectplan" && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Projektdefinition</h3>
+                  {group.projectPlanApproved ? (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4" />
+                      Godkänd
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                      Ej godkänd
+                    </span>
+                  )}
+                </div>
+
+                {!projectDefinition ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Studenterna har inte skickat in någon projektdefinition än.</p>
+                    <p className="text-sm mt-2">Delfas: {group.subPhase}</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4 mb-6">
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Syfte</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.purpose || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Mål (SMART)</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.goals || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Omfattning</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.scope || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Avgränsningar</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.exclusions || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Framgångskriterier</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.success_criteria || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                    </div>
+
+                    {!group.projectPlanApproved && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <h4 className="font-medium text-yellow-800 mb-2">Godkänn projektplan</h4>
+                        <p className="text-sm text-yellow-700 mb-4">
+                          När du godkänner projektplanen får studenterna tillgång till intervjufunktionen.
+                        </p>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Feedback (valfritt)
+                          </label>
+                          <textarea
+                            value={feedback}
+                            onChange={(e) => setFeedback(e.target.value)}
+                            placeholder="Skriv feedback till studenterna..."
+                            rows={2}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleProjectPlanApproval}
+                          disabled={isSubmitting}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          {isSubmitting ? "Godkänner..." : "Godkänn projektplan"}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             {activeTab === "proposals" && (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Åtgärdsförslag</h3>

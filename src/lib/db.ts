@@ -1,6 +1,8 @@
 import { sql } from '@vercel/postgres';
 
 // Database schema types
+export type SubPhase = 'intro' | 'prestudy' | 'planning' | 'execution' | 'closing';
+
 export interface Group {
   id: number;
   code: string;
@@ -8,7 +10,20 @@ export interface Group {
   student_names: string;
   created_at: Date;
   phase: number;
+  sub_phase: SubPhase;
+  project_plan_approved: boolean;
   status: 'active' | 'pending_approval' | 'approved' | 'completed';
+}
+
+export interface ProjectDefinition {
+  id: number;
+  group_id: number;
+  purpose: string;
+  goals: string;
+  scope: string;
+  exclusions: string;
+  success_criteria: string;
+  created_at: Date;
 }
 
 export interface ActivityLog {
@@ -38,7 +53,7 @@ export interface Download {
 // Initialize database tables
 export async function initializeDatabase() {
   try {
-    // Create groups table
+    // Create groups table with sub_phase and project_plan_approved
     await sql`
       CREATE TABLE IF NOT EXISTS groups (
         id SERIAL PRIMARY KEY,
@@ -47,7 +62,32 @@ export async function initializeDatabase() {
         student_names TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         phase INTEGER DEFAULT 1,
+        sub_phase VARCHAR(20) DEFAULT 'intro',
+        project_plan_approved BOOLEAN DEFAULT FALSE,
         status VARCHAR(20) DEFAULT 'active'
+      )
+    `;
+
+    // Add new columns if they don't exist (for existing databases)
+    try {
+      await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS sub_phase VARCHAR(20) DEFAULT 'intro'`;
+      await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS project_plan_approved BOOLEAN DEFAULT FALSE`;
+    } catch (e) {
+      // Columns may already exist
+    }
+
+    // Create project_definitions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS project_definitions (
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
+        purpose TEXT,
+        goals TEXT,
+        scope TEXT,
+        exclusions TEXT,
+        success_criteria TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(group_id)
       )
     `;
 
@@ -282,4 +322,52 @@ export async function getDocumentViews(groupId: number) {
     SELECT document_id FROM document_views WHERE group_id = ${groupId}
   `;
   return result.rows.map(r => r.document_id);
+}
+
+// Sub-phase operations
+export async function updateSubPhase(groupId: number, subPhase: SubPhase) {
+  await sql`
+    UPDATE groups SET sub_phase = ${subPhase} WHERE id = ${groupId}
+  `;
+  await logActivity(groupId, 'sub_phase_changed', `Delfas ändrad till ${subPhase}`);
+}
+
+export async function approveProjectPlan(groupId: number) {
+  await sql`
+    UPDATE groups SET project_plan_approved = TRUE WHERE id = ${groupId}
+  `;
+  await logActivity(groupId, 'project_plan_approved', 'Projektplan godkänd av lärare');
+}
+
+// Project definition operations
+export async function saveProjectDefinition(
+  groupId: number,
+  definition: {
+    purpose: string;
+    goals: string;
+    scope: string;
+    exclusions: string;
+    success_criteria: string;
+  }
+) {
+  const result = await sql`
+    INSERT INTO project_definitions (group_id, purpose, goals, scope, exclusions, success_criteria)
+    VALUES (${groupId}, ${definition.purpose}, ${definition.goals}, ${definition.scope}, ${definition.exclusions}, ${definition.success_criteria})
+    ON CONFLICT (group_id) DO UPDATE SET
+      purpose = ${definition.purpose},
+      goals = ${definition.goals},
+      scope = ${definition.scope},
+      exclusions = ${definition.exclusions},
+      success_criteria = ${definition.success_criteria}
+    RETURNING *
+  `;
+  await logActivity(groupId, 'project_definition_saved', 'Projektdefinition sparad');
+  return result.rows[0] as ProjectDefinition;
+}
+
+export async function getProjectDefinition(groupId: number) {
+  const result = await sql`
+    SELECT * FROM project_definitions WHERE group_id = ${groupId}
+  `;
+  return result.rows[0] as ProjectDefinition | undefined;
 }
