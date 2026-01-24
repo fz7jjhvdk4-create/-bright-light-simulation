@@ -33,6 +33,7 @@ export async function GET(
         phase: group.phase,
         subPhase: group.sub_phase || 'intro',
         projectPlanApproved: group.project_plan_approved || false,
+        investigationApproved: group.investigation_approved || false,
         status: group.status,
         createdAt: group.created_at
       },

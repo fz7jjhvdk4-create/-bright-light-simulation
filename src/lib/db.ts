@@ -12,7 +12,8 @@ export interface Group {
   phase: number;
   sub_phase: SubPhase;
   project_plan_approved: boolean;
-  status: 'active' | 'pending_approval' | 'approved' | 'completed';
+  investigation_approved: boolean;
+  status: 'active' | 'pending_approval' | 'pending_investigation_approval' | 'approved' | 'completed';
 }
 
 export interface ProjectDefinition {
@@ -23,6 +24,17 @@ export interface ProjectDefinition {
   scope: string;
   exclusions: string;
   success_criteria: string;
+  created_at: Date;
+}
+
+export interface InvestigationReport {
+  id: number;
+  group_id: number;
+  summary: string;
+  methodology: string;
+  root_causes: string; // JSON string
+  conclusions: string;
+  recommendations: string;
   created_at: Date;
 }
 
@@ -72,9 +84,25 @@ export async function initializeDatabase() {
     try {
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS sub_phase VARCHAR(20) DEFAULT 'intro'`;
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS project_plan_approved BOOLEAN DEFAULT FALSE`;
+      await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS investigation_approved BOOLEAN DEFAULT FALSE`;
     } catch (e) {
       // Columns may already exist
     }
+
+    // Create investigation_reports table
+    await sql`
+      CREATE TABLE IF NOT EXISTS investigation_reports (
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
+        summary TEXT,
+        methodology TEXT,
+        root_causes TEXT,
+        conclusions TEXT,
+        recommendations TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(group_id)
+      )
+    `;
 
     // Create project_definitions table
     await sql`
@@ -370,4 +398,51 @@ export async function getProjectDefinition(groupId: number) {
     SELECT * FROM project_definitions WHERE group_id = ${groupId}
   `;
   return result.rows[0] as ProjectDefinition | undefined;
+}
+
+// Investigation report operations
+export async function saveInvestigationReport(
+  groupId: number,
+  report: {
+    summary: string;
+    methodology: string;
+    root_causes: Array<{ id: string; title: string; description: string; evidence: string }>;
+    conclusions: string;
+    recommendations: string;
+  }
+) {
+  const rootCausesJson = JSON.stringify(report.root_causes);
+  const result = await sql`
+    INSERT INTO investigation_reports (group_id, summary, methodology, root_causes, conclusions, recommendations)
+    VALUES (${groupId}, ${report.summary}, ${report.methodology}, ${rootCausesJson}, ${report.conclusions}, ${report.recommendations})
+    ON CONFLICT (group_id) DO UPDATE SET
+      summary = ${report.summary},
+      methodology = ${report.methodology},
+      root_causes = ${rootCausesJson},
+      conclusions = ${report.conclusions},
+      recommendations = ${report.recommendations}
+    RETURNING *
+  `;
+  return result.rows[0] as InvestigationReport;
+}
+
+export async function getInvestigationReport(groupId: number) {
+  const result = await sql`
+    SELECT * FROM investigation_reports WHERE group_id = ${groupId}
+  `;
+  if (result.rows[0]) {
+    const report = result.rows[0] as InvestigationReport;
+    return {
+      ...report,
+      root_causes: report.root_causes ? JSON.parse(report.root_causes) : []
+    };
+  }
+  return undefined;
+}
+
+export async function approveInvestigation(groupId: number) {
+  await sql`
+    UPDATE groups SET investigation_approved = TRUE WHERE id = ${groupId}
+  `;
+  await logActivity(groupId, 'investigation_approved', 'Utredning godkänd av lärare');
 }

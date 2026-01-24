@@ -23,8 +23,17 @@ interface GroupDetail {
   phase: number;
   subPhase: string;
   projectPlanApproved: boolean;
+  investigationApproved: boolean;
   status: string;
   createdAt: string;
+}
+
+interface InvestigationReport {
+  summary: string;
+  methodology: string;
+  root_causes: Array<{ id: string; title: string; description: string; evidence: string }>;
+  conclusions: string;
+  recommendations: string;
 }
 
 interface ProjectDefinition {
@@ -73,11 +82,12 @@ export default function TeacherGroupDetailPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "activity" | "interviews" | "data" | "proposals" | "projectplan"
+    "activity" | "interviews" | "data" | "proposals" | "projectplan" | "investigation"
   >("projectplan");
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectDefinition, setProjectDefinition] = useState<ProjectDefinition | null>(null);
+  const [investigationReport, setInvestigationReport] = useState<InvestigationReport | null>(null);
 
   useEffect(() => {
     const session = localStorage.getItem("teacher_session");
@@ -93,15 +103,17 @@ export default function TeacherGroupDetailPage() {
 
   const fetchGroupData = async () => {
     try {
-      const [groupRes, proposalsRes, definitionRes] = await Promise.all([
+      const [groupRes, proposalsRes, definitionRes, investigationRes] = await Promise.all([
         fetch(`/api/groups/${code}`),
         fetch(`/api/groups/${code}/proposals`),
         fetch(`/api/groups/${code}/project-definition`),
+        fetch(`/api/groups/${code}/investigation-report`),
       ]);
 
       const groupData = await groupRes.json();
       const proposalsData = await proposalsRes.json();
       const definitionData = await definitionRes.json();
+      const investigationData = await investigationRes.json();
 
       if (groupData.success) {
         setGroup(groupData.group);
@@ -116,6 +128,10 @@ export default function TeacherGroupDetailPage() {
 
       if (definitionData.success && definitionData.definition) {
         setProjectDefinition(definitionData.definition);
+      }
+
+      if (investigationData.success && investigationData.report) {
+        setInvestigationReport(investigationData.report);
       }
     } catch (error) {
       console.error("Error fetching group data:", error);
@@ -168,6 +184,30 @@ export default function TeacherGroupDetailPage() {
       }
     } catch (error) {
       console.error("Error approving project plan:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInvestigationApproval = async () => {
+    if (!group) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/groups/${group.code}/approve-investigation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feedback }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        await fetchGroupData();
+        setFeedback("");
+        alert("Utredningen har godkänts! Studenterna har nu tillgång till Fas 2.");
+      }
+    } catch (error) {
+      console.error("Error approving investigation:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -239,6 +279,8 @@ export default function TeacherGroupDetailPage() {
                     ? "bg-green-100 text-green-700"
                     : group.status === "pending_approval"
                     ? "bg-yellow-100 text-yellow-700"
+                    : group.status === "pending_investigation_approval"
+                    ? "bg-orange-100 text-orange-700"
                     : "bg-gray-100 text-gray-700"
                 }`}
               >
@@ -246,6 +288,8 @@ export default function TeacherGroupDetailPage() {
                   ? "Godkänd"
                   : group.status === "pending_approval"
                   ? "Väntar godkännande"
+                  : group.status === "pending_investigation_approval"
+                  ? "Utredning väntar"
                   : "Pågående"}
               </span>
             </div>
@@ -330,6 +374,20 @@ export default function TeacherGroupDetailPage() {
                 Projektplan
                 {!group.projectPlanApproved && projectDefinition && (
                   <span className="ml-1 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">Ny</span>
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab("investigation")}
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === "investigation"
+                    ? "border-yellow-500 text-yellow-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <FileText className="w-4 h-4 inline mr-1" />
+                Utredning
+                {group.status === "pending_investigation_approval" && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">Väntar</span>
                 )}
               </button>
               <button
@@ -451,6 +509,103 @@ export default function TeacherGroupDetailPage() {
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
                           {isSubmitting ? "Godkänner..." : "Godkänn projektplan"}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {activeTab === "investigation" && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Utredningsrapport</h3>
+                  {group.investigationApproved ? (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4" />
+                      Godkänd
+                    </span>
+                  ) : group.status === "pending_investigation_approval" ? (
+                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                      Väntar på godkännande
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                      Ej inlämnad
+                    </span>
+                  )}
+                </div>
+
+                {!investigationReport ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Studenterna har inte skickat in någon utredningsrapport än.</p>
+                    <p className="text-sm mt-2">Delfas: {group.subPhase}</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-4 mb-6">
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Sammanfattning</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.summary || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Metodik</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.methodology || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-2">Identifierade rotorsaker ({investigationReport.root_causes?.length || 0})</h4>
+                        {investigationReport.root_causes && investigationReport.root_causes.length > 0 ? (
+                          <div className="space-y-3">
+                            {investigationReport.root_causes.map((rc, index) => (
+                              <div key={rc.id} className="p-3 bg-white border rounded">
+                                <h5 className="font-medium text-gray-800">{index + 1}. {rc.title || "Utan titel"}</h5>
+                                <p className="text-gray-600 text-sm mt-1">{rc.description}</p>
+                                {rc.evidence && (
+                                  <p className="text-gray-500 text-xs mt-1 italic">Bevis: {rc.evidence}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <em className="text-gray-400">Inga rotorsaker dokumenterade</em>
+                        )}
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Slutsatser</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.conclusions || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50">
+                        <h4 className="font-medium text-gray-700 mb-1">Rekommendationer</h4>
+                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.recommendations || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      </div>
+                    </div>
+
+                    {group.status === "pending_investigation_approval" && !group.investigationApproved && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <h4 className="font-medium text-orange-800 mb-2">Godkänn utredning</h4>
+                        <p className="text-sm text-orange-700 mb-4">
+                          När du godkänner utredningen får studenterna tillgång till Fas 2 (Implementering).
+                        </p>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Feedback (valfritt)
+                          </label>
+                          <textarea
+                            value={feedback}
+                            onChange={(e) => setFeedback(e.target.value)}
+                            placeholder="Skriv feedback till studenterna..."
+                            rows={2}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleInvestigationApproval}
+                          disabled={isSubmitting}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          {isSubmitting ? "Godkänner..." : "Godkänn utredning och lås upp Fas 2"}
                         </Button>
                       </div>
                     )}

@@ -17,6 +17,7 @@ import { ResultsCalculation } from "@/components/ResultsCalculation";
 import { ExportPanel } from "@/components/ExportPanel";
 import { IntroMeeting } from "@/components/IntroMeeting";
 import { ProjectDefinition } from "@/components/ProjectDefinition";
+import { InvestigationReport } from "@/components/InvestigationReport";
 
 type SubPhase = 'intro' | 'prestudy' | 'planning' | 'execution' | 'closing';
 
@@ -28,6 +29,7 @@ interface GroupData {
   phase: number;
   subPhase: SubPhase;
   projectPlanApproved: boolean;
+  investigationApproved: boolean;
   status: string;
 }
 
@@ -465,6 +467,14 @@ export default function SimulationPage() {
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
+          </div>
+        ) : group.phase === 1 && group.subPhase === 'closing' ? (
+          <div className="flex-1 overflow-y-auto">
+            <InvestigationReport
+              groupCode={group.code}
+              onSubmit={() => fetchGroupData()}
+              isSubmitted={group.status === 'pending_investigation_approval'}
+            />
           </div>
         ) : (
           <>
