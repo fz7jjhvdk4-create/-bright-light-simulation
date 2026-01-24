@@ -130,10 +130,27 @@ export default function SimulationPage() {
     }
   };
 
-  const handleSelectRole = (role: Role) => {
+  const handleSelectRole = async (role: Role) => {
     setSelectedRole(role);
     setMessages([]);
-    // Load chat history for this role if exists
+    setOfferedData([]);
+    setOfferedDocuments([]);
+
+    // Load chat history for this role
+    if (group) {
+      try {
+        const response = await fetch(`/api/groups/${group.code}/chat-history?roleId=${role.id}`);
+        const data = await response.json();
+        if (data.success && data.messages.length > 0) {
+          setMessages(data.messages.map((m: { role: string; content: string }) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content
+          })));
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+      }
+    }
   };
 
   const handleSendMessage = async () => {
@@ -159,6 +176,18 @@ export default function SimulationPage() {
 
       if (data.response) {
         setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+
+        // Update interview stats - add role if not already interviewed
+        if (selectedRole && !isRoleInterviewed(selectedRole.id)) {
+          setInterviews(prev => [...prev, { roleId: selectedRole.id, questionsAsked: 1 }]);
+        } else if (selectedRole) {
+          // Increment question count for existing interview
+          setInterviews(prev => prev.map(i =>
+            i.roleId === selectedRole.id
+              ? { ...i, questionsAsked: i.questionsAsked + 1 }
+              : i
+          ));
+        }
 
         // Handle offered data/documents
         if (data.offeredData) {
