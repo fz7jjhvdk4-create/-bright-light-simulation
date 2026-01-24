@@ -155,10 +155,11 @@ export default function TeacherGroupDetailPage() {
       console.log("Approval response:", data);
 
       if (data.success) {
-        // Refresh data
-        await fetchGroupData();
+        // Refresh data and force reload to ensure UI updates
         setFeedback("");
         alert(approved ? "Gruppen har godkänts!" : "Gruppen har avslagits.");
+        // Force page reload to ensure fresh data
+        window.location.reload();
       } else {
         alert(`Fel vid godkännande: ${data.error || "Okänt fel"}`);
         console.error("Approval failed:", data);
