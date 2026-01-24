@@ -104,6 +104,50 @@ export async function initializeDatabase() {
       )
     `;
 
+    // Create budget_allocations table
+    await sql`
+      CREATE TABLE IF NOT EXISTS budget_allocations (
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
+        proposal_id INTEGER NOT NULL,
+        allocated INTEGER DEFAULT 0,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create project_events table for Phase 2 events
+    await sql`
+      CREATE TABLE IF NOT EXISTS project_events (
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
+        event_type VARCHAR(50) NOT NULL,
+        week INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        impact_budget INTEGER DEFAULT 0,
+        impact_time INTEGER DEFAULT 0,
+        resolved BOOLEAN DEFAULT FALSE,
+        resolution TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create final_reports table
+    await sql`
+      CREATE TABLE IF NOT EXISTS final_reports (
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
+        executive_summary TEXT,
+        results_vs_goals TEXT,
+        budget_summary TEXT,
+        lessons_learned TEXT,
+        recommendations TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(group_id)
+      )
+    `;
+
     // Create project_definitions table
     await sql`
       CREATE TABLE IF NOT EXISTS project_definitions (
@@ -445,4 +489,62 @@ export async function approveInvestigation(groupId: number) {
     UPDATE groups SET investigation_approved = TRUE WHERE id = ${groupId}
   `;
   await logActivity(groupId, 'investigation_approved', 'Utredning godkänd av lärare');
+}
+
+// Budget allocation operations
+export async function saveBudgetAllocation(
+  groupId: number,
+  allocations: Array<{ proposalId: number; allocated: number; notes: string }>
+) {
+  // Delete existing allocations
+  await sql`DELETE FROM budget_allocations WHERE group_id = ${groupId}`;
+
+  // Insert new allocations
+  for (const allocation of allocations) {
+    await sql`
+      INSERT INTO budget_allocations (group_id, proposal_id, allocated, notes)
+      VALUES (${groupId}, ${allocation.proposalId}, ${allocation.allocated}, ${allocation.notes})
+    `;
+  }
+}
+
+export async function getBudgetAllocation(groupId: number) {
+  const result = await sql`
+    SELECT proposal_id as "proposalId", allocated, notes
+    FROM budget_allocations
+    WHERE group_id = ${groupId}
+  `;
+  return result.rows;
+}
+
+// Final report operations
+export async function saveFinalReport(
+  groupId: number,
+  report: {
+    executive_summary: string;
+    results_vs_goals: string;
+    budget_summary: string;
+    lessons_learned: string;
+    recommendations: string;
+  }
+) {
+  const result = await sql`
+    INSERT INTO final_reports (group_id, executive_summary, results_vs_goals, budget_summary, lessons_learned, recommendations)
+    VALUES (${groupId}, ${report.executive_summary}, ${report.results_vs_goals}, ${report.budget_summary}, ${report.lessons_learned}, ${report.recommendations})
+    ON CONFLICT (group_id) DO UPDATE SET
+      executive_summary = ${report.executive_summary},
+      results_vs_goals = ${report.results_vs_goals},
+      budget_summary = ${report.budget_summary},
+      lessons_learned = ${report.lessons_learned},
+      recommendations = ${report.recommendations}
+    RETURNING *
+  `;
+  return result.rows[0];
+}
+
+export async function getFinalReport(groupId: number) {
+  const result = await sql`
+    SELECT * FROM final_reports WHERE group_id = ${groupId}
+  `;
+  return result.rows[0];
 }

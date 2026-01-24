@@ -18,6 +18,10 @@ import { ExportPanel } from "@/components/ExportPanel";
 import { IntroMeeting } from "@/components/IntroMeeting";
 import { ProjectDefinition } from "@/components/ProjectDefinition";
 import { InvestigationReport } from "@/components/InvestigationReport";
+import { Phase2IntroMeeting } from "@/components/Phase2IntroMeeting";
+import { BudgetAllocation } from "@/components/BudgetAllocation";
+import { ConflictResolution } from "@/components/ConflictResolution";
+import { FinalReport } from "@/components/FinalReport";
 
 type SubPhase = 'intro' | 'prestudy' | 'planning' | 'execution' | 'closing';
 
@@ -85,7 +89,7 @@ export default function SimulationPage() {
 
   // Active tab and tool tab
   const [activeTab, setActiveTab] = useState<"interview" | "tools" | "log">("interview");
-  const [activeTool, setActiveTool] = useState<"overview" | "proposals" | "stakeholders" | "risks" | "wbs" | "implementation" | "events" | "results" | "export" | null>(null);
+  const [activeTool, setActiveTool] = useState<"overview" | "proposals" | "stakeholders" | "risks" | "wbs" | "implementation" | "events" | "results" | "export" | "budget" | "conflicts" | "final" | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Phase 2 state
@@ -474,6 +478,25 @@ export default function SimulationPage() {
               groupCode={group.code}
               onSubmit={() => fetchGroupData()}
               isSubmitted={group.status === 'pending_investigation_approval'}
+            />
+          </div>
+        ) : group.phase === 2 && group.subPhase === 'intro' ? (
+          <div className="flex-1 p-4 overflow-y-auto">
+            <div className="max-w-3xl mx-auto h-full">
+              <Phase2IntroMeeting
+                groupName={group.name}
+                proposals={proposals}
+                onComplete={() => updateSubPhase('planning')}
+              />
+            </div>
+          </div>
+        ) : group.phase === 2 && group.subPhase === 'closing' ? (
+          <div className="flex-1 overflow-y-auto">
+            <FinalReport
+              groupCode={group.code}
+              groupName={group.name}
+              proposals={proposals}
+              onSubmit={() => fetchGroupData()}
             />
           </div>
         ) : (
@@ -878,6 +901,33 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
+                          onClick={() => setActiveTool("budget")}
+                          className="text-left border rounded-lg p-4 hover:border-blue-300 transition-colors border-blue-200 bg-blue-50"
+                        >
+                          <h4 className="font-medium mb-2">💰 Budgetallokering</h4>
+                          <p className="text-sm text-gray-500">
+                            Fördela budget på åtgärder
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("conflicts")}
+                          className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 bg-red-50"
+                        >
+                          <h4 className="font-medium mb-2">🤝 Konflikthantering</h4>
+                          <p className="text-sm text-gray-500">
+                            Hantera konflikter med intressenter
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("final")}
+                          className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 bg-indigo-50"
+                        >
+                          <h4 className="font-medium mb-2">📝 Slutrapport</h4>
+                          <p className="text-sm text-gray-500">
+                            Skriv slutrapport och avsluta projektet
+                          </p>
+                        </button>
+                        <button
                           onClick={() => setActiveTool("proposals")}
                           className="text-left border rounded-lg p-4 hover:border-yellow-300 transition-colors"
                         >
@@ -956,6 +1006,25 @@ export default function SimulationPage() {
                     <ResultsCalculation
                       groupCode={group.code}
                       proposals={proposals}
+                    />
+                  )}
+                  {activeTool === "budget" && (
+                    <BudgetAllocation
+                      groupCode={group.code}
+                      proposals={proposals}
+                    />
+                  )}
+                  {activeTool === "conflicts" && (
+                    <ConflictResolution
+                      groupCode={group.code}
+                    />
+                  )}
+                  {activeTool === "final" && (
+                    <FinalReport
+                      groupCode={group.code}
+                      groupName={group.name}
+                      proposals={proposals}
+                      onSubmit={() => fetchGroupData()}
                     />
                   )}
                   {activeTool === "export" && (
