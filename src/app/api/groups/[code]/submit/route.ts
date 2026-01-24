@@ -7,6 +7,8 @@ export async function POST(
 ) {
   try {
     const { code } = await params;
+    const body = await request.json().catch(() => ({}));
+    const { type } = body;
 
     const group = await getGroupByCode(code);
     if (!group) {
@@ -16,6 +18,32 @@ export async function POST(
       );
     }
 
+    // Handle project plan submission (before interviews are unlocked)
+    if (type === 'project_plan') {
+      // Check if project definition exists
+      const definitionResult = await sql`
+        SELECT id FROM project_definitions WHERE group_id = ${group.id}
+      `;
+
+      if (definitionResult.rows.length === 0) {
+        return Response.json(
+          { success: false, error: 'Ni måste fylla i projektdefinitionen först (i Förstudie-fasen)' },
+          { status: 400 }
+        );
+      }
+
+      // Update status to pending approval for project plan
+      await updateGroupStatus(group.id, 'pending_approval');
+      await logActivity(
+        group.id,
+        'project_plan_submitted',
+        'Projektplan inlämnad för godkännande'
+      );
+
+      return Response.json({ success: true, type: 'project_plan' });
+    }
+
+    // Handle full phase 1 submission (after interviews are done)
     // Check requirements
     const proposalsResult = await sql`
       SELECT COUNT(*) as count FROM action_proposals WHERE group_id = ${group.id}

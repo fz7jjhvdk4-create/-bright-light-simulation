@@ -838,6 +838,53 @@ export default function SimulationPage() {
                         </button>
                       </div>
 
+                      {/* Submit project plan for approval */}
+                      {group.subPhase === 'planning' && !group.projectPlanApproved && (
+                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <h4 className="font-medium text-green-800 mb-2">📝 Skicka in projektplan för godkännande</h4>
+                          <p className="text-sm text-green-700 mb-3">
+                            När ni har fyllt i projektdefinitionen och är redo, skicka in för lärarens godkännande.
+                            Efter godkännande låses intervjufunktionen upp.
+                          </p>
+                          <Button
+                            onClick={async () => {
+                              if (confirm("Är ni säkra på att ni vill skicka in projektplanen för godkännande?")) {
+                                try {
+                                  const response = await fetch(`/api/groups/${group.code}/submit`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ type: "project_plan" }),
+                                  });
+                                  const data = await response.json();
+                                  if (data.success) {
+                                    alert("Projektplanen har skickats in för godkännande! Invänta lärarens beslut.");
+                                    fetchGroupData();
+                                  } else {
+                                    alert(`Kunde inte skicka in: ${data.error}`);
+                                  }
+                                } catch {
+                                  alert("Ett fel uppstod vid inlämning.");
+                                }
+                              }
+                            }}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Send className="w-4 h-4 mr-2" />
+                            Skicka in för godkännande
+                          </Button>
+                        </div>
+                      )}
+
+                      {group.status === 'pending_approval' && (
+                        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på godkännande</h4>
+                          <p className="text-sm text-yellow-700">
+                            Er projektplan har skickats in och väntar på lärarens godkännande.
+                            Ni kommer att meddelas när den har granskats.
+                          </p>
+                        </div>
+                      )}
+
                       {/* Documentation tools */}
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Dokumentation</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
