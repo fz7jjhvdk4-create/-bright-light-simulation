@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGroupByCode, approveProjectPlan, updateSubPhase, logActivity } from '@/lib/db';
+import { getGroupByCode, approveProjectPlan, updateSubPhase, updateGroupStatus, logActivity } from '@/lib/db';
 
 export async function POST(
   request: NextRequest,
@@ -20,7 +20,11 @@ export async function POST(
     // Move to execution phase (where interviews happen)
     await updateSubPhase(group.id, 'execution');
 
+    // Update status back to active (project plan approved, ready for interviews)
+    await updateGroupStatus(group.id, 'active');
+
     // Log activity
+    await logActivity(group.id, 'project_plan_approved', 'Projektplan godkänd av lärare - intervjuer upplåsta');
     if (feedback) {
       await logActivity(group.id, 'project_plan_feedback', `Feedback från lärare: ${feedback}`);
     }

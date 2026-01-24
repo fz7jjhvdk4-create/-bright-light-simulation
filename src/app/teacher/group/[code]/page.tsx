@@ -185,12 +185,16 @@ export default function TeacherGroupDetailPage() {
 
       const data = await response.json();
       if (data.success) {
-        await fetchGroupData();
         setFeedback("");
         alert("Projektplanen har godkänts! Studenterna kan nu börja intervjua.");
+        // Force page reload to ensure fresh data
+        window.location.reload();
+      } else {
+        alert(`Fel vid godkännande: ${data.error || "Okänt fel"}`);
       }
     } catch (error) {
       console.error("Error approving project plan:", error);
+      alert("Något gick fel vid godkännande.");
     } finally {
       setIsSubmitting(false);
     }
