@@ -152,14 +152,20 @@ export default function TeacherGroupDetailPage() {
       });
 
       const data = await response.json();
+      console.log("Approval response:", data);
+
       if (data.success) {
         // Refresh data
         await fetchGroupData();
         setFeedback("");
         alert(approved ? "Gruppen har godkänts!" : "Gruppen har avslagits.");
+      } else {
+        alert(`Fel vid godkännande: ${data.error || "Okänt fel"}`);
+        console.error("Approval failed:", data);
       }
     } catch (error) {
       console.error("Error submitting approval:", error);
+      alert("Något gick fel vid godkännande. Kontrollera konsolen för mer info.");
     } finally {
       setIsSubmitting(false);
     }
