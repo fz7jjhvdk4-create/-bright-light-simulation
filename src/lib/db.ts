@@ -268,9 +268,12 @@ export async function createGroup(name: string, studentNames: string) {
 }
 
 export async function getGroupByCode(code: string) {
+  const upperCode = code.toUpperCase();
+  console.log('getGroupByCode called with:', code, '-> searching for:', upperCode);
   const result = await sql`
-    SELECT * FROM groups WHERE code = ${code}
+    SELECT * FROM groups WHERE UPPER(code) = ${upperCode}
   `;
+  console.log('getGroupByCode result:', result.rows[0] ? `Found group id=${result.rows[0].id}, project_plan_approved=${result.rows[0].project_plan_approved}` : 'Not found');
   return result.rows[0] as Group | undefined;
 }
 
@@ -405,10 +408,25 @@ export async function updateSubPhase(groupId: number, subPhase: SubPhase) {
 }
 
 export async function approveProjectPlan(groupId: number) {
-  await sql`
+  // Use RETURNING to verify the update actually happened
+  const result = await sql`
     UPDATE groups SET project_plan_approved = TRUE WHERE id = ${groupId}
+    RETURNING id, project_plan_approved
   `;
+
+  console.log('approveProjectPlan SQL result:', result.rows);
+
+  if (result.rows.length === 0) {
+    throw new Error(`Failed to update project_plan_approved for group ${groupId} - no rows updated`);
+  }
+
+  if (!result.rows[0].project_plan_approved) {
+    throw new Error(`project_plan_approved is still false after update for group ${groupId}`);
+  }
+
   await logActivity(groupId, 'project_plan_approved', 'Projektplan godkänd av lärare');
+
+  return result.rows[0];
 }
 
 // Project definition operations

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGroupByCode, approveProjectPlan, updateSubPhase, updateGroupStatus, logActivity } from '@/lib/db';
 
+// Disable caching for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
@@ -28,8 +32,8 @@ export async function POST(
     console.log('Found group:', group.id, 'Current project_plan_approved:', group.project_plan_approved);
 
     // Approve the project plan
-    await approveProjectPlan(group.id);
-    console.log('Project plan approved');
+    const approvalResult = await approveProjectPlan(group.id);
+    console.log('Project plan approved, result:', approvalResult);
 
     // Move to execution phase (where interviews happen)
     await updateSubPhase(group.id, 'execution');
