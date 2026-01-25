@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, DragEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { roles } from "@/lib/roles";
-import { Save, Download, Image as ImageIcon, FileText } from "lucide-react";
+import { Save, Image as ImageIcon, FileText } from "lucide-react";
 import { exportAsImage, exportAsPDF, downloadBlob } from "@/lib/export-utils";
+
+type Quadrant = "manage_closely" | "keep_satisfied" | "keep_informed" | "monitor" | "unassigned";
 
 interface StakeholderData {
   roleId: string;
-  power: number;
-  interest: number;
+  quadrant: Quadrant;
   strategy: string;
 }
 
@@ -17,53 +18,78 @@ interface StakeholderAnalysisProps {
   groupCode: string;
 }
 
+const quadrantInfo: Record<Quadrant, { name: string; description: string; color: string; borderColor: string }> = {
+  manage_closely: { name: "Manage Closely", description: "Hög makt, högt intresse", color: "bg-red-100", borderColor: "border-red-300" },
+  keep_satisfied: { name: "Keep Satisfied", description: "Hög makt, lågt intresse", color: "bg-yellow-100", borderColor: "border-yellow-300" },
+  keep_informed: { name: "Keep Informed", description: "Låg makt, högt intresse", color: "bg-blue-100", borderColor: "border-blue-300" },
+  monitor: { name: "Monitor", description: "Låg makt, lågt intresse", color: "bg-gray-100", borderColor: "border-gray-300" },
+  unassigned: { name: "Ej placerade", description: "Dra till en ruta", color: "bg-white", borderColor: "border-gray-200" }
+};
+
 export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [stakeholders, setStakeholders] = useState<StakeholderData[]>(
     roles.map(role => ({
       roleId: role.id,
-      power: 3,
-      interest: 3,
+      quadrant: "unassigned" as Quadrant,
       strategy: ""
     }))
   );
   const [saved, setSaved] = useState(false);
+  const [draggedRole, setDraggedRole] = useState<string | null>(null);
+  const [dragOverQuadrant, setDragOverQuadrant] = useState<Quadrant | null>(null);
 
   // Load saved data from localStorage
   useEffect(() => {
-    const savedData = localStorage.getItem(`stakeholders-${groupCode}`);
+    const savedData = localStorage.getItem(`stakeholders-v2-${groupCode}`);
     if (savedData) {
       setStakeholders(JSON.parse(savedData));
     }
   }, [groupCode]);
 
   const handleSave = () => {
-    localStorage.setItem(`stakeholders-${groupCode}`, JSON.stringify(stakeholders));
+    localStorage.setItem(`stakeholders-v2-${groupCode}`, JSON.stringify(stakeholders));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const updateStakeholder = (roleId: string, field: keyof StakeholderData, value: number | string) => {
+  const handleDragStart = (e: DragEvent, roleId: string) => {
+    setDraggedRole(roleId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: DragEvent, quadrant: Quadrant) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverQuadrant(quadrant);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverQuadrant(null);
+  };
+
+  const handleDrop = (e: DragEvent, quadrant: Quadrant) => {
+    e.preventDefault();
+    if (draggedRole) {
+      setStakeholders(prev =>
+        prev.map(s => s.roleId === draggedRole ? { ...s, quadrant } : s)
+      );
+      setSaved(false);
+    }
+    setDraggedRole(null);
+    setDragOverQuadrant(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedRole(null);
+    setDragOverQuadrant(null);
+  };
+
+  const updateStrategy = (roleId: string, strategy: string) => {
     setStakeholders(prev =>
-      prev.map(s => s.roleId === roleId ? { ...s, [field]: value } : s)
+      prev.map(s => s.roleId === roleId ? { ...s, strategy } : s)
     );
     setSaved(false);
-  };
-
-  const getQuadrant = (power: number, interest: number): string => {
-    if (power >= 3 && interest >= 3) return "Manage Closely";
-    if (power >= 3 && interest < 3) return "Keep Satisfied";
-    if (power < 3 && interest >= 3) return "Keep Informed";
-    return "Monitor";
-  };
-
-  const getQuadrantColor = (quadrant: string): string => {
-    switch (quadrant) {
-      case "Manage Closely": return "bg-red-100 border-red-300";
-      case "Keep Satisfied": return "bg-yellow-100 border-yellow-300";
-      case "Keep Informed": return "bg-blue-100 border-blue-300";
-      default: return "bg-gray-100 border-gray-300";
-    }
   };
 
   const handleExportImage = async () => {
@@ -72,10 +98,9 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
       downloadBlob(blob, `intressentanalys-${groupCode}.png`);
     } catch (error) {
       console.error("Export error:", error);
-      // Fallback to text export
       const content = stakeholders.map(s => {
         const role = roles.find(r => r.id === s.roleId);
-        return `${role?.name} (${role?.title}): Power=${s.power}, Interest=${s.interest}, Quadrant=${getQuadrant(s.power, s.interest)}, Strategy: ${s.strategy || "Ej angiven"}`;
+        return `${role?.name} (${role?.title}): ${quadrantInfo[s.quadrant].name}, Strategy: ${s.strategy || "Ej angiven"}`;
       }).join("\n");
       const blob = new Blob([content], { type: "text/plain" });
       downloadBlob(blob, `intressentanalys-${groupCode}.txt`);
@@ -91,6 +116,66 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
       alert("Kunde inte exportera som PDF");
     }
   };
+
+  const getStakeholdersInQuadrant = (quadrant: Quadrant) => {
+    return stakeholders.filter(s => s.quadrant === quadrant);
+  };
+
+  const renderStakeholderChip = (stakeholder: StakeholderData, showStrategy = false) => {
+    const role = roles.find(r => r.id === stakeholder.roleId);
+    if (!role) return null;
+
+    return (
+      <div
+        key={stakeholder.roleId}
+        draggable
+        onDragStart={(e) => handleDragStart(e, stakeholder.roleId)}
+        onDragEnd={handleDragEnd}
+        className={`flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm border cursor-move hover:shadow-md transition-shadow ${
+          draggedRole === stakeholder.roleId ? "opacity-50" : ""
+        }`}
+      >
+        <span className="text-lg">{role.avatar}</span>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-sm truncate">{role.name}</div>
+          <div className="text-xs text-gray-500 truncate">{role.title}</div>
+          {showStrategy && stakeholder.strategy && (
+            <div className="text-xs text-gray-600 mt-1 italic truncate">{stakeholder.strategy}</div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderQuadrant = (quadrant: Quadrant) => {
+    const info = quadrantInfo[quadrant];
+    const stakeholdersInQuadrant = getStakeholdersInQuadrant(quadrant);
+    const isOver = dragOverQuadrant === quadrant;
+
+    return (
+      <div
+        onDragOver={(e) => handleDragOver(e, quadrant)}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDrop(e, quadrant)}
+        className={`p-3 rounded-lg border-2 min-h-[140px] transition-all ${info.color} ${info.borderColor} ${
+          isOver ? "ring-2 ring-yellow-500 border-yellow-500" : ""
+        }`}
+      >
+        <div className="font-medium text-sm mb-1">{info.name}</div>
+        <div className="text-xs text-gray-600 mb-3">{info.description}</div>
+        <div className="space-y-2">
+          {stakeholdersInQuadrant.map(s => renderStakeholderChip(s, true))}
+          {stakeholdersInQuadrant.length === 0 && (
+            <div className="text-xs text-gray-400 italic text-center py-4">
+              Dra intressenter hit
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const unassignedStakeholders = getStakeholdersInQuadrant("unassigned");
 
   return (
     <div className="h-full flex flex-col">
@@ -113,133 +198,86 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
           </div>
         </div>
         <p className="text-sm text-gray-500">
-          Bedöm varje intressents makt (Power) och intresse (Interest) för att avgöra hur de ska hanteras.
+          Dra intressenterna till rätt ruta baserat på deras makt och intresse.
         </p>
       </div>
 
       <div id="stakeholder-content" className="flex-1 overflow-y-auto p-4" ref={contentRef}>
-        {/* Power/Interest Matrix visualization */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-medium mb-3 text-center">Power/Interest-matris</h4>
-          <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
-            <div className="p-3 bg-yellow-100 border border-yellow-300 rounded text-center">
-              <div className="font-medium text-sm">Keep Satisfied</div>
-              <div className="text-xs text-gray-600">Hög makt, lågt intresse</div>
-              <div className="mt-2 text-xs">
-                {stakeholders.filter(s => getQuadrant(s.power, s.interest) === "Keep Satisfied").map(s => {
-                  const role = roles.find(r => r.id === s.roleId);
-                  return <div key={s.roleId}>{role?.name}</div>;
-                })}
-              </div>
-            </div>
-            <div className="p-3 bg-red-100 border border-red-300 rounded text-center">
-              <div className="font-medium text-sm">Manage Closely</div>
-              <div className="text-xs text-gray-600">Hög makt, högt intresse</div>
-              <div className="mt-2 text-xs">
-                {stakeholders.filter(s => getQuadrant(s.power, s.interest) === "Manage Closely").map(s => {
-                  const role = roles.find(r => r.id === s.roleId);
-                  return <div key={s.roleId}>{role?.name}</div>;
-                })}
-              </div>
-            </div>
-            <div className="p-3 bg-gray-100 border border-gray-300 rounded text-center">
-              <div className="font-medium text-sm">Monitor</div>
-              <div className="text-xs text-gray-600">Låg makt, lågt intresse</div>
-              <div className="mt-2 text-xs">
-                {stakeholders.filter(s => getQuadrant(s.power, s.interest) === "Monitor").map(s => {
-                  const role = roles.find(r => r.id === s.roleId);
-                  return <div key={s.roleId}>{role?.name}</div>;
-                })}
-              </div>
-            </div>
-            <div className="p-3 bg-blue-100 border border-blue-300 rounded text-center">
-              <div className="font-medium text-sm">Keep Informed</div>
-              <div className="text-xs text-gray-600">Låg makt, högt intresse</div>
-              <div className="mt-2 text-xs">
-                {stakeholders.filter(s => getQuadrant(s.power, s.interest) === "Keep Informed").map(s => {
-                  const role = roles.find(r => r.id === s.roleId);
-                  return <div key={s.roleId}>{role?.name}</div>;
-                })}
+        {/* Unassigned stakeholders */}
+        {unassignedStakeholders.length > 0 && (
+          <div className="mb-6">
+            <h4 className="font-medium mb-3 text-gray-700">Intressenter att placera:</h4>
+            <div
+              onDragOver={(e) => handleDragOver(e, "unassigned")}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, "unassigned")}
+              className={`p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 ${
+                dragOverQuadrant === "unassigned" ? "ring-2 ring-yellow-500 border-yellow-500" : ""
+              }`}
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {unassignedStakeholders.map(s => renderStakeholderChip(s))}
               </div>
             </div>
           </div>
+        )}
+
+        {/* Power/Interest Matrix */}
+        <div className="mb-6">
+          <h4 className="font-medium mb-3 text-center">Power/Interest-matris</h4>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Row labels */}
+            <div className="col-span-2 flex justify-center gap-4 text-xs text-gray-500 mb-1">
+              <span>← Lågt intresse</span>
+              <span>Högt intresse →</span>
+            </div>
+
+            {/* High power row */}
+            <div className="text-xs text-gray-500 text-right pr-2 self-center -mr-2 writing-mode-vertical hidden sm:block">
+              Hög makt ↑
+            </div>
+            {renderQuadrant("keep_satisfied")}
+            {renderQuadrant("manage_closely")}
+
+            {/* Low power row */}
+            <div className="text-xs text-gray-500 text-right pr-2 self-center -mr-2 writing-mode-vertical hidden sm:block">
+              Låg makt ↓
+            </div>
+            {renderQuadrant("monitor")}
+            {renderQuadrant("keep_informed")}
+          </div>
         </div>
 
-        {/* Stakeholder list */}
-        <div className="space-y-4">
-          {roles.map(role => {
-            const stakeholder = stakeholders.find(s => s.roleId === role.id)!;
-            const quadrant = getQuadrant(stakeholder.power, stakeholder.interest);
-
-            return (
-              <div
-                key={role.id}
-                className={`p-4 rounded-lg border ${getQuadrantColor(quadrant)}`}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">{role.avatar}</span>
-                  <div>
-                    <div className="font-medium">{role.name}</div>
-                    <div className="text-sm text-gray-600">{role.title}</div>
-                  </div>
-                  <div className="ml-auto text-sm font-medium px-2 py-1 bg-white rounded">
-                    {quadrant}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">
-                      Power (Makt): {stakeholder.power}
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      value={stakeholder.power}
-                      onChange={(e) => updateStakeholder(role.id, "power", parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>Låg</span>
-                      <span>Hög</span>
+        {/* Strategy input for placed stakeholders */}
+        {stakeholders.filter(s => s.quadrant !== "unassigned").length > 0 && (
+          <div className="mt-6">
+            <h4 className="font-medium mb-3">Hanteringsstrategier</h4>
+            <div className="space-y-3">
+              {stakeholders
+                .filter(s => s.quadrant !== "unassigned")
+                .map(stakeholder => {
+                  const role = roles.find(r => r.id === stakeholder.roleId);
+                  if (!role) return null;
+                  return (
+                    <div key={stakeholder.roleId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <span className="text-lg">{role.avatar}</span>
+                      <div className="flex-shrink-0 w-32">
+                        <div className="font-medium text-sm">{role.name}</div>
+                        <div className="text-xs text-gray-500">{quadrantInfo[stakeholder.quadrant].name}</div>
+                      </div>
+                      <input
+                        type="text"
+                        value={stakeholder.strategy}
+                        onChange={(e) => updateStrategy(stakeholder.roleId, e.target.value)}
+                        placeholder="Hur ska denna intressent hanteras?"
+                        className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none text-sm"
+                      />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-700 mb-1">
-                      Interest (Intresse): {stakeholder.interest}
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      value={stakeholder.interest}
-                      onChange={(e) => updateStakeholder(role.id, "interest", parseInt(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>Låg</span>
-                      <span>Hög</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Hanteringsstrategi
-                  </label>
-                  <input
-                    type="text"
-                    value={stakeholder.strategy}
-                    onChange={(e) => updateStakeholder(role.id, "strategy", e.target.value)}
-                    placeholder="Hur ska denna intressent hanteras?"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none text-sm"
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
