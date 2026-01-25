@@ -14,6 +14,8 @@ import {
   Eye,
 } from "lucide-react";
 
+type GateStatus = 'not_submitted' | 'pending' | 'approved' | 'rejected';
+
 interface GroupSummary {
   id: number;
   code: string;
@@ -22,6 +24,9 @@ interface GroupSummary {
   phase: number;
   status: string;
   createdAt: string;
+  gate1Status: GateStatus;
+  gate2Status: GateStatus;
+  gate3Status: GateStatus;
   interviewsCount: number;
   downloadsCount: number;
   proposalsCount: number;
@@ -143,7 +148,11 @@ export default function TeacherDashboard() {
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {groups.filter((g) => g.status === "pending_approval").length}
+                  {groups.filter((g) =>
+                    g.gate1Status === 'pending' ||
+                    g.gate2Status === 'pending' ||
+                    g.gate3Status === 'pending'
+                  ).length}
                 </div>
                 <div className="text-sm text-gray-500">Väntar godkännande</div>
               </div>
@@ -156,9 +165,9 @@ export default function TeacherDashboard() {
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {groups.filter((g) => g.phase === 2).length}
+                  {groups.filter((g) => g.gate3Status === 'approved').length}
                 </div>
-                <div className="text-sm text-gray-500">I Fas 2</div>
+                <div className="text-sm text-gray-500">Slutförda</div>
               </div>
             </div>
           </div>
@@ -203,16 +212,16 @@ export default function TeacherDashboard() {
                   Studenter
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                  Fas
+                  Gate 1
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                  Status
+                  Gate 2
+                </th>
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                  Gate 3
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
                   Intervjuer
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
-                  Filer
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
                   Förslag
@@ -232,50 +241,57 @@ export default function TeacherDashboard() {
                   </td>
                 </tr>
               ) : (
-                filteredGroups.map((group) => (
-                  <tr key={group.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{group.name}</div>
-                      <div className="text-sm text-gray-500">{group.code}</div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {group.studentNames}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          group.phase === 1
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-green-100 text-green-700"
-                        }`}
-                      >
-                        Fas {group.phase}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {getStatusBadge(group.status, group.phase)}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm">
-                      {group.interviewsCount}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm">
-                      {group.downloadsCount}
-                    </td>
-                    <td className="px-4 py-3 text-center text-sm">
-                      {group.proposalsCount}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => router.push(`/teacher/group/${group.code}`)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Visa
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                filteredGroups.map((group) => {
+                  const getGateBadge = (status: GateStatus) => {
+                    if (status === 'approved') {
+                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs"><CheckCircle className="w-3 h-3" /></span>;
+                    }
+                    if (status === 'pending') {
+                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs"><Clock className="w-3 h-3" /></span>;
+                    }
+                    if (status === 'rejected') {
+                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs"><AlertCircle className="w-3 h-3" /></span>;
+                    }
+                    return <span className="px-2 py-1 bg-gray-100 text-gray-400 rounded-full text-xs">—</span>;
+                  };
+
+                  return (
+                    <tr key={group.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">{group.name}</div>
+                        <div className="text-sm text-gray-500">{group.code}</div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {group.studentNames}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {getGateBadge(group.gate1Status)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {getGateBadge(group.gate2Status)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {getGateBadge(group.gate3Status)}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm">
+                        {group.interviewsCount}
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm">
+                        {group.proposalsCount}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => router.push(`/teacher/group/${group.code}`)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Visa
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

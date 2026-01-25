@@ -15,6 +15,8 @@ import {
   ClipboardList,
 } from "lucide-react";
 
+type GateStatus = 'not_submitted' | 'pending' | 'approved' | 'rejected';
+
 interface GroupDetail {
   id: number;
   code: string;
@@ -24,6 +26,9 @@ interface GroupDetail {
   subPhase: string;
   projectPlanApproved: boolean;
   investigationApproved: boolean;
+  gate1Status: GateStatus;
+  gate2Status: GateStatus;
+  gate3Status: GateStatus;
   status: string;
   createdAt: string;
 }
@@ -224,6 +229,39 @@ export default function TeacherGroupDetailPage() {
     }
   };
 
+  // New three-gate approval handler
+  const handleGateApproval = async (gateNumber: 1 | 2 | 3, approved: boolean) => {
+    if (!group) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/groups/${group.code}/approve-gate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gateNumber, approved, feedback }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setFeedback("");
+        const gateNames = { 1: 'Projektdirektiv', 2: 'Projektplan', 3: 'Utredningsrapport' };
+        if (approved) {
+          alert(`${gateNames[gateNumber]} godkänd! Studenterna har nu tillgång till nästa fas.`);
+        } else {
+          alert(`${gateNames[gateNumber]} avvisad. Studenterna har fått feedback.`);
+        }
+        window.location.reload();
+      } else {
+        alert(`Fel vid godkännande: ${data.error || "Okänt fel"}`);
+      }
+    } catch (error) {
+      console.error("Error processing gate approval:", error);
+      alert("Något gick fel vid godkännande.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const getRoleName = (roleId: string) => {
     const role = roles.find((r) => r.id === roleId);
     return role ? `${role.name} (${role.title})` : roleId;
@@ -274,35 +312,36 @@ export default function TeacherGroupDetailPage() {
                 Kod: {group.code} • Studenter: {group.studentNames}
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  group.phase === 1
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-green-100 text-green-700"
-                }`}
-              >
-                Fas {group.phase}
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  group.status === "approved"
-                    ? "bg-green-100 text-green-700"
-                    : group.status === "pending_approval"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : group.status === "pending_investigation_approval"
-                    ? "bg-orange-100 text-orange-700"
-                    : "bg-gray-100 text-gray-700"
-                }`}
-              >
-                {group.status === "approved"
-                  ? "Godkänd"
-                  : group.status === "pending_approval"
-                  ? "Väntar godkännande"
-                  : group.status === "pending_investigation_approval"
-                  ? "Utredning väntar"
-                  : "Pågående"}
-              </span>
+            <div className="flex items-center gap-2">
+              {/* Three gates indicator */}
+              {[
+                { num: 1, name: "Gate 1", status: group.gate1Status },
+                { num: 2, name: "Gate 2", status: group.gate2Status },
+                { num: 3, name: "Gate 3", status: group.gate3Status },
+              ].map((gate) => {
+                const getGateStyle = (status: GateStatus) => {
+                  if (status === 'approved') return "bg-green-100 text-green-700";
+                  if (status === 'pending') return "bg-yellow-100 text-yellow-700";
+                  if (status === 'rejected') return "bg-red-100 text-red-700";
+                  return "bg-gray-100 text-gray-400";
+                };
+                const getGateIcon = (status: GateStatus) => {
+                  if (status === 'approved') return <CheckCircle className="w-3 h-3" />;
+                  if (status === 'pending') return "⏳";
+                  if (status === 'rejected') return <XCircle className="w-3 h-3" />;
+                  return "—";
+                };
+                return (
+                  <span
+                    key={gate.num}
+                    className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getGateStyle(gate.status)}`}
+                    title={`${gate.name}: ${gate.status}`}
+                  >
+                    {getGateIcon(gate.status)}
+                    {gate.name}
+                  </span>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -369,6 +408,59 @@ export default function TeacherGroupDetailPage() {
           </div>
         )}
 
+        {/* Pending gate approval banner */}
+        {(group.gate1Status === 'pending' || group.gate2Status === 'pending' || group.gate3Status === 'pending') && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold text-yellow-800 mb-4">
+              {group.gate1Status === 'pending' && "Gate 1: Projektdirektiv väntar på godkännande"}
+              {group.gate2Status === 'pending' && "Gate 2: Projektplan väntar på godkännande"}
+              {group.gate3Status === 'pending' && "Gate 3: Utredningsrapport väntar på godkännande"}
+            </h3>
+            <p className="text-sm text-yellow-700 mb-4">
+              {group.gate1Status === 'pending' && "Granska projektdirektivet och godkänn för att låsa upp Fas 2 (Projektplan)."}
+              {group.gate2Status === 'pending' && "Granska projektplanen och godkänn för att låsa upp Fas 3 (Utredning med intervjuer)."}
+              {group.gate3Status === 'pending' && "Granska utredningsrapporten och godkänn för att slutföra projektet."}
+            </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Feedback (valfritt)
+              </label>
+              <textarea
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="Skriv feedback till studenterna..."
+                rows={3}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+              />
+            </div>
+            <div className="flex gap-4">
+              <Button
+                onClick={() => {
+                  const gateNum = group.gate1Status === 'pending' ? 1 : group.gate2Status === 'pending' ? 2 : 3;
+                  handleGateApproval(gateNum as 1 | 2 | 3, true);
+                }}
+                disabled={isSubmitting}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {isSubmitting ? "Behandlar..." : "Godkänn"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const gateNum = group.gate1Status === 'pending' ? 1 : group.gate2Status === 'pending' ? 2 : 3;
+                  handleGateApproval(gateNum as 1 | 2 | 3, false);
+                }}
+                disabled={isSubmitting}
+                className="border-red-300 text-red-600 hover:bg-red-50"
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Avslå (begär komplettering)
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow">
           <div className="border-b px-4">
@@ -382,9 +474,12 @@ export default function TeacherGroupDetailPage() {
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
-                Projektplan
-                {!group.projectPlanApproved && projectDefinition && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">Ny</span>
+                Gate 1 (Projektdirektiv)
+                {group.gate1Status === 'pending' && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                )}
+                {group.gate1Status === 'approved' && (
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
                 )}
               </button>
               <button
@@ -396,9 +491,9 @@ export default function TeacherGroupDetailPage() {
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
-                Utredning
-                {group.status === "pending_investigation_approval" && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs rounded">Väntar</span>
+                Gate 2 & 3 (Projektplan & Utredning)
+                {(group.gate2Status === 'pending' || group.gate3Status === 'pending') && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
                 )}
               </button>
               <button

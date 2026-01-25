@@ -38,6 +38,10 @@ export async function GET(
         subPhase: group.sub_phase || 'intro',
         projectPlanApproved: group.project_plan_approved || false,
         investigationApproved: group.investigation_approved || false,
+        // New three-gate system
+        gate1Status: (group as any).gate1_status || 'not_submitted',
+        gate2Status: (group as any).gate2_status || 'not_submitted',
+        gate3Status: (group as any).gate3_status || 'not_submitted',
         status: group.status,
         createdAt: group.created_at
       },

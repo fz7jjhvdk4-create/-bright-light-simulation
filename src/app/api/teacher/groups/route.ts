@@ -16,6 +16,9 @@ export async function GET() {
         g.phase,
         g.status,
         g.created_at,
+        g.gate1_status,
+        g.gate2_status,
+        g.gate3_status,
         (SELECT COUNT(*) FROM interviews WHERE group_id = g.id) as interviews_count,
         (SELECT COUNT(*) FROM downloads WHERE group_id = g.id) as downloads_count,
         (SELECT COUNT(*) FROM action_proposals WHERE group_id = g.id) as proposals_count
@@ -33,6 +36,9 @@ export async function GET() {
         phase: g.phase,
         status: g.status,
         createdAt: g.created_at,
+        gate1Status: g.gate1_status || 'not_submitted',
+        gate2Status: g.gate2_status || 'not_submitted',
+        gate3Status: g.gate3_status || 'not_submitted',
         interviewsCount: parseInt(g.interviews_count),
         downloadsCount: parseInt(g.downloads_count),
         proposalsCount: parseInt(g.proposals_count)
