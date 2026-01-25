@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createGroup, initializeDatabase } from '@/lib/db';
 
+// Disable caching
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { name, studentNames } = await request.json();
@@ -12,22 +15,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Try to create the group - if tables don't exist, initialize them first
-    let group;
-    try {
-      group = await createGroup(name, studentNames);
-    } catch (dbError: unknown) {
-      // Check if it's a "relation does not exist" error
-      const errorMessage = dbError instanceof Error ? dbError.message : String(dbError);
-      if (errorMessage.includes('relation') && errorMessage.includes('does not exist')) {
-        console.log('Tables do not exist, initializing database...');
-        await initializeDatabase();
-        // Retry creating the group
-        group = await createGroup(name, studentNames);
-      } else {
-        throw dbError;
-      }
-    }
+    // Always initialize database first to ensure tables exist
+    await initializeDatabase();
+
+    // Create the group
+    const group = await createGroup(name, studentNames);
 
     return NextResponse.json({
       success: true,
@@ -41,8 +33,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating group:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Okänt fel';
     return NextResponse.json(
-      { error: 'Kunde inte skapa grupp' },
+      { error: 'Kunde inte skapa grupp', details: errorMessage },
       { status: 500 }
     );
   }
