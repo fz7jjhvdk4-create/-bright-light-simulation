@@ -1,4 +1,9 @@
 import { sql } from '@vercel/postgres';
+import { NextResponse } from 'next/server';
+
+// Disable caching for this route
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -18,7 +23,7 @@ export async function GET() {
       ORDER BY g.created_at DESC
     `;
 
-    return Response.json({
+    const response = NextResponse.json({
       success: true,
       groups: result.rows.map(g => ({
         id: g.id,
@@ -33,6 +38,10 @@ export async function GET() {
         proposalsCount: parseInt(g.proposals_count)
       }))
     });
+
+    // Prevent caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    return response;
   } catch (error) {
     console.error('Error fetching groups:', error);
     return Response.json(
