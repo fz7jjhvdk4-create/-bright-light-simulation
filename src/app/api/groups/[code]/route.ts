@@ -12,9 +12,7 @@ export async function GET(
   try {
     const { code } = await params;
 
-    console.log('GET /api/groups/[code] called for:', code);
     const group = await getGroupByCode(code.toUpperCase());
-    console.log('Group fetched, project_plan_approved:', group?.project_plan_approved);
 
     if (!group) {
       return NextResponse.json(
