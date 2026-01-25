@@ -1,42 +1,41 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  const checks = {
-    api: true,
-    database: false,
-    tables: false,
-    error: null as string | null
+  const checks: Record<string, unknown> = {
+    timestamp: new Date().toISOString(),
+    env: {
+      hasPostgresUrl: !!process.env.POSTGRES_URL,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+    }
   };
 
   try {
     // Test database connection
-    const result = await sql`SELECT 1 as test`;
-    checks.database = result.rows[0]?.test === 1;
+    const result = await sql`SELECT NOW() as time, current_database() as db`;
+    checks.database = {
+      connected: true,
+      time: result.rows[0]?.time,
+      db: result.rows[0]?.db
+    };
 
-    // Check if tables exist
-    const tablesCheck = await sql`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-      AND table_name IN ('groups', 'activity_log', 'interviews', 'downloads')
+    // Check if groups table exists
+    const tableCheck = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_name = 'groups'
+      ) as exists
     `;
-    checks.tables = tablesCheck.rows.length >= 4;
+    checks.groupsTable = tableCheck.rows[0]?.exists;
 
-    return NextResponse.json({
-      status: checks.database && checks.tables ? 'healthy' : 'degraded',
-      checks,
-      message: checks.tables
-        ? 'Allt fungerar!'
-        : 'Databastabeller saknas. Besök /api/init för att skapa dem.'
-    });
   } catch (error) {
-    checks.error = String(error);
-    return NextResponse.json({
-      status: 'error',
-      checks,
-      message: 'Kunde inte ansluta till databasen. Kontrollera POSTGRES_URL.',
-      suggestion: 'Se till att POSTGRES_URL är konfigurerad i Vercel Environment Variables.'
-    }, { status: 500 });
+    checks.database = {
+      connected: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
+
+  return NextResponse.json(checks);
 }
