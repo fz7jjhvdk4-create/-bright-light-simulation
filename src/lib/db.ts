@@ -12,16 +12,17 @@ export interface Group {
   name: string;
   student_names: string;
   created_at: Date;
-  phase: number; // 1 = Projektdefinition, 2 = Projektplan, 3 = Utredning
+  phase: number; // 1 = Projektdefinition, 2 = Projektplan, 3 = Utredning, 4 = Redovisning
   sub_phase: SubPhase;
   // Legacy fields (kept for backwards compatibility)
   project_plan_approved: boolean;
   investigation_approved: boolean;
-  // New three-gate system
+  // Four-gate system
   gate1_status: GateStatus; // Projektdirektiv
   gate2_status: GateStatus; // Projektplan
   gate3_status: GateStatus; // Utredningsrapport
-  status: 'active' | 'pending_approval' | 'pending_gate1' | 'pending_gate2' | 'pending_gate3' | 'approved' | 'completed';
+  gate4_status: GateStatus; // Slutredovisning
+  status: 'active' | 'pending_approval' | 'pending_gate1' | 'pending_gate2' | 'pending_gate3' | 'pending_gate4' | 'approved' | 'completed';
 }
 
 export interface ProjectDefinition {
@@ -93,10 +94,11 @@ export async function initializeDatabase() {
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS sub_phase VARCHAR(20) DEFAULT 'intro'`;
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS project_plan_approved BOOLEAN DEFAULT FALSE`;
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS investigation_approved BOOLEAN DEFAULT FALSE`;
-      // New three-gate columns
+      // Four-gate columns
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS gate1_status VARCHAR(20) DEFAULT 'not_submitted'`;
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS gate2_status VARCHAR(20) DEFAULT 'not_submitted'`;
       await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS gate3_status VARCHAR(20) DEFAULT 'not_submitted'`;
+      await sql`ALTER TABLE groups ADD COLUMN IF NOT EXISTS gate4_status VARCHAR(20) DEFAULT 'not_submitted'`;
     } catch (e) {
       // Columns may already exist
     }
@@ -231,9 +233,19 @@ export async function initializeDatabase() {
         description TEXT NOT NULL,
         responsible VARCHAR(100),
         cost INTEGER,
+        timeline VARCHAR(200),
+        cost_reduction INTEGER,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // Add new columns to action_proposals if they don't exist
+    try {
+      await sql`ALTER TABLE action_proposals ADD COLUMN IF NOT EXISTS timeline VARCHAR(200)`;
+      await sql`ALTER TABLE action_proposals ADD COLUMN IF NOT EXISTS cost_reduction INTEGER`;
+    } catch (e) {
+      // Columns may already exist
+    }
 
     // Create document_views table
     await sql`
@@ -513,41 +525,46 @@ export async function approveInvestigation(groupId: number) {
   await logActivity(groupId, 'investigation_approved', 'Utredning godkänd av lärare');
 }
 
-// Three-gate system operations - using explicit queries since @vercel/postgres doesn't support dynamic column names
-export async function submitGate(groupId: number, gateNumber: 1 | 2 | 3) {
+// Four-gate system operations - using explicit queries since @vercel/postgres doesn't support dynamic column names
+export async function submitGate(groupId: number, gateNumber: 1 | 2 | 3 | 4) {
   const status = `pending_gate${gateNumber}`;
 
   if (gateNumber === 1) {
     await sql`UPDATE groups SET gate1_status = 'pending', status = ${status} WHERE id = ${groupId}`;
   } else if (gateNumber === 2) {
     await sql`UPDATE groups SET gate2_status = 'pending', status = ${status} WHERE id = ${groupId}`;
-  } else {
+  } else if (gateNumber === 3) {
     await sql`UPDATE groups SET gate3_status = 'pending', status = ${status} WHERE id = ${groupId}`;
+  } else {
+    await sql`UPDATE groups SET gate4_status = 'pending', status = ${status} WHERE id = ${groupId}`;
   }
 
   await logActivity(groupId, `gate${gateNumber}_submitted`, `Gate ${gateNumber} skickad för godkännande`);
 }
 
-export async function approveGate(groupId: number, gateNumber: 1 | 2 | 3, feedback?: string) {
-  // For gate 1 and 2, move to next phase
+export async function approveGate(groupId: number, gateNumber: 1 | 2 | 3 | 4, feedback?: string) {
   if (gateNumber === 1) {
     await sql`UPDATE groups SET gate1_status = 'approved', phase = 2, status = 'active', project_plan_approved = TRUE WHERE id = ${groupId}`;
   } else if (gateNumber === 2) {
     await sql`UPDATE groups SET gate2_status = 'approved', phase = 3, status = 'active' WHERE id = ${groupId}`;
   } else if (gateNumber === 3) {
-    await sql`UPDATE groups SET gate3_status = 'approved', status = 'completed', investigation_approved = TRUE WHERE id = ${groupId}`;
+    await sql`UPDATE groups SET gate3_status = 'approved', phase = 4, status = 'active', investigation_approved = TRUE WHERE id = ${groupId}`;
+  } else if (gateNumber === 4) {
+    await sql`UPDATE groups SET gate4_status = 'approved', status = 'completed' WHERE id = ${groupId}`;
   }
 
   await logActivity(groupId, `gate${gateNumber}_approved`, `Gate ${gateNumber} godkänd av lärare${feedback ? `: ${feedback}` : ''}`);
 }
 
-export async function rejectGate(groupId: number, gateNumber: 1 | 2 | 3, feedback: string) {
+export async function rejectGate(groupId: number, gateNumber: 1 | 2 | 3 | 4, feedback: string) {
   if (gateNumber === 1) {
     await sql`UPDATE groups SET gate1_status = 'rejected', status = 'active' WHERE id = ${groupId}`;
   } else if (gateNumber === 2) {
     await sql`UPDATE groups SET gate2_status = 'rejected', status = 'active' WHERE id = ${groupId}`;
-  } else {
+  } else if (gateNumber === 3) {
     await sql`UPDATE groups SET gate3_status = 'rejected', status = 'active' WHERE id = ${groupId}`;
+  } else {
+    await sql`UPDATE groups SET gate4_status = 'rejected', status = 'active' WHERE id = ${groupId}`;
   }
 
   await logActivity(groupId, `gate${gateNumber}_rejected`, `Gate ${gateNumber} avvisad: ${feedback}`);

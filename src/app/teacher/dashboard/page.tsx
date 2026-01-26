@@ -27,6 +27,7 @@ interface GroupSummary {
   gate1Status: GateStatus;
   gate2Status: GateStatus;
   gate3Status: GateStatus;
+  gate4Status: GateStatus;
   interviewsCount: number;
   downloadsCount: number;
   proposalsCount: number;
@@ -151,7 +152,8 @@ export default function TeacherDashboard() {
                   {groups.filter((g) =>
                     g.gate1Status === 'pending' ||
                     g.gate2Status === 'pending' ||
-                    g.gate3Status === 'pending'
+                    g.gate3Status === 'pending' ||
+                    g.gate4Status === 'pending'
                   ).length}
                 </div>
                 <div className="text-sm text-gray-500">Väntar godkännande</div>
@@ -165,7 +167,7 @@ export default function TeacherDashboard() {
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {groups.filter((g) => g.gate3Status === 'approved').length}
+                  {groups.filter((g) => g.gate4Status === 'approved').length}
                 </div>
                 <div className="text-sm text-gray-500">Slutförda</div>
               </div>
@@ -221,6 +223,9 @@ export default function TeacherDashboard() {
                   Gate 3
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                  Gate 4
+                </th>
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
                   Intervjuer
                 </th>
                 <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
@@ -234,7 +239,7 @@ export default function TeacherDashboard() {
             <tbody className="divide-y divide-gray-200">
               {filteredGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                     {searchQuery
                       ? "Inga grupper matchar sökningen"
                       : "Inga grupper registrerade än"}
@@ -272,6 +277,9 @@ export default function TeacherDashboard() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {getGateBadge(group.gate3Status)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {getGateBadge(group.gate4Status)}
                       </td>
                       <td className="px-4 py-3 text-center text-sm">
                         {group.interviewsCount}

@@ -36,14 +36,15 @@ interface GroupData {
   code: string;
   name: string;
   studentNames: string;
-  phase: number; // 1 = Projektdefinition, 2 = Projektplan, 3 = Utredning
+  phase: number; // 1 = Projektdefinition, 2 = Projektplan, 3 = Utredning, 4 = Redovisning
   subPhase: SubPhase;
   projectPlanApproved: boolean;
   investigationApproved: boolean;
-  // New three-gate system
+  // Four-gate system
   gate1Status: GateStatus;
   gate2Status: GateStatus;
   gate3Status: GateStatus;
+  gate4Status: GateStatus;
   status: string;
 }
 
@@ -134,8 +135,8 @@ export default function SimulationPage() {
         setActivityLog(data.activityLog || []);
         setViewedDocuments(data.viewedDocuments || []);
 
-        // Fetch proposals if in phase 2
-        if (data.group.phase === 2) {
+        // Fetch proposals if in phase 3 or 4
+        if (data.group.phase >= 3) {
           const proposalsRes = await fetch(`/api/groups/${code}/proposals`);
           const proposalsData = await proposalsRes.json();
           if (proposalsData.success) {
@@ -348,8 +349,8 @@ export default function SimulationPage() {
   };
 
   // Check if interviews are locked
-  // With the three-phase system, interviews are only available in Phase 3 (Utredning)
-  const interviewsLocked = group?.phase !== 3;
+  // Interviews are available in Phase 3 (Utredning) and Phase 4 (Redovisning)
+  const interviewsLocked = !group || group.phase < 3;
 
   if (loading) {
     return (
@@ -385,40 +386,46 @@ export default function SimulationPage() {
               <span className="text-gray-400 ml-1 sm:ml-2">({group.code})</span>
             </div>
             <div className="hidden sm:block h-4 border-l border-gray-300" />
-            {/* Three-phase indicator */}
+            {/* Four-phase indicator */}
             <div className="flex items-center gap-1">
               {[
                 { num: 1, name: "Projektdefinition", color: "blue" },
                 { num: 2, name: "Projektplan", color: "purple" },
-                { num: 3, name: "Utredning", color: "green" }
+                { num: 3, name: "Utredning", color: "orange" },
+                { num: 4, name: "Redovisning", color: "green" }
               ].map((phase, index) => {
                 const isActive = group.phase === phase.num;
                 const isCompleted = group.phase > phase.num ||
                   (phase.num === 1 && (group.gate1Status === 'approved' || group.projectPlanApproved)) ||
                   (phase.num === 2 && group.gate2Status === 'approved') ||
-                  (phase.num === 3 && (group.gate3Status === 'approved' || group.investigationApproved));
+                  (phase.num === 3 && group.gate3Status === 'approved') ||
+                  (phase.num === 4 && group.gate4Status === 'approved');
                 const isPending =
                   (phase.num === 1 && group.gate1Status === 'pending') ||
                   (phase.num === 2 && group.gate2Status === 'pending') ||
-                  (phase.num === 3 && group.gate3Status === 'pending');
+                  (phase.num === 3 && group.gate3Status === 'pending') ||
+                  (phase.num === 4 && group.gate4Status === 'pending');
+
+                const bgColor = isCompleted
+                  ? "bg-green-100 text-green-700"
+                  : isPending
+                  ? "bg-yellow-100 text-yellow-700"
+                  : isActive
+                  ? phase.color === "blue" ? "bg-blue-100 text-blue-700"
+                    : phase.color === "purple" ? "bg-purple-100 text-purple-700"
+                    : phase.color === "orange" ? "bg-orange-100 text-orange-700"
+                    : "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-400";
 
                 return (
                   <div key={phase.num} className="flex items-center">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-                      isCompleted
-                        ? "bg-green-100 text-green-700"
-                        : isPending
-                        ? "bg-yellow-100 text-yellow-700"
-                        : isActive
-                        ? `bg-${phase.color}-100 text-${phase.color}-700`
-                        : "bg-gray-100 text-gray-400"
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${bgColor}`}>
                       {isCompleted && <CheckCircle className="w-3 h-3 inline mr-1" />}
                       {isPending && <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1 animate-pulse" />}
                       <span className="hidden sm:inline">{phase.num}. {phase.name}</span>
                       <span className="sm:hidden">{phase.num}</span>
                     </span>
-                    {index < 2 && <ChevronRight className="w-3 h-3 text-gray-300 mx-0.5" />}
+                    {index < 3 && <ChevronRight className="w-3 h-3 text-gray-300 mx-0.5" />}
                   </div>
                 );
               })}
@@ -465,15 +472,26 @@ export default function SimulationPage() {
             )}
             {group.phase === 3 && (
               <>
-                <span className="font-medium">Fas 3 - Utredning:</span> Intervjua, samla data, analysera med 7QC/7QM och skapa handlingsplan.
+                <span className="font-medium">Fas 3 - Utredning:</span> Intervjua, samla data, analysera med 5 Varför, 7QC och 7QM. Hitta rotorsaker.
                 {group.gate3Status === 'pending' && (
                   <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
                 )}
                 {group.gate3Status === 'rejected' && (
                   <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
-                {!group.gate3Status || group.gate3Status === 'not_submitted' && (
+                {(!group.gate3Status || group.gate3Status === 'not_submitted') && (
                   <span className="ml-2 text-gray-500">Intervjuer upplåsta</span>
+                )}
+              </>
+            )}
+            {group.phase === 4 && (
+              <>
+                <span className="font-medium">Fas 4 - Redovisning:</span> Skapa handlingsplan och presentera kvalitetsverktyg och resultat.
+                {group.gate4Status === 'pending' && (
+                  <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
+                )}
+                {group.gate4Status === 'rejected' && (
+                  <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
               </>
             )}
@@ -946,11 +964,11 @@ export default function SimulationPage() {
                       )}
                     </>
                   ) : group.phase === 3 ? (
-                    /* Fas 3: Utredning och åtgärder */
+                    /* Fas 3: Utredning - intervjuer, data, analysverktyg */
                     <>
-                      <h3 className="text-lg font-semibold mb-2">Fas 3 - Utredning och åtgärder</h3>
+                      <h3 className="text-lg font-semibold mb-2">Fas 3 - Utredning</h3>
                       <p className="text-sm text-gray-500 mb-4">
-                        Intervjua medarbetare, samla data, analysera med kvalitetsverktyg och skapa handlingsplan.
+                        Intervjua medarbetare, samla data, analysera med 5 Varför, 7QC och 7QM. Identifiera rotorsaker.
                       </p>
 
                       {/* Analysis tools */}
@@ -983,15 +1001,6 @@ export default function SimulationPage() {
                             Affinitet, träddiagram, matris m.m. (minst 2 krävs)
                           </p>
                         </button>
-                        <button
-                          onClick={() => setActiveTool("proposals")}
-                          className="text-left border-2 border-yellow-300 rounded-lg p-4 hover:bg-yellow-50 transition-colors bg-yellow-50"
-                        >
-                          <h4 className="font-medium mb-2">📋 Handlingsplan</h4>
-                          <p className="text-sm text-gray-600">
-                            Dokumentera rotorsaker och åtgärder (minst 3 krävs)
-                          </p>
-                        </button>
                       </div>
 
                       {/* Documentation tools */}
@@ -1019,27 +1028,24 @@ export default function SimulationPage() {
 
                       {/* Gate 3 submission */}
                       {group.gate3Status === 'not_submitted' && (
-                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <h4 className="font-medium text-green-800 mb-2">📝 Gate 3: Styrgruppsmöte - Utredningsrapport</h4>
-                          <p className="text-sm text-green-700 mb-3">
-                            När ni har genomfört intervjuer (minst 6 roller), använt analysverktyg (minst 4 st 7QC, 2 st 7QM, 5 Varför)
-                            och skapat en handlingsplan med minst 3 åtgärder som totalt minskar reklamationskostnaden med &gt;50%,
-                            skicka in för lärarens godkännande.
+                        <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                          <h4 className="font-medium text-orange-800 mb-2">📝 Gate 3: Styrgruppsmöte - Utredningsrapport</h4>
+                          <p className="text-sm text-orange-700 mb-3">
+                            När ni har genomfört intervjuer, använt analysverktyg och hittat rotorsaker,
+                            skicka in för lärarens godkännande. Efter godkännande får ni tillgång till Fas 4 (Redovisning).
                           </p>
-                          <div className="text-xs text-green-600 mb-3 space-y-1">
+                          <div className="text-xs text-orange-600 mb-3 space-y-1">
                             <p>Krav för godkännande:</p>
                             <ul className="list-disc list-inside pl-2">
                               <li>Minst 6 roller intervjuade ({interviews.length}/6)</li>
                               <li>Minst 4 st 7QC-verktyg använda</li>
                               <li>Minst 2 st 7QM-verktyg använda</li>
                               <li>5 Varför-analys genomförd</li>
-                              <li>Minst 3 åtgärder med ansvarig och förväntad effekt</li>
-                              <li>Total reduktion &gt;50%</li>
                             </ul>
                           </div>
                           <Button
                             onClick={async () => {
-                              if (confirm("Är ni säkra på att ni vill skicka in utredningsrapporten för godkännande?")) {
+                              if (confirm("Är ni säkra på att ni vill skicka in utredningen för godkännande?")) {
                                 try {
                                   const response = await fetch(`/api/groups/${group.code}/submit-gate`, {
                                     method: "POST",
@@ -1048,7 +1054,127 @@ export default function SimulationPage() {
                                   });
                                   const data = await response.json();
                                   if (data.success) {
-                                    alert("Utredningsrapporten har skickats in! Henrik från styrelsen kommer också granska den.");
+                                    alert("Utredningen har skickats in! Invänta lärarens beslut.");
+                                    fetchGroupData();
+                                  } else {
+                                    alert(`Kunde inte skicka in: ${data.error}`);
+                                  }
+                                } catch {
+                                  alert("Ett fel uppstod vid inlämning.");
+                                }
+                              }
+                            }}
+                            className="bg-orange-600 hover:bg-orange-700"
+                          >
+                            <Send className="w-4 h-4 mr-2" />
+                            Boka styrgruppsmöte (Gate 3)
+                          </Button>
+                        </div>
+                      )}
+
+                      {group.gate3Status === 'pending' && (
+                        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
+                          <p className="text-sm text-yellow-700">
+                            Er utredningsrapport har skickats till Maria och styrgruppen. Ni får återkoppling inom kort.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : group.phase === 4 ? (
+                    /* Fas 4: Redovisning - handlingsplan och presentation */
+                    <>
+                      <h3 className="text-lg font-semibold mb-2">Fas 4 - Redovisning</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Skapa handlingsplan med aktiviteter, ansvarig och tidplan. Presentera vilka kvalitetsverktyg ni använt och vilka resultat ni nått.
+                      </p>
+
+                      {/* Action plan tools */}
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Handlingsplan</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <button
+                          onClick={() => setActiveTool("proposals")}
+                          className="text-left border-2 border-yellow-300 rounded-lg p-4 hover:bg-yellow-50 transition-colors bg-yellow-50"
+                        >
+                          <h4 className="font-medium mb-2">📋 Handlingsplan</h4>
+                          <p className="text-sm text-gray-600">
+                            Dokumentera åtgärder med aktivitet, ansvarig, tidplan och minskning (minst 3 krävs)
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("export")}
+                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
+                        >
+                          <h4 className="font-medium mb-2">📦 Exportera</h4>
+                          <p className="text-sm text-gray-500">
+                            Ladda ner rapporter och dokumentation
+                          </p>
+                        </button>
+                      </div>
+
+                      {/* Review previous analysis */}
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Granska era analysresultat</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <button
+                          onClick={() => setActiveTool("fivewhy")}
+                          className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 bg-red-50"
+                        >
+                          <h4 className="font-medium mb-2">🔍 5 Varför</h4>
+                          <p className="text-sm text-gray-600">Se era 5 Varför-analyser</p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("7qc")}
+                          className="text-left border rounded-lg p-4 hover:border-cyan-300 transition-colors border-cyan-200 bg-cyan-50"
+                        >
+                          <h4 className="font-medium mb-2">📊 7QC</h4>
+                          <p className="text-sm text-gray-600">Se era 7QC-analyser</p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("7qm")}
+                          className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 bg-indigo-50"
+                        >
+                          <h4 className="font-medium mb-2">🗂️ 7QM</h4>
+                          <p className="text-sm text-gray-600">Se era 7QM-analyser</p>
+                        </button>
+                        <button
+                          onClick={() => setActiveTool("overview")}
+                          className="text-left border rounded-lg p-4 hover:border-gray-300 transition-colors"
+                        >
+                          <h4 className="font-medium mb-2">📁 Nedladdade filer</h4>
+                          <p className="text-sm text-gray-500">
+                            Se vilka datafiler ni har fått ({downloads.length} st)
+                          </p>
+                        </button>
+                      </div>
+
+                      {/* Gate 4 submission */}
+                      {group.gate4Status === 'not_submitted' && (
+                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <h4 className="font-medium text-green-800 mb-2">📝 Gate 4: Slutredovisning till styrgruppen</h4>
+                          <p className="text-sm text-green-700 mb-3">
+                            Presentera er handlingsplan med aktiviteter, ansvarig, tidplan och förväntad minskning
+                            av reklamationskostnaderna. Redovisa vilka kvalitetsverktyg ni använt och era resultat.
+                          </p>
+                          <div className="text-xs text-green-600 mb-3 space-y-1">
+                            <p>Krav för godkännande:</p>
+                            <ul className="list-disc list-inside pl-2">
+                              <li>Minst 3 åtgärder med ansvarig, tidplan och förväntad effekt</li>
+                              <li>Total minskning av reklamationskostnaderna &gt;50%</li>
+                              <li>Presentation av använda kvalitetsverktyg och resultat</li>
+                            </ul>
+                          </div>
+                          <Button
+                            onClick={async () => {
+                              if (confirm("Är ni säkra på att ni vill skicka in slutredovisningen för godkännande?")) {
+                                try {
+                                  const response = await fetch(`/api/groups/${group.code}/submit-gate`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ gateNumber: 4 }),
+                                  });
+                                  const data = await response.json();
+                                  if (data.success) {
+                                    alert("Slutredovisningen har skickats in! Henrik från styrelsen kommer också granska den.");
                                     fetchGroupData();
                                   } else {
                                     alert(`Kunde inte skicka in: ${data.error}`);
@@ -1061,31 +1187,31 @@ export default function SimulationPage() {
                             className="bg-green-600 hover:bg-green-700"
                           >
                             <Send className="w-4 h-4 mr-2" />
-                            Boka styrgruppsmöte (Gate 3)
+                            Boka slutredovisning (Gate 4)
                           </Button>
                         </div>
                       )}
 
-                      {group.gate3Status === 'pending' && (
+                      {group.gate4Status === 'pending' && (
                         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                           <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
                           <p className="text-sm text-yellow-700">
-                            Er utredningsrapport har skickats till Maria och Henrik från styrelsen. Ni får återkoppling inom kort.
+                            Er slutredovisning har skickats till Maria och Henrik från styrelsen. Ni får återkoppling inom kort.
                           </p>
                         </div>
                       )}
 
-                      {group.gate3Status === 'approved' && (
+                      {group.gate4Status === 'approved' && (
                         <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg">
-                          <h4 className="font-medium text-green-800 mb-2">✅ Utredningen godkänd!</h4>
+                          <h4 className="font-medium text-green-800 mb-2">✅ Projektet godkänt!</h4>
                           <p className="text-sm text-green-700">
-                            Grattis! Styrgruppen har godkänt er utredningsrapport. Projektet är nu avslutat.
+                            Grattis! Styrgruppen har godkänt er slutredovisning. Projektet är nu avslutat.
                           </p>
                         </div>
                       )}
                     </>
                   ) : (
-                    /* Fallback - borde inte visas */
+                    /* Fallback */
                     <>
                       <h3 className="text-lg font-semibold mb-4">Verktyg</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

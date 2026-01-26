@@ -17,6 +17,10 @@ interface GateRequirements {
     items: Array<{ name: string; met: boolean; description: string }>;
     allMet: boolean;
   };
+  gate4: {
+    items: Array<{ name: string; met: boolean; description: string }>;
+    allMet: boolean;
+  };
 }
 
 export async function GET(
@@ -91,7 +95,7 @@ export async function GET(
       }
     ];
 
-    // Gate 3 requirements from prd.json
+    // Gate 3 requirements: Investigation phase
     const gate3Items = [
       {
         name: 'Minst 6 roller intervjuade',
@@ -117,7 +121,11 @@ export async function GET(
         name: '5 Varför-analys genomförd',
         met: false, // Need to track this
         description: 'Rotorsaksanalys med 5 Varför'
-      },
+      }
+    ];
+
+    // Gate 4 requirements: Presentation/reporting phase
+    const gate4Items = [
       {
         name: 'Handlingsplan med minst 3 åtgärder',
         met: proposalsCount >= 3,
@@ -127,6 +135,11 @@ export async function GET(
         name: 'Ansvarig angiven för varje åtgärd',
         met: proposalsCount >= 3, // Simplified check
         description: 'Varje åtgärd har en ansvarig person'
+      },
+      {
+        name: 'Tidplan angiven för varje åtgärd',
+        met: proposalsCount >= 3, // Simplified check
+        description: 'Varje åtgärd har en tidplan'
       },
       {
         name: 'Total reduktion >50%',
@@ -147,6 +160,10 @@ export async function GET(
       gate3: {
         items: gate3Items,
         allMet: gate3Items.every(item => item.met)
+      },
+      gate4: {
+        items: gate4Items,
+        allMet: gate4Items.every(item => item.met)
       }
     };
 
@@ -156,6 +173,7 @@ export async function GET(
       gate1Status: (group as any).gate1_status || 'not_submitted',
       gate2Status: (group as any).gate2_status || 'not_submitted',
       gate3Status: (group as any).gate3_status || 'not_submitted',
+      gate4Status: (group as any).gate4_status || 'not_submitted',
       requirements,
       stats: {
         interviewsCount: interviews.length,

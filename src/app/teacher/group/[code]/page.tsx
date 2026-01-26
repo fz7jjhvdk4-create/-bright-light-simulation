@@ -13,6 +13,7 @@ import {
   FileText,
   MessageSquare,
   ClipboardList,
+  Eye,
 } from "lucide-react";
 
 type GateStatus = 'not_submitted' | 'pending' | 'approved' | 'rejected';
@@ -29,6 +30,7 @@ interface GroupDetail {
   gate1Status: GateStatus;
   gate2Status: GateStatus;
   gate3Status: GateStatus;
+  gate4Status: GateStatus;
   status: string;
   createdAt: string;
 }
@@ -229,8 +231,8 @@ export default function TeacherGroupDetailPage() {
     }
   };
 
-  // New three-gate approval handler
-  const handleGateApproval = async (gateNumber: 1 | 2 | 3, approved: boolean) => {
+  // Four-gate approval handler
+  const handleGateApproval = async (gateNumber: 1 | 2 | 3 | 4, approved: boolean) => {
     if (!group) return;
 
     setIsSubmitting(true);
@@ -244,7 +246,7 @@ export default function TeacherGroupDetailPage() {
       const data = await response.json();
       if (data.success) {
         setFeedback("");
-        const gateNames = { 1: 'Projektdirektiv', 2: 'Projektplan', 3: 'Utredningsrapport' };
+        const gateNames: Record<number, string> = { 1: 'Projektdirektiv', 2: 'Projektplan', 3: 'Utredningsrapport', 4: 'Slutredovisning' };
         if (approved) {
           alert(`${gateNames[gateNumber]} godkänd! Studenterna har nu tillgång till nästa fas.`);
         } else {
@@ -309,15 +311,24 @@ export default function TeacherGroupDetailPage() {
             <div>
               <h1 className="text-xl font-bold text-gray-900">{group.name}</h1>
               <p className="text-sm text-gray-500">
-                Kod: {group.code} • Studenter: {group.studentNames}
+                Kod: {group.code} • Studenter: {group.studentNames} • Fas: {group.phase}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* Three gates indicator */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(`/simulation/${group.code}`, '_blank')}
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                Visa studentvy
+              </Button>
+              {/* Four gates indicator */}
               {[
                 { num: 1, name: "Gate 1", status: group.gate1Status },
                 { num: 2, name: "Gate 2", status: group.gate2Status },
                 { num: 3, name: "Gate 3", status: group.gate3Status },
+                { num: 4, name: "Gate 4", status: group.gate4Status },
               ].map((gate) => {
                 const getGateStyle = (status: GateStatus) => {
                   if (status === 'approved') return "bg-green-100 text-green-700";
@@ -409,17 +420,19 @@ export default function TeacherGroupDetailPage() {
         )}
 
         {/* Pending gate approval banner */}
-        {(group.gate1Status === 'pending' || group.gate2Status === 'pending' || group.gate3Status === 'pending') && (
+        {(group.gate1Status === 'pending' || group.gate2Status === 'pending' || group.gate3Status === 'pending' || group.gate4Status === 'pending') && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
             <h3 className="text-lg font-semibold text-yellow-800 mb-4">
               {group.gate1Status === 'pending' && "Gate 1: Projektdirektiv väntar på godkännande"}
               {group.gate2Status === 'pending' && "Gate 2: Projektplan väntar på godkännande"}
               {group.gate3Status === 'pending' && "Gate 3: Utredningsrapport väntar på godkännande"}
+              {group.gate4Status === 'pending' && "Gate 4: Slutredovisning väntar på godkännande"}
             </h3>
             <p className="text-sm text-yellow-700 mb-4">
               {group.gate1Status === 'pending' && "Granska projektdirektivet och godkänn för att låsa upp Fas 2 (Projektplan)."}
               {group.gate2Status === 'pending' && "Granska projektplanen och godkänn för att låsa upp Fas 3 (Utredning med intervjuer)."}
-              {group.gate3Status === 'pending' && "Granska utredningsrapporten och godkänn för att slutföra projektet."}
+              {group.gate3Status === 'pending' && "Granska utredningsrapporten och godkänn för att låsa upp Fas 4 (Redovisning)."}
+              {group.gate4Status === 'pending' && "Granska slutredovisningen och godkänn för att slutföra projektet."}
             </p>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -436,8 +449,8 @@ export default function TeacherGroupDetailPage() {
             <div className="flex gap-4">
               <Button
                 onClick={() => {
-                  const gateNum = group.gate1Status === 'pending' ? 1 : group.gate2Status === 'pending' ? 2 : 3;
-                  handleGateApproval(gateNum as 1 | 2 | 3, true);
+                  const gateNum = group.gate1Status === 'pending' ? 1 : group.gate2Status === 'pending' ? 2 : group.gate3Status === 'pending' ? 3 : 4;
+                  handleGateApproval(gateNum as 1 | 2 | 3 | 4, true);
                 }}
                 disabled={isSubmitting}
                 className="bg-green-600 hover:bg-green-700"
@@ -448,8 +461,8 @@ export default function TeacherGroupDetailPage() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  const gateNum = group.gate1Status === 'pending' ? 1 : group.gate2Status === 'pending' ? 2 : 3;
-                  handleGateApproval(gateNum as 1 | 2 | 3, false);
+                  const gateNum = group.gate1Status === 'pending' ? 1 : group.gate2Status === 'pending' ? 2 : group.gate3Status === 'pending' ? 3 : 4;
+                  handleGateApproval(gateNum as 1 | 2 | 3 | 4, false);
                 }}
                 disabled={isSubmitting}
                 className="border-red-300 text-red-600 hover:bg-red-50"

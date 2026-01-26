@@ -12,7 +12,7 @@ export async function POST(
     const { code } = await params;
     const { gateNumber, approved, feedback } = await request.json();
 
-    if (!gateNumber || ![1, 2, 3].includes(gateNumber)) {
+    if (!gateNumber || ![1, 2, 3, 4].includes(gateNumber)) {
       return NextResponse.json(
         { error: 'Ogiltigt gate-nummer' },
         { status: 400 }
@@ -24,10 +24,11 @@ export async function POST(
       return NextResponse.json({ error: 'Grupp hittades inte' }, { status: 404 });
     }
 
-    const gateNames = {
+    const gateNames: Record<number, string> = {
       1: 'Projektdirektiv',
       2: 'Projektplan',
-      3: 'Utredningsrapport'
+      3: 'Utredningsrapport',
+      4: 'Slutredovisning'
     };
 
     if (approved) {
@@ -40,6 +41,8 @@ export async function POST(
       } else if (gateNumber === 2) {
         newPhase = 3;
       } else if (gateNumber === 3) {
+        newPhase = 4;
+      } else if (gateNumber === 4) {
         newStatus = 'completed';
       }
 
@@ -48,6 +51,7 @@ export async function POST(
         SET gate1_status = CASE WHEN ${gateNumber} = 1 THEN 'approved' ELSE gate1_status END,
             gate2_status = CASE WHEN ${gateNumber} = 2 THEN 'approved' ELSE gate2_status END,
             gate3_status = CASE WHEN ${gateNumber} = 3 THEN 'approved' ELSE gate3_status END,
+            gate4_status = CASE WHEN ${gateNumber} = 4 THEN 'approved' ELSE gate4_status END,
             phase = ${newPhase},
             status = ${newStatus},
             project_plan_approved = CASE WHEN ${gateNumber} = 1 THEN TRUE ELSE project_plan_approved END,
@@ -58,7 +62,7 @@ export async function POST(
       await logActivity(
         group.id,
         `gate${gateNumber}_approved`,
-        `${gateNames[gateNumber as 1 | 2 | 3]} godkänd av lärare${feedback ? `. Feedback: ${feedback}` : ''}`
+        `${gateNames[gateNumber]} godkänd av lärare${feedback ? `. Feedback: ${feedback}` : ''}`
       );
 
       return NextResponse.json({
@@ -73,6 +77,7 @@ export async function POST(
         SET gate1_status = CASE WHEN ${gateNumber} = 1 THEN 'rejected' ELSE gate1_status END,
             gate2_status = CASE WHEN ${gateNumber} = 2 THEN 'rejected' ELSE gate2_status END,
             gate3_status = CASE WHEN ${gateNumber} = 3 THEN 'rejected' ELSE gate3_status END,
+            gate4_status = CASE WHEN ${gateNumber} = 4 THEN 'rejected' ELSE gate4_status END,
             status = 'active'
         WHERE id = ${group.id}
       `;
@@ -80,7 +85,7 @@ export async function POST(
       await logActivity(
         group.id,
         `gate${gateNumber}_rejected`,
-        `${gateNames[gateNumber as 1 | 2 | 3]} avvisad: ${feedback || 'Ingen feedback angiven'}`
+        `${gateNames[gateNumber]} avvisad: ${feedback || 'Ingen feedback angiven'}`
       );
 
       return NextResponse.json({

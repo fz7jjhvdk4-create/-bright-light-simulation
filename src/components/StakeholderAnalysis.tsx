@@ -225,26 +225,28 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
         {/* Power/Interest Matrix */}
         <div className="mb-6">
           <h4 className="font-medium mb-3 text-center">Power/Interest-matris</h4>
-          <div className="grid grid-cols-2 gap-3">
-            {/* Row labels */}
-            <div className="col-span-2 flex justify-center gap-4 text-xs text-gray-500 mb-1">
-              <span>← Lågt intresse</span>
-              <span>Högt intresse →</span>
+          <div className="flex gap-2">
+            {/* Y-axis label */}
+            <div className="hidden sm:flex flex-col justify-between items-center py-4 text-xs text-gray-500">
+              <span>Hög makt ↑</span>
+              <span>Låg makt ↓</span>
             </div>
-
-            {/* High power row */}
-            <div className="text-xs text-gray-500 text-right pr-2 self-center -mr-2 writing-mode-vertical hidden sm:block">
-              Hög makt ↑
+            {/* Matrix grid */}
+            <div className="flex-1">
+              {/* X-axis labels */}
+              <div className="flex justify-between text-xs text-gray-500 mb-1 px-1">
+                <span>← Lågt intresse</span>
+                <span>Högt intresse →</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {/* High power row */}
+                {renderQuadrant("keep_satisfied")}
+                {renderQuadrant("manage_closely")}
+                {/* Low power row */}
+                {renderQuadrant("monitor")}
+                {renderQuadrant("keep_informed")}
+              </div>
             </div>
-            {renderQuadrant("keep_satisfied")}
-            {renderQuadrant("manage_closely")}
-
-            {/* Low power row */}
-            <div className="text-xs text-gray-500 text-right pr-2 self-center -mr-2 writing-mode-vertical hidden sm:block">
-              Låg makt ↓
-            </div>
-            {renderQuadrant("monitor")}
-            {renderQuadrant("keep_informed")}
           </div>
         </div>
 

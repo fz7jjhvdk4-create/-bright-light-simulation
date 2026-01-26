@@ -30,6 +30,8 @@ export async function GET(
         description: p.description,
         responsible: p.responsible,
         cost: p.cost,
+        timeline: p.timeline,
+        costReduction: p.cost_reduction,
         createdAt: p.created_at
       }))
     });
@@ -48,7 +50,7 @@ export async function POST(
 ) {
   try {
     const { code } = await params;
-    const { rootCauseId, description, responsible, cost } = await request.json();
+    const { rootCauseId, description, responsible, cost, timeline, costReduction } = await request.json();
 
     if (!rootCauseId || !description) {
       return Response.json(
@@ -66,8 +68,8 @@ export async function POST(
     }
 
     const result = await sql`
-      INSERT INTO action_proposals (group_id, root_cause_id, description, responsible, cost)
-      VALUES (${group.id}, ${rootCauseId}, ${description}, ${responsible || null}, ${cost || null})
+      INSERT INTO action_proposals (group_id, root_cause_id, description, responsible, cost, timeline, cost_reduction)
+      VALUES (${group.id}, ${rootCauseId}, ${description}, ${responsible || null}, ${cost || null}, ${timeline || null}, ${costReduction || null})
       RETURNING *
     `;
 
@@ -81,6 +83,8 @@ export async function POST(
         description: result.rows[0].description,
         responsible: result.rows[0].responsible,
         cost: result.rows[0].cost,
+        timeline: result.rows[0].timeline,
+        costReduction: result.rows[0].cost_reduction,
         createdAt: result.rows[0].created_at
       }
     });

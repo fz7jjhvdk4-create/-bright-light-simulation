@@ -11,6 +11,8 @@ interface Proposal {
   description: string;
   responsible: string | null;
   cost: number | null;
+  timeline: string | null;
+  costReduction: number | null;
   createdAt: string;
 }
 
@@ -30,6 +32,8 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
   const [description, setDescription] = useState("");
   const [responsible, setResponsible] = useState("");
   const [cost, setCost] = useState("");
+  const [timeline, setTimeline] = useState("");
+  const [costReduction, setCostReduction] = useState("");
 
   useEffect(() => {
     fetchProposals();
@@ -62,6 +66,8 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
           description: description.trim(),
           responsible: responsible.trim() || null,
           cost: cost ? parseInt(cost) : null,
+          timeline: timeline.trim() || null,
+          costReduction: costReduction ? parseInt(costReduction) : null,
         }),
       });
 
@@ -72,6 +78,8 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
         setDescription("");
         setResponsible("");
         setCost("");
+        setTimeline("");
+        setCostReduction("");
         setShowForm(false);
       }
     } catch (error) {
@@ -166,7 +174,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ansvarig
+                    Ansvarig *
                   </label>
                   <input
                     type="text"
@@ -176,6 +184,21 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tidplan *
+                  </label>
+                  <input
+                    type="text"
+                    value={timeline}
+                    onChange={(e) => setTimeline(e.target.value)}
+                    placeholder="T.ex. Vecka 1-4, Mars 2025"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Uppskattad kostnad (SEK)
@@ -188,12 +211,24 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Minskning av reklamationskostnad (SEK) *
+                  </label>
+                  <input
+                    type="number"
+                    value={costReduction}
+                    onChange={(e) => setCostReduction(e.target.value)}
+                    placeholder="T.ex. 500000"
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2 pt-2">
                 <Button
                   onClick={handleAddProposal}
-                  disabled={!selectedRootCause || !description.trim() || submitting}
+                  disabled={!selectedRootCause || !description.trim() || !responsible.trim() || !timeline.trim() || !costReduction || submitting}
                 >
                   {submitting ? "Sparar..." : "Spara åtgärd"}
                 </Button>
@@ -205,6 +240,8 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
                     setDescription("");
                     setResponsible("");
                     setCost("");
+                    setTimeline("");
+                    setCostReduction("");
                   }}
                 >
                   Avbryt
@@ -238,12 +275,18 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
                       </span>
                     </div>
                     <p className="text-gray-900">{proposal.description}</p>
-                    <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
                       {proposal.responsible && (
                         <span>Ansvarig: {proposal.responsible}</span>
                       )}
-                      {proposal.cost && (
+                      {proposal.timeline && (
+                        <span>Tidplan: {proposal.timeline}</span>
+                      )}
+                      {proposal.cost != null && proposal.cost > 0 && (
                         <span>Kostnad: {proposal.cost.toLocaleString()} SEK</span>
+                      )}
+                      {proposal.costReduction != null && proposal.costReduction > 0 && (
+                        <span className="text-green-600">Minskning: {proposal.costReduction.toLocaleString()} SEK</span>
                       )}
                     </div>
                   </div>

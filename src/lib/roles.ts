@@ -96,7 +96,7 @@ export const roles: Role[] = [
     avatar: "👩‍🔬",
     personality: "Metodisk, frustrerad att ingen lyssnar. Glad att konsulten är där.",
     hasData: true,
-    dataFiles: ["reklamationer", "produktion"],
+    dataFiles: ["reklamationer"],
     knowledge: {
       surface: "847 reklamationer 2024 vs 412 år 2023. Kostnad 4.8 MSEK. Slagit larm i ett år.",
       deeper: "IndustriLux 500W värst. Två leverantörer: ElektroTech (gammal) och AsiaCore (ny 2022).",
