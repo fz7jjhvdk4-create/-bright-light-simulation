@@ -24,6 +24,15 @@ interface ParetoData {
   items: { name: string; count: number }[];
 }
 
+interface CauseEffectDiagram {
+  id: string;
+  problem: string;
+  categories: {
+    name: string;
+    causes: string[];
+  }[];
+}
+
 interface CauseEffectData {
   problem: string;
   categories: {
@@ -59,7 +68,7 @@ interface ToolsState {
   checksheet: ChecksheetData;
   histogram: HistogramData;
   pareto: ParetoData;
-  causeEffect: CauseEffectData;
+  causeEffect: CauseEffectData | CauseEffectDiagram[];
   scatter: ScatterData;
   controlChart: ControlChartData;
   stratification: StratificationData;
@@ -91,17 +100,20 @@ const defaultState: ToolsState = {
       { name: "Metodfel", count: 0 }
     ]
   },
-  causeEffect: {
-    problem: "Kvalitetsproblem",
-    categories: [
-      { name: "Människa", causes: [] },
-      { name: "Maskin", causes: [] },
-      { name: "Material", causes: [] },
-      { name: "Metod", causes: [] },
-      { name: "Miljö", causes: [] },
-      { name: "Mätning", causes: [] }
-    ]
-  },
+  causeEffect: [
+    {
+      id: "ce-1",
+      problem: "Kvalitetsproblem",
+      categories: [
+        { name: "Människa", causes: [] },
+        { name: "Maskin", causes: [] },
+        { name: "Material", causes: [] },
+        { name: "Metod", causes: [] },
+        { name: "Miljö", causes: [] },
+        { name: "Mätning", causes: [] }
+      ]
+    }
+  ],
   scatter: {
     title: "Sambandsdiagram",
     xLabel: "Variabel X",
@@ -164,11 +176,22 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
   const [state, setState] = useState<ToolsState>(defaultState);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [rawStratValues, setRawStratValues] = useState<Record<number, string>>({});
+  const [activeCEDiagram, setActiveCEDiagram] = useState(0);
 
   useEffect(() => {
     const savedData = localStorage.getItem(`7qc-${groupCode}`);
     if (savedData) {
-      setState(JSON.parse(savedData));
+      const parsed = JSON.parse(savedData);
+      // Migrate old causeEffect format (single object) to new format (array)
+      if (parsed.causeEffect && !Array.isArray(parsed.causeEffect)) {
+        parsed.causeEffect = [{
+          id: "ce-1",
+          problem: parsed.causeEffect.problem,
+          categories: parsed.causeEffect.categories
+        }];
+      }
+      setState(parsed);
     }
   }, [groupCode]);
 
@@ -397,17 +420,105 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
 
   // Cause-Effect (Ishikawa) component
   const renderCauseEffect = () => {
+    const diagrams = Array.isArray(state.causeEffect) ? state.causeEffect : [{
+      id: "ce-1",
+      problem: (state.causeEffect as CauseEffectData).problem,
+      categories: (state.causeEffect as CauseEffectData).categories
+    }];
+    const currentIdx = Math.min(activeCEDiagram, diagrams.length - 1);
+    const current = diagrams[currentIdx];
+
+    const updateCurrentDiagram = (updater: (d: CauseEffectDiagram) => CauseEffectDiagram) => {
+      setState(prev => {
+        const arr = Array.isArray(prev.causeEffect) ? [...prev.causeEffect] : [{
+          id: "ce-1",
+          problem: (prev.causeEffect as CauseEffectData).problem,
+          categories: (prev.causeEffect as CauseEffectData).categories
+        }];
+        arr[currentIdx] = updater(arr[currentIdx]);
+        return { ...prev, causeEffect: arr };
+      });
+    };
+
+    const addNewDiagram = () => {
+      setState(prev => {
+        const arr = Array.isArray(prev.causeEffect) ? [...prev.causeEffect] : [{
+          id: "ce-1",
+          problem: (prev.causeEffect as CauseEffectData).problem,
+          categories: (prev.causeEffect as CauseEffectData).categories
+        }];
+        const newDiagram: CauseEffectDiagram = {
+          id: `ce-${Date.now()}`,
+          problem: "Nytt problem",
+          categories: [
+            { name: "Människa", causes: [] },
+            { name: "Maskin", causes: [] },
+            { name: "Material", causes: [] },
+            { name: "Metod", causes: [] },
+            { name: "Miljö", causes: [] },
+            { name: "Mätning", causes: [] }
+          ]
+        };
+        arr.push(newDiagram);
+        return { ...prev, causeEffect: arr };
+      });
+      setActiveCEDiagram(diagrams.length);
+    };
+
+    const deleteDiagram = (idx: number) => {
+      if (diagrams.length <= 1) return;
+      setState(prev => {
+        const arr = Array.isArray(prev.causeEffect) ? [...prev.causeEffect] : [];
+        arr.splice(idx, 1);
+        return { ...prev, causeEffect: arr };
+      });
+      if (currentIdx >= diagrams.length - 1) {
+        setActiveCEDiagram(Math.max(0, diagrams.length - 2));
+      }
+    };
+
     return (
       <div className="space-y-4">
+        {/* Diagram tabs */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {diagrams.map((d, idx) => (
+            <div key={d.id} className="flex items-center">
+              <button
+                onClick={() => setActiveCEDiagram(idx)}
+                className={`px-3 py-1.5 text-sm rounded-t-lg border border-b-0 ${
+                  idx === currentIdx
+                    ? "bg-white font-medium text-yellow-700 border-yellow-300"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200"
+                }`}
+              >
+                {d.problem || `Diagram ${idx + 1}`}
+              </button>
+              {diagrams.length > 1 && (
+                <button
+                  onClick={() => deleteDiagram(idx)}
+                  className="ml-0.5 px-1 py-1.5 text-xs text-gray-400 hover:text-red-500 border border-b-0 border-gray-200 rounded-tr-lg bg-gray-50"
+                  title="Ta bort diagram"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={addNewDiagram}
+            className="px-3 py-1.5 text-sm text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg border border-dashed border-yellow-300"
+          >
+            <Plus className="w-3 h-3 inline mr-1" />
+            Nytt diagram
+          </button>
+        </div>
+
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Problem:</span>
           <input
             type="text"
-            value={state.causeEffect.problem}
-            onChange={(e) => setState(prev => ({
-              ...prev,
-              causeEffect: { ...prev.causeEffect, problem: e.target.value }
-            }))}
+            value={current.problem}
+            onChange={(e) => updateCurrentDiagram(d => ({ ...d, problem: e.target.value }))}
             className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
           />
         </div>
@@ -417,12 +528,12 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
           <div className="flex items-center justify-center mb-4">
             <div className="flex-1 h-1 bg-gray-400"></div>
             <div className="px-4 py-2 bg-red-100 border-2 border-red-400 rounded font-medium text-center">
-              {state.causeEffect.problem || "Problem"}
+              {current.problem || "Problem"}
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {state.causeEffect.categories.map((category, catIdx) => (
+            {current.categories.map((category, catIdx) => (
               <div key={catIdx} className="border rounded-lg p-3 bg-white">
                 <h5 className="font-medium text-sm mb-2 text-yellow-700">{category.name}</h5>
                 <div className="space-y-1">
@@ -433,23 +544,23 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
                         type="text"
                         value={cause}
                         onChange={(e) => {
-                          const newCategories = [...state.causeEffect.categories];
-                          newCategories[catIdx].causes[causeIdx] = e.target.value;
-                          setState(prev => ({
-                            ...prev,
-                            causeEffect: { ...prev.causeEffect, categories: newCategories }
-                          }));
+                          updateCurrentDiagram(d => {
+                            const newCategories = d.categories.map((c, i) =>
+                              i === catIdx ? { ...c, causes: c.causes.map((cs, j) => j === causeIdx ? e.target.value : cs) } : c
+                            );
+                            return { ...d, categories: newCategories };
+                          });
                         }}
                         className="flex-1 text-xs px-1 py-0.5 border rounded focus:outline-none focus:ring-1 focus:ring-yellow-500"
                       />
                       <button
                         onClick={() => {
-                          const newCategories = [...state.causeEffect.categories];
-                          newCategories[catIdx].causes = newCategories[catIdx].causes.filter((_, i) => i !== causeIdx);
-                          setState(prev => ({
-                            ...prev,
-                            causeEffect: { ...prev.causeEffect, categories: newCategories }
-                          }));
+                          updateCurrentDiagram(d => {
+                            const newCategories = d.categories.map((c, i) =>
+                              i === catIdx ? { ...c, causes: c.causes.filter((_, j) => j !== causeIdx) } : c
+                            );
+                            return { ...d, categories: newCategories };
+                          });
                         }}
                         className="text-red-400 hover:text-red-600"
                       >
@@ -459,12 +570,12 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
                   ))}
                   <button
                     onClick={() => {
-                      const newCategories = [...state.causeEffect.categories];
-                      newCategories[catIdx].causes.push("");
-                      setState(prev => ({
-                        ...prev,
-                        causeEffect: { ...prev.causeEffect, categories: newCategories }
-                      }));
+                      updateCurrentDiagram(d => {
+                        const newCategories = d.categories.map((c, i) =>
+                          i === catIdx ? { ...c, causes: [...c.causes, ""] } : c
+                        );
+                        return { ...d, categories: newCategories };
+                      });
                     }}
                     className="text-xs text-yellow-600 hover:text-yellow-700"
                   >
@@ -564,17 +675,17 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
 
         {/* Visual histogram */}
         <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-end gap-1 h-40">
+          <div className="flex items-end gap-1" style={{ height: '160px' }}>
             {state.histogram.bins.map((bin, idx) => {
               const barHeight = maxCount > 0 ? (bin.count / maxCount) * 100 : 0;
               return (
-                <div key={idx} className="flex-1 flex flex-col items-center">
+                <div key={idx} className="flex-1 flex flex-col items-center justify-end" style={{ height: '100%' }}>
                   <div className="text-xs text-gray-500 mb-1">{bin.count}</div>
                   <div
                     className="w-full bg-blue-500 rounded-t"
                     style={{ height: `${barHeight}%`, minHeight: bin.count > 0 ? '4px' : '0' }}
                   />
-                  <div className="text-xs mt-1 text-center">{bin.label}</div>
+                  <div className="text-xs mt-1 text-center flex-shrink-0">{bin.label}</div>
                 </div>
               );
             })}
@@ -921,8 +1032,9 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
               </div>
               <input
                 type="text"
-                value={group.values.join(", ")}
+                value={rawStratValues[idx] ?? group.values.join(", ")}
                 onChange={(e) => {
+                  setRawStratValues(prev => ({ ...prev, [idx]: e.target.value }));
                   const values = e.target.value.split(",").map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
                   const newGroups = [...state.stratification.groups];
                   newGroups[idx].values = values;
@@ -931,13 +1043,39 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
                     stratification: { ...prev.stratification, groups: newGroups }
                   }));
                 }}
-                placeholder="Värden (kommaseparerade)"
+                onBlur={() => {
+                  setRawStratValues(prev => ({
+                    ...prev,
+                    [idx]: state.stratification.groups[idx].values.join(", ")
+                  }));
+                }}
+                placeholder="Värden (kommaseparerade, t.ex. 10, 15, 22, 18)"
                 className="w-full px-2 py-1 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-yellow-500"
               />
               {group.values.length > 0 && (
-                <div className="mt-2 text-xs text-gray-500">
-                  N={group.values.length}, Medel={group.values.length > 0 ? (group.values.reduce((a, b) => a + b, 0) / group.values.length).toFixed(2) : 0}
-                </div>
+                <>
+                  <div className="mt-2 text-xs text-gray-500">
+                    N={group.values.length},
+                    Medel={(group.values.reduce((a, b) => a + b, 0) / group.values.length).toFixed(2)},
+                    Min={Math.min(...group.values).toFixed(1)},
+                    Max={Math.max(...group.values).toFixed(1)}
+                    {group.values.length > 1 && `, Std=${(Math.sqrt(group.values.reduce((sum, v) => sum + Math.pow(v - group.values.reduce((a, b) => a + b, 0) / group.values.length, 2), 0) / group.values.length)).toFixed(2)}`}
+                  </div>
+                  <div className="mt-2 flex items-end gap-0.5 bg-white rounded p-1" style={{ height: '48px' }}>
+                    {group.values.map((val, vIdx) => {
+                      const maxVal = Math.max(...group.values, 1);
+                      const height = (val / maxVal) * 100;
+                      return (
+                        <div
+                          key={vIdx}
+                          className="flex-1 bg-blue-400 rounded-t"
+                          style={{ height: `${height}%`, minHeight: '2px' }}
+                          title={`${val}`}
+                        />
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </div>
           ))}

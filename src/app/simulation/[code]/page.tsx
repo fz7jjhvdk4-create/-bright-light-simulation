@@ -103,6 +103,9 @@ export default function SimulationPage() {
   const [activeTool, setActiveTool] = useState<"overview" | "proposals" | "stakeholders" | "risks" | "wbs" | "gantt" | "fivewhy" | "7qc" | "7qm" | "implementation" | "events" | "results" | "export" | "budget" | "conflicts" | "final" | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Phase viewing state (for navigating back to completed phases)
+  const [viewingPhase, setViewingPhase] = useState<number | null>(null);
+
   // Phase 2 state
   const [currentWeek, setCurrentWeek] = useState(1);
   const [proposals, setProposals] = useState<Array<{
@@ -112,6 +115,10 @@ export default function SimulationPage() {
     responsible: string | null;
     cost: number | null;
   }>>([]);
+
+  // Effective phase: either viewing a past phase or the current group phase
+  const effectivePhase = viewingPhase ?? group?.phase ?? 1;
+  const isReadOnly = viewingPhase !== null && group !== null && viewingPhase < group.phase;
 
   useEffect(() => {
     if (code) {
@@ -150,6 +157,37 @@ export default function SimulationPage() {
       setError("Kunde inte ladda gruppdata");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toolNames: Record<string, string> = {
+    wbs: "WBS",
+    gantt: "Gantt-schema",
+    stakeholders: "Intressentanalys",
+    risks: "Riskanalys",
+    fivewhy: "5 Varför",
+    "7qc": "7QC Kvalitetsverktyg",
+    "7qm": "7QM Ledningsverktyg",
+    proposals: "Åtgärdsförslag",
+    overview: "Nedladdade filer",
+    export: "Exportera",
+    implementation: "Implementeringsplan",
+    events: "Händelser",
+    results: "Resultatberäkning",
+    budget: "Budgetallokering",
+    conflicts: "Konflikthantering",
+    final: "Slutrapport",
+  };
+
+  const handleOpenTool = (tool: typeof activeTool) => {
+    setActiveTool(tool);
+    if (tool && group) {
+      const name = toolNames[tool] || tool;
+      fetch(`/api/groups/${group.code}/log-activity`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "tool_opened", detail: `Verktyg öppnat: ${name}` }),
+      }).catch(() => {});
     }
   };
 
@@ -350,7 +388,7 @@ export default function SimulationPage() {
 
   // Check if interviews are locked
   // Interviews are available in Phase 3 (Utredning) and Phase 4 (Redovisning)
-  const interviewsLocked = !group || group.phase < 3;
+  const interviewsLocked = !group || effectivePhase < 3;
 
   if (loading) {
     return (
@@ -372,7 +410,7 @@ export default function SimulationPage() {
     );
   }
 
-  const availableRoles = getRolesForPhase(group.phase);
+  const availableRoles = getRolesForPhase(effectivePhase);
 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)]">
@@ -405,8 +443,12 @@ export default function SimulationPage() {
                   (phase.num === 2 && group.gate2Status === 'pending') ||
                   (phase.num === 3 && group.gate3Status === 'pending') ||
                   (phase.num === 4 && group.gate4Status === 'pending');
+                const isViewing = effectivePhase === phase.num;
+                const canNavigate = isCompleted || isActive;
 
-                const bgColor = isCompleted
+                const bgColor = isViewing && viewingPhase !== null
+                  ? "bg-blue-200 text-blue-800 ring-2 ring-blue-400"
+                  : isCompleted
                   ? "bg-green-100 text-green-700"
                   : isPending
                   ? "bg-yellow-100 text-yellow-700"
@@ -419,12 +461,25 @@ export default function SimulationPage() {
 
                 return (
                   <div key={phase.num} className="flex items-center">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${bgColor}`}>
+                    <button
+                      onClick={() => {
+                        if (canNavigate) {
+                          if (phase.num === group.phase) {
+                            setViewingPhase(null);
+                          } else {
+                            setViewingPhase(phase.num);
+                          }
+                          setActiveTool(null);
+                        }
+                      }}
+                      disabled={!canNavigate}
+                      className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${bgColor} ${canNavigate ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
+                    >
                       {isCompleted && <CheckCircle className="w-3 h-3 inline mr-1" />}
                       {isPending && <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1 animate-pulse" />}
                       <span className="hidden sm:inline">{phase.num}. {phase.name}</span>
                       <span className="sm:hidden">{phase.num}</span>
-                    </span>
+                    </button>
                     {index < 3 && <ChevronRight className="w-3 h-3 text-gray-300 mx-0.5" />}
                   </div>
                 );
@@ -447,50 +502,63 @@ export default function SimulationPage() {
 
         {/* Phase-specific status */}
         <div className="mt-2 pt-2 border-t">
+          {isReadOnly && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                Skrivskyddat läge - Fas {viewingPhase}
+              </span>
+              <button
+                onClick={() => { setViewingPhase(null); setActiveTool(null); }}
+                className="text-xs text-blue-600 hover:text-blue-800 underline"
+              >
+                Tillbaka till aktuell fas (Fas {group.phase})
+              </button>
+            </div>
+          )}
           <div className="text-xs text-gray-600">
-            {group.phase === 1 && (
+            {effectivePhase === 1 && (
               <>
                 <span className="font-medium">Fas 1 - Projektdefinition:</span> Definiera syfte, mål och avgränsningar.
-                {group.gate1Status === 'pending' && (
+                {!isReadOnly && group.gate1Status === 'pending' && (
                   <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
                 )}
-                {group.gate1Status === 'rejected' && (
+                {!isReadOnly && group.gate1Status === 'rejected' && (
                   <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
               </>
             )}
-            {group.phase === 2 && (
+            {effectivePhase === 2 && (
               <>
                 <span className="font-medium">Fas 2 - Projektplan:</span> Skapa WBS, Gantt, intressentanalys och riskanalys.
-                {group.gate2Status === 'pending' && (
+                {!isReadOnly && group.gate2Status === 'pending' && (
                   <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
                 )}
-                {group.gate2Status === 'rejected' && (
+                {!isReadOnly && group.gate2Status === 'rejected' && (
                   <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
               </>
             )}
-            {group.phase === 3 && (
+            {effectivePhase === 3 && (
               <>
                 <span className="font-medium">Fas 3 - Utredning:</span> Intervjua, samla data, analysera med 5 Varför, 7QC och 7QM. Hitta rotorsaker.
-                {group.gate3Status === 'pending' && (
+                {!isReadOnly && group.gate3Status === 'pending' && (
                   <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
                 )}
-                {group.gate3Status === 'rejected' && (
+                {!isReadOnly && group.gate3Status === 'rejected' && (
                   <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
-                {(!group.gate3Status || group.gate3Status === 'not_submitted') && (
+                {!isReadOnly && (!group.gate3Status || group.gate3Status === 'not_submitted') && (
                   <span className="ml-2 text-gray-500">Intervjuer upplåsta</span>
                 )}
               </>
             )}
-            {group.phase === 4 && (
+            {effectivePhase === 4 && (
               <>
                 <span className="font-medium">Fas 4 - Redovisning:</span> Skapa handlingsplan och presentera kvalitetsverktyg och resultat.
-                {group.gate4Status === 'pending' && (
+                {!isReadOnly && group.gate4Status === 'pending' && (
                   <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
                 )}
-                {group.gate4Status === 'rejected' && (
+                {!isReadOnly && group.gate4Status === 'rejected' && (
                   <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
               </>
@@ -502,8 +570,79 @@ export default function SimulationPage() {
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden relative">
+        {/* Fireworks celebration when project is fully approved */}
+        {group.gate4Status === 'approved' && (
+          <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
+            <div className="fireworks-banner bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 text-white py-4 px-6 text-center shadow-lg pointer-events-auto">
+              <div className="flex items-center justify-center gap-3">
+                <span className="firework-spark text-2xl">🎆</span>
+                <div>
+                  <h2 className="text-xl font-bold">Projektet är godkänt!</h2>
+                  <p className="text-sm text-green-100">Grattis! Ni har framgångsrikt genomfört hela kvalitetsprojektet för Bright Light Solutions.</p>
+                </div>
+                <span className="firework-spark text-2xl" style={{ animationDelay: '0.5s' }}>🎇</span>
+              </div>
+            </div>
+            {/* Animated particles */}
+            <div className="fireworks-container">
+              {Array.from({ length: 20 }, (_, i) => (
+                <div
+                  key={i}
+                  className="firework-particle"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 3}s`,
+                    animationDuration: `${2 + Math.random() * 2}s`,
+                  }}
+                />
+              ))}
+            </div>
+            <style jsx>{`
+              .fireworks-banner {
+                animation: bannerGlow 2s ease-in-out infinite alternate;
+              }
+              @keyframes bannerGlow {
+                from { box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+                to { box-shadow: 0 4px 25px rgba(16, 185, 129, 0.6); }
+              }
+              .firework-spark {
+                display: inline-block;
+                animation: sparkle 1.5s ease-in-out infinite;
+              }
+              @keyframes sparkle {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.3); opacity: 0.7; }
+              }
+              .fireworks-container {
+                position: relative;
+                height: 0;
+                overflow: visible;
+              }
+              .firework-particle {
+                position: absolute;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: gold;
+                animation: particleRise linear infinite;
+                opacity: 0;
+              }
+              .firework-particle:nth-child(odd) { background: #10b981; }
+              .firework-particle:nth-child(3n) { background: #f59e0b; }
+              .firework-particle:nth-child(4n) { background: #ef4444; }
+              .firework-particle:nth-child(5n) { background: #8b5cf6; }
+              @keyframes particleRise {
+                0% { transform: translateY(0) scale(0); opacity: 0; }
+                20% { opacity: 1; transform: translateY(-20px) scale(1); }
+                80% { opacity: 0.8; }
+                100% { transform: translateY(-120px) scale(0); opacity: 0; }
+              }
+            `}</style>
+          </div>
+        )}
+
         {/* Fas 1: Projektdefinition - Intro meeting och projektdefinition */}
-        {group.phase === 1 && group.subPhase === 'intro' ? (
+        {effectivePhase === 1 && group.subPhase === 'intro' && !isReadOnly ? (
           <div className="flex-1 p-4 overflow-y-auto">
             <div className="max-w-3xl mx-auto h-full">
               <IntroMeeting
@@ -512,14 +651,14 @@ export default function SimulationPage() {
               />
             </div>
           </div>
-        ) : group.phase === 1 ? (
+        ) : effectivePhase === 1 ? (
           <div className="flex-1 overflow-y-auto">
             <ProjectDefinition
               groupCode={group.code}
               onSave={() => {}}
             />
             {/* Gate 1 submission */}
-            {group.gate1Status === 'not_submitted' && (
+            {!isReadOnly && (group.gate1Status === 'not_submitted' || group.gate1Status === 'rejected') && (
               <div className="p-6 max-w-3xl mx-auto">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <h4 className="font-medium text-blue-800 mb-2">📝 Gate 1: Styrgruppsmöte - Projektdirektiv</h4>
@@ -556,7 +695,7 @@ export default function SimulationPage() {
                 </div>
               </div>
             )}
-            {group.gate1Status === 'pending' && (
+            {!isReadOnly && group.gate1Status === 'pending' && (
               <div className="p-6 max-w-3xl mx-auto">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
@@ -851,11 +990,11 @@ export default function SimulationPage() {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="Skriv din fråga..."
+                      placeholder={isReadOnly ? "Skrivskyddat läge" : "Skriv din fråga..."}
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
-                      disabled={isSending}
+                      disabled={isSending || isReadOnly}
                     />
-                    <Button onClick={handleSendMessage} disabled={isSending || !input.trim()}>
+                    <Button onClick={handleSendMessage} disabled={isSending || !input.trim() || isReadOnly}>
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>
@@ -865,11 +1004,11 @@ export default function SimulationPage() {
           )}
 
           {activeTab === "tools" && (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col overflow-hidden">
               {!activeTool ? (
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto">
                   {/* Fas 2: Projektplan */}
-                  {group.phase === 2 ? (
+                  {effectivePhase === 2 ? (
                     <>
                       <h3 className="text-lg font-semibold mb-2">Fas 2 - Projektplan</h3>
                       <p className="text-sm text-gray-500 mb-4">
@@ -880,7 +1019,7 @@ export default function SimulationPage() {
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Planeringsverktyg</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
-                          onClick={() => setActiveTool("wbs")}
+                          onClick={() => handleOpenTool("wbs")}
                           className="text-left border rounded-lg p-4 hover:border-blue-300 transition-colors border-blue-200 bg-blue-50"
                         >
                           <h4 className="font-medium mb-2">📊 WBS</h4>
@@ -889,7 +1028,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("gantt")}
+                          onClick={() => handleOpenTool("gantt")}
                           className="text-left border rounded-lg p-4 hover:border-teal-300 transition-colors border-teal-200 bg-teal-50"
                         >
                           <h4 className="font-medium mb-2">📅 Gantt-schema</h4>
@@ -898,7 +1037,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("stakeholders")}
+                          onClick={() => handleOpenTool("stakeholders")}
                           className="text-left border rounded-lg p-4 hover:border-purple-300 transition-colors border-purple-200 bg-purple-50"
                         >
                           <h4 className="font-medium mb-2">👥 Intressentanalys</h4>
@@ -907,7 +1046,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("risks")}
+                          onClick={() => handleOpenTool("risks")}
                           className="text-left border rounded-lg p-4 hover:border-orange-300 transition-colors border-orange-200 bg-orange-50"
                         >
                           <h4 className="font-medium mb-2">⚠️ Riskanalys</h4>
@@ -918,7 +1057,7 @@ export default function SimulationPage() {
                       </div>
 
                       {/* Gate 2 submission */}
-                      {group.gate2Status === 'not_submitted' && (
+                      {!isReadOnly && (group.gate2Status === 'not_submitted' || group.gate2Status === 'rejected') && (
                         <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                           <h4 className="font-medium text-purple-800 mb-2">📝 Gate 2: Styrgruppsmöte - Projektplan</h4>
                           <p className="text-sm text-purple-700 mb-3">
@@ -954,7 +1093,7 @@ export default function SimulationPage() {
                         </div>
                       )}
 
-                      {group.gate2Status === 'pending' && (
+                      {!isReadOnly && group.gate2Status === 'pending' && (
                         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                           <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
                           <p className="text-sm text-yellow-700">
@@ -963,7 +1102,7 @@ export default function SimulationPage() {
                         </div>
                       )}
                     </>
-                  ) : group.phase === 3 ? (
+                  ) : effectivePhase === 3 ? (
                     /* Fas 3: Utredning - intervjuer, data, analysverktyg */
                     <>
                       <h3 className="text-lg font-semibold mb-2">Fas 3 - Utredning</h3>
@@ -975,7 +1114,7 @@ export default function SimulationPage() {
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Analysverktyg</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
-                          onClick={() => setActiveTool("fivewhy")}
+                          onClick={() => handleOpenTool("fivewhy")}
                           className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 bg-red-50"
                         >
                           <h4 className="font-medium mb-2">🔍 5 Varför</h4>
@@ -984,7 +1123,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("7qc")}
+                          onClick={() => handleOpenTool("7qc")}
                           className="text-left border rounded-lg p-4 hover:border-cyan-300 transition-colors border-cyan-200 bg-cyan-50"
                         >
                           <h4 className="font-medium mb-2">📊 7 Kvalitetsverktyg (7QC)</h4>
@@ -993,7 +1132,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("7qm")}
+                          onClick={() => handleOpenTool("7qm")}
                           className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 bg-indigo-50"
                         >
                           <h4 className="font-medium mb-2">🗂️ 7 Ledningsverktyg (7QM)</h4>
@@ -1003,11 +1142,25 @@ export default function SimulationPage() {
                         </button>
                       </div>
 
+                      {/* Action proposals */}
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Handlingsplan</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <button
+                          onClick={() => handleOpenTool("proposals")}
+                          className="text-left border rounded-lg p-4 hover:border-green-300 transition-colors border-green-200 bg-green-50"
+                        >
+                          <h4 className="font-medium mb-2">📋 Åtgärdsförslag</h4>
+                          <p className="text-sm text-gray-600">
+                            Dokumentera åtgärdsförslag baserade på era analyser
+                          </p>
+                        </button>
+                      </div>
+
                       {/* Documentation tools */}
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Dokumentation</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
-                          onClick={() => setActiveTool("overview")}
+                          onClick={() => handleOpenTool("overview")}
                           className="text-left border rounded-lg p-4 hover:border-gray-300 transition-colors"
                         >
                           <h4 className="font-medium mb-2">📁 Nedladdade filer</h4>
@@ -1016,7 +1169,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("export")}
+                          onClick={() => handleOpenTool("export")}
                           className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
                         >
                           <h4 className="font-medium mb-2">📦 Exportera</h4>
@@ -1027,7 +1180,7 @@ export default function SimulationPage() {
                       </div>
 
                       {/* Gate 3 submission */}
-                      {group.gate3Status === 'not_submitted' && (
+                      {!isReadOnly && (group.gate3Status === 'not_submitted' || group.gate3Status === 'rejected') && (
                         <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                           <h4 className="font-medium text-orange-800 mb-2">📝 Gate 3: Styrgruppsmöte - Utredningsrapport</h4>
                           <p className="text-sm text-orange-700 mb-3">
@@ -1047,6 +1200,23 @@ export default function SimulationPage() {
                             onClick={async () => {
                               if (confirm("Är ni säkra på att ni vill skicka in utredningen för godkännande?")) {
                                 try {
+                                  // Save investigation tools data to database
+                                  const tools7qcRaw = localStorage.getItem(`7qc-${group.code}`);
+                                  const tools7qmRaw = localStorage.getItem(`7qm-${group.code}`);
+                                  const fiveWhyRaw = localStorage.getItem(`five-why-${group.code}`);
+                                  const problemsRaw = localStorage.getItem(`problems-${group.code}`);
+
+                                  await fetch(`/api/groups/${group.code}/investigation-tools`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      tools7qc: tools7qcRaw ? JSON.parse(tools7qcRaw) : null,
+                                      tools7qm: tools7qmRaw ? JSON.parse(tools7qmRaw) : null,
+                                      fiveWhy: fiveWhyRaw ? JSON.parse(fiveWhyRaw) : null,
+                                      problems: problemsRaw ? JSON.parse(problemsRaw) : null,
+                                    }),
+                                  });
+
                                   const response = await fetch(`/api/groups/${group.code}/submit-gate`, {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
@@ -1072,7 +1242,7 @@ export default function SimulationPage() {
                         </div>
                       )}
 
-                      {group.gate3Status === 'pending' && (
+                      {!isReadOnly && group.gate3Status === 'pending' && (
                         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                           <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
                           <p className="text-sm text-yellow-700">
@@ -1081,7 +1251,7 @@ export default function SimulationPage() {
                         </div>
                       )}
                     </>
-                  ) : group.phase === 4 ? (
+                  ) : effectivePhase === 4 ? (
                     /* Fas 4: Redovisning - handlingsplan och presentation */
                     <>
                       <h3 className="text-lg font-semibold mb-2">Fas 4 - Redovisning</h3>
@@ -1093,7 +1263,7 @@ export default function SimulationPage() {
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Handlingsplan</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
-                          onClick={() => setActiveTool("proposals")}
+                          onClick={() => handleOpenTool("proposals")}
                           className="text-left border-2 border-yellow-300 rounded-lg p-4 hover:bg-yellow-50 transition-colors bg-yellow-50"
                         >
                           <h4 className="font-medium mb-2">📋 Handlingsplan</h4>
@@ -1102,7 +1272,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("export")}
+                          onClick={() => handleOpenTool("export")}
                           className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
                         >
                           <h4 className="font-medium mb-2">📦 Exportera</h4>
@@ -1116,28 +1286,28 @@ export default function SimulationPage() {
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Granska era analysresultat</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
-                          onClick={() => setActiveTool("fivewhy")}
+                          onClick={() => handleOpenTool("fivewhy")}
                           className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 bg-red-50"
                         >
                           <h4 className="font-medium mb-2">🔍 5 Varför</h4>
                           <p className="text-sm text-gray-600">Se era 5 Varför-analyser</p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("7qc")}
+                          onClick={() => handleOpenTool("7qc")}
                           className="text-left border rounded-lg p-4 hover:border-cyan-300 transition-colors border-cyan-200 bg-cyan-50"
                         >
                           <h4 className="font-medium mb-2">📊 7QC</h4>
                           <p className="text-sm text-gray-600">Se era 7QC-analyser</p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("7qm")}
+                          onClick={() => handleOpenTool("7qm")}
                           className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 bg-indigo-50"
                         >
                           <h4 className="font-medium mb-2">🗂️ 7QM</h4>
                           <p className="text-sm text-gray-600">Se era 7QM-analyser</p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("overview")}
+                          onClick={() => handleOpenTool("overview")}
                           className="text-left border rounded-lg p-4 hover:border-gray-300 transition-colors"
                         >
                           <h4 className="font-medium mb-2">📁 Nedladdade filer</h4>
@@ -1148,7 +1318,7 @@ export default function SimulationPage() {
                       </div>
 
                       {/* Gate 4 submission */}
-                      {group.gate4Status === 'not_submitted' && (
+                      {!isReadOnly && (group.gate4Status === 'not_submitted' || group.gate4Status === 'rejected') && (
                         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                           <h4 className="font-medium text-green-800 mb-2">📝 Gate 4: Slutredovisning till styrgruppen</h4>
                           <p className="text-sm text-green-700 mb-3">
@@ -1192,7 +1362,7 @@ export default function SimulationPage() {
                         </div>
                       )}
 
-                      {group.gate4Status === 'pending' && (
+                      {!isReadOnly && group.gate4Status === 'pending' && (
                         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                           <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
                           <p className="text-sm text-yellow-700">
@@ -1216,7 +1386,7 @@ export default function SimulationPage() {
                       <h3 className="text-lg font-semibold mb-4">Verktyg</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <button
-                          onClick={() => setActiveTool("proposals")}
+                          onClick={() => handleOpenTool("proposals")}
                           className="text-left border rounded-lg p-4 hover:border-yellow-300 transition-colors"
                         >
                           <h4 className="font-medium mb-2">📋 Åtgärdsförslag</h4>
@@ -1225,7 +1395,7 @@ export default function SimulationPage() {
                           </p>
                         </button>
                         <button
-                          onClick={() => setActiveTool("export")}
+                          onClick={() => handleOpenTool("export")}
                           className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
                         >
                           <h4 className="font-medium mb-2">📦 Exportera</h4>
@@ -1238,26 +1408,34 @@ export default function SimulationPage() {
                   )}
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col">
-                  <div className="px-4 py-2 border-b bg-gray-50 flex items-center gap-2">
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="px-4 py-2 border-b bg-gray-50 flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => setActiveTool(null)}
                       className="text-sm text-gray-500 hover:text-gray-700"
                     >
                       ← Tillbaka till verktyg
                     </button>
+                    {isReadOnly && (
+                      <span className="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                        Skrivskyddat läge
+                      </span>
+                    )}
                   </div>
                   {activeTool === "proposals" && (
                     <ActionProposals
                       groupCode={group.code}
                       onSubmit={async () => {
                         try {
-                          const response = await fetch(`/api/groups/${group.code}/submit`, {
+                          const gateNumber = group.phase;
+                          const response = await fetch(`/api/groups/${group.code}/submit-gate`, {
                             method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ gateNumber }),
                           });
                           const data = await response.json();
                           if (data.success) {
-                            alert("Åtgärdsförslag inskickade för godkännande! Invänta lärarens beslut.");
+                            alert("Inskickat för godkännande! Invänta lärarens beslut.");
                             fetchGroupData();
                           } else {
                             alert(`Kunde inte skicka in: ${data.error}`);

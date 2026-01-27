@@ -161,6 +161,8 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
   const [state, setState] = useState<ToolsState>(defaultState);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [relFrom, setRelFrom] = useState<number | "">("");
+  const [relTo, setRelTo] = useState<number | "">("");
 
   useEffect(() => {
     const savedData = localStorage.getItem(`7qm-${groupCode}`);
@@ -339,96 +341,127 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
         </div>
 
         {state.tree.goal && (
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-center">
-              <div className="px-4 py-2 bg-yellow-500 text-white rounded-lg font-medium text-center">
+          <div className="p-4 bg-gray-50 rounded-lg overflow-x-auto">
+            {/* Root node */}
+            <div className="flex flex-col items-center">
+              <div className="px-4 py-2 bg-yellow-500 text-white rounded-lg font-medium text-center shadow">
                 {state.tree.goal}
               </div>
+              {state.tree.branches.length > 0 && (
+                <div className="w-0.5 h-6 bg-yellow-400" />
+              )}
             </div>
 
-            <div className="mt-4 space-y-3">
-              {state.tree.branches.map((branch, branchIdx) => (
-                <div key={branchIdx} className="ml-8 pl-4 border-l-2 border-yellow-300">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                    <input
-                      type="text"
-                      value={branch.name}
-                      onChange={(e) => {
-                        const newBranches = [...state.tree.branches];
-                        newBranches[branchIdx].name = e.target.value;
-                        setState(prev => ({
-                          ...prev,
-                          tree: { ...prev.tree, branches: newBranches }
-                        }));
-                      }}
-                      placeholder="Delmål/strategi"
-                      className="flex-1 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-yellow-500 font-medium"
-                    />
-                    <button
-                      onClick={() => {
-                        const newBranches = state.tree.branches.filter((_, i) => i !== branchIdx);
-                        setState(prev => ({
-                          ...prev,
-                          tree: { ...prev.tree, branches: newBranches }
-                        }));
-                      }}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+            {/* Branches */}
+            {state.tree.branches.length > 0 && (
+              <div className="relative">
+                {/* Horizontal connector line between branches */}
+                {state.tree.branches.length > 1 && (
+                  <div className="absolute top-0 h-0.5 bg-yellow-300" style={{
+                    left: `${100 / (state.tree.branches.length * 2)}%`,
+                    right: `${100 / (state.tree.branches.length * 2)}%`
+                  }} />
+                )}
 
-                  <div className="ml-4 space-y-1">
-                    {branch.subBranches.map((sub, subIdx) => (
-                      <div key={subIdx} className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-                        <input
-                          type="text"
-                          value={sub}
-                          onChange={(e) => {
-                            const newBranches = [...state.tree.branches];
-                            newBranches[branchIdx].subBranches[subIdx] = e.target.value;
-                            setState(prev => ({
-                              ...prev,
-                              tree: { ...prev.tree, branches: newBranches }
-                            }));
-                          }}
-                          placeholder="Åtgärd"
-                          className="flex-1 px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-yellow-500"
-                        />
-                        <button
-                          onClick={() => {
-                            const newBranches = [...state.tree.branches];
-                            newBranches[branchIdx].subBranches = newBranches[branchIdx].subBranches.filter((_, i) => i !== subIdx);
-                            setState(prev => ({
-                              ...prev,
-                              tree: { ...prev.tree, branches: newBranches }
-                            }));
-                          }}
-                          className="text-gray-400 hover:text-red-500"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                <div className="flex justify-center gap-6">
+                  {state.tree.branches.map((branch, branchIdx) => (
+                    <div key={branchIdx} className="flex flex-col items-center flex-1" style={{ minWidth: '180px', maxWidth: '280px' }}>
+                      {/* Vertical connector from horizontal line to branch */}
+                      <div className="w-0.5 h-4 bg-yellow-300" />
+
+                      {/* Branch node */}
+                      <div className="w-full border-2 border-yellow-400 rounded-lg p-2 bg-white shadow-sm">
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={branch.name}
+                            onChange={(e) => {
+                              const newBranches = [...state.tree.branches];
+                              newBranches[branchIdx].name = e.target.value;
+                              setState(prev => ({
+                                ...prev,
+                                tree: { ...prev.tree, branches: newBranches }
+                              }));
+                            }}
+                            placeholder="Delmål/strategi"
+                            className="flex-1 px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-yellow-500 font-medium"
+                          />
+                          <button
+                            onClick={() => {
+                              const newBranches = state.tree.branches.filter((_, i) => i !== branchIdx);
+                              setState(prev => ({
+                                ...prev,
+                                tree: { ...prev.tree, branches: newBranches }
+                              }));
+                            }}
+                            className="text-red-500 hover:text-red-700 flex-shrink-0"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                    ))}
-                    <button
-                      onClick={() => {
-                        const newBranches = [...state.tree.branches];
-                        newBranches[branchIdx].subBranches.push("");
-                        setState(prev => ({
-                          ...prev,
-                          tree: { ...prev.tree, branches: newBranches }
-                        }));
-                      }}
-                      className="text-xs text-gray-500 hover:text-yellow-600"
-                    >
-                      + Lägg till åtgärd
-                    </button>
-                  </div>
-                </div>
-              ))}
 
+                      {/* Sub-branches */}
+                      {branch.subBranches.length > 0 && (
+                        <div className="w-0.5 h-3 bg-gray-300" />
+                      )}
+                      <div className="w-full space-y-1">
+                        {branch.subBranches.map((sub, subIdx) => (
+                          <div key={subIdx} className="flex items-center gap-1 w-full">
+                            <div className="w-4 h-0.5 bg-gray-300 flex-shrink-0" />
+                            <div className="flex-1 flex items-center gap-1 border rounded px-2 py-1 bg-white text-sm">
+                              <input
+                                type="text"
+                                value={sub}
+                                onChange={(e) => {
+                                  const newBranches = [...state.tree.branches];
+                                  newBranches[branchIdx].subBranches[subIdx] = e.target.value;
+                                  setState(prev => ({
+                                    ...prev,
+                                    tree: { ...prev.tree, branches: newBranches }
+                                  }));
+                                }}
+                                placeholder="Åtgärd"
+                                className="flex-1 focus:outline-none text-sm"
+                              />
+                              <button
+                                onClick={() => {
+                                  const newBranches = [...state.tree.branches];
+                                  newBranches[branchIdx].subBranches = newBranches[branchIdx].subBranches.filter((_, i) => i !== subIdx);
+                                  setState(prev => ({
+                                    ...prev,
+                                    tree: { ...prev.tree, branches: newBranches }
+                                  }));
+                                }}
+                                className="text-gray-400 hover:text-red-500 flex-shrink-0"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          const newBranches = [...state.tree.branches];
+                          newBranches[branchIdx].subBranches.push("");
+                          setState(prev => ({
+                            ...prev,
+                            tree: { ...prev.tree, branches: newBranches }
+                          }));
+                        }}
+                        className="text-xs text-gray-500 hover:text-yellow-600 mt-1"
+                      >
+                        + Lägg till åtgärd
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-center mt-4">
               <Button
                 size="sm"
                 variant="outline"
@@ -441,7 +474,6 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
                     }
                   }));
                 }}
-                className="ml-8"
               >
                 <Plus className="w-4 h-4 mr-1" />
                 Lägg till delmål
@@ -806,6 +838,13 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
               placeholder="Effekt, Kostnad, Tid..."
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
             />
+            <div className="mt-2 space-y-1 text-xs text-gray-500">
+              <p className="font-medium text-gray-600">Poängskala (0-10):</p>
+              <p><span className="font-medium">Effekt:</span> 10 = stor positiv effekt på kvalitet, 1 = liten effekt</p>
+              <p><span className="font-medium">Kostnad:</span> 10 = låg kostnad (billig), 1 = hög kostnad (dyr)</p>
+              <p><span className="font-medium">Tid:</span> 10 = snabb att genomföra, 1 = lång tid</p>
+              <p className="text-gray-400 italic">Högre poäng = bättre. Anpassa kriterierna efter ert projekt.</p>
+            </div>
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-2">Alternativ</label>
@@ -835,9 +874,19 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
               <thead>
                 <tr>
                   <th className="border p-2 bg-gray-50">Alternativ</th>
-                  {state.prioritization.criteria.map((crit, idx) => (
-                    <th key={idx} className="border p-2 bg-gray-50 min-w-[80px]">{crit}</th>
-                  ))}
+                  {state.prioritization.criteria.map((crit, idx) => {
+                    const explanations: Record<string, string> = {
+                      "Effekt": "10 = stor positiv effekt, 1 = liten effekt",
+                      "Kostnad": "10 = låg kostnad (billig), 1 = hög kostnad (dyr)",
+                      "Tid": "10 = snabb att genomföra, 1 = lång tid"
+                    };
+                    return (
+                      <th key={idx} className="border p-2 bg-gray-50 min-w-[80px] cursor-help" title={explanations[crit] || `Poäng 0-10 för ${crit}`}>
+                        {crit}
+                        {explanations[crit] && <span className="text-gray-400 ml-1">ⓘ</span>}
+                      </th>
+                    );
+                  })}
                   <th className="border p-2 bg-yellow-50 font-bold">Summa</th>
                   <th className="border p-2 bg-gray-50 w-10"></th>
                 </tr>
@@ -1025,43 +1074,55 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
                   </button>
                 </div>
               ))}
-              <div className="flex items-center gap-2">
-                <select
-                  className="px-2 py-1 border rounded text-sm"
-                  onChange={(e) => {
-                    const from = parseInt(e.target.value);
-                    if (!isNaN(from)) {
-                      const toSelect = document.getElementById('relation-to') as HTMLSelectElement;
-                      if (toSelect && !isNaN(parseInt(toSelect.value))) {
-                        const to = parseInt(toSelect.value);
-                        if (from !== to && !state.relations.relations.some(r => r.from === from && r.to === to)) {
-                          setState(prev => ({
-                            ...prev,
-                            relations: {
-                              ...prev.relations,
-                              relations: [...prev.relations.relations, { from, to }]
-                            }
-                          }));
-                        }
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500">
+                  Välj en orsak (Från) och en verkan (Till), klicka sedan på &quot;Lägg till&quot;.
+                </p>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={relFrom}
+                    onChange={(e) => setRelFrom(e.target.value === "" ? "" : parseInt(e.target.value))}
+                    className="px-2 py-1 border rounded text-sm flex-1"
+                  >
+                    <option value="">Från (orsak)...</option>
+                    {state.relations.items.map((item, idx) => (
+                      <option key={idx} value={idx}>{item || `#${idx + 1}`}</option>
+                    ))}
+                  </select>
+                  <span className="text-lg">→</span>
+                  <select
+                    value={relTo}
+                    onChange={(e) => setRelTo(e.target.value === "" ? "" : parseInt(e.target.value))}
+                    className="px-2 py-1 border rounded text-sm flex-1"
+                  >
+                    <option value="">Till (verkan)...</option>
+                    {state.relations.items.map((item, idx) => (
+                      <option key={idx} value={idx}>{item || `#${idx + 1}`}</option>
+                    ))}
+                  </select>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={relFrom === "" || relTo === "" || relFrom === relTo}
+                    onClick={() => {
+                      if (relFrom !== "" && relTo !== "" && relFrom !== relTo &&
+                          !state.relations.relations.some(r => r.from === relFrom && r.to === relTo)) {
+                        setState(prev => ({
+                          ...prev,
+                          relations: {
+                            ...prev.relations,
+                            relations: [...prev.relations.relations, { from: relFrom as number, to: relTo as number }]
+                          }
+                        }));
+                        setRelFrom("");
+                        setRelTo("");
                       }
-                    }
-                  }}
-                >
-                  <option value="">Från...</option>
-                  {state.relations.items.map((item, idx) => (
-                    <option key={idx} value={idx}>{item || `#${idx + 1}`}</option>
-                  ))}
-                </select>
-                <span>→</span>
-                <select
-                  id="relation-to"
-                  className="px-2 py-1 border rounded text-sm"
-                >
-                  <option value="">Till...</option>
-                  {state.relations.items.map((item, idx) => (
-                    <option key={idx} value={idx}>{item || `#${idx + 1}`}</option>
-                  ))}
-                </select>
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Lägg till
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

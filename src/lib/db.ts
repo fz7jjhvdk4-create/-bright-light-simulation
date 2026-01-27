@@ -103,6 +103,18 @@ export async function initializeDatabase() {
       // Columns may already exist
     }
 
+    // Migration: Fix groups stuck in wrong phase after gate approval
+    try {
+      // Groups with gate2 approved should be in phase 3
+      await sql`UPDATE groups SET phase = 3 WHERE gate2_status = 'approved' AND phase = 2`;
+      // Groups with gate3 approved should be in phase 4
+      await sql`UPDATE groups SET phase = 4 WHERE gate3_status = 'approved' AND phase = 3`;
+      // Groups with gate4 approved should be completed
+      await sql`UPDATE groups SET status = 'completed' WHERE gate4_status = 'approved' AND status != 'completed'`;
+    } catch (e) {
+      // Migration may fail if columns don't exist yet
+    }
+
     // Create investigation_reports table
     await sql`
       CREATE TABLE IF NOT EXISTS investigation_reports (
@@ -255,6 +267,20 @@ export async function initializeDatabase() {
         document_id VARCHAR(50) NOT NULL,
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(group_id, document_id)
+      )
+    `;
+
+    // Create investigation_tools_data table
+    await sql`
+      CREATE TABLE IF NOT EXISTS investigation_tools_data (
+        id SERIAL PRIMARY KEY,
+        group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
+        tools_7qc TEXT,
+        tools_7qm TEXT,
+        five_why TEXT,
+        problems TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(group_id)
       )
     `;
 
@@ -643,6 +669,14 @@ export async function saveFinalReport(
 export async function getFinalReport(groupId: number) {
   const result = await sql`
     SELECT * FROM final_reports WHERE group_id = ${groupId}
+  `;
+  return result.rows[0];
+}
+
+export async function deleteGroup(groupId: number) {
+  // Related tables have ON DELETE CASCADE, so this will clean up everything
+  const result = await sql`
+    DELETE FROM groups WHERE id = ${groupId} RETURNING *
   `;
   return result.rows[0];
 }

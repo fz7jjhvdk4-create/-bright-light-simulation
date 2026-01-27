@@ -34,6 +34,17 @@ export async function POST(
 
       // Update status to pending approval for project plan
       await updateGroupStatus(group.id, 'pending_approval');
+      // Safety net: also set gate status to pending
+      const ppPhase = group.phase;
+      await sql`
+        UPDATE groups
+        SET gate1_status = CASE WHEN ${ppPhase} = 1 THEN 'pending' ELSE gate1_status END,
+            gate2_status = CASE WHEN ${ppPhase} = 2 THEN 'pending' ELSE gate2_status END,
+            gate3_status = CASE WHEN ${ppPhase} = 3 THEN 'pending' ELSE gate3_status END,
+            gate4_status = CASE WHEN ${ppPhase} = 4 THEN 'pending' ELSE gate4_status END,
+            status = CONCAT('pending_gate', ${ppPhase}::text)
+        WHERE id = ${group.id}
+      `;
       await logActivity(
         group.id,
         'project_plan_submitted',
@@ -81,10 +92,21 @@ export async function POST(
 
     // Update status to pending approval
     await updateGroupStatus(group.id, 'pending_approval');
+    // Safety net: also set gate status to pending
+    const currentPhase = group.phase;
+    await sql`
+      UPDATE groups
+      SET gate1_status = CASE WHEN ${currentPhase} = 1 THEN 'pending' ELSE gate1_status END,
+          gate2_status = CASE WHEN ${currentPhase} = 2 THEN 'pending' ELSE gate2_status END,
+          gate3_status = CASE WHEN ${currentPhase} = 3 THEN 'pending' ELSE gate3_status END,
+          gate4_status = CASE WHEN ${currentPhase} = 4 THEN 'pending' ELSE gate4_status END,
+          status = CONCAT('pending_gate', ${currentPhase}::text)
+      WHERE id = ${group.id}
+    `;
     await logActivity(
       group.id,
       'submission',
-      `Fas 1 inlämnad för godkännande. ${proposalsCount} åtgärdsförslag, ${interviewsCount} intervjuer, ${downloadsCount} datafiler.`
+      `Fas ${currentPhase} inlämnad för godkännande. ${proposalsCount} åtgärdsförslag, ${interviewsCount} intervjuer, ${downloadsCount} datafiler.`
     );
 
     return Response.json({ success: true });

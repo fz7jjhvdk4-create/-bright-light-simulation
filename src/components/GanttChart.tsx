@@ -19,18 +19,10 @@ interface GanttChartProps {
 }
 
 const defaultTasks: GanttTask[] = [
-  { id: "1", name: "Projektstart", startWeek: 1, duration: 0, color: "bg-purple-500", isMilestone: true },
-  { id: "2", name: "Projektplanering", startWeek: 1, duration: 2, color: "bg-blue-500" },
-  { id: "3", name: "Datainsamling", startWeek: 3, duration: 3, color: "bg-green-500" },
-  { id: "4", name: "Intervjuer", startWeek: 4, duration: 4, color: "bg-yellow-500" },
-  { id: "5", name: "Rotorsaksanalys", startWeek: 7, duration: 2, color: "bg-orange-500" },
-  { id: "6", name: "Åtgärdsförslag", startWeek: 9, duration: 2, color: "bg-red-500" },
-  { id: "7", name: "Gate 1: Utredning klar", startWeek: 10, duration: 0, color: "bg-purple-500", isMilestone: true },
-  { id: "8", name: "Leverantörsåtgärder", startWeek: 11, duration: 8, color: "bg-blue-400" },
-  { id: "9", name: "Utbildningsinsatser", startWeek: 11, duration: 4, color: "bg-green-400" },
-  { id: "10", name: "Processförbättringar", startWeek: 13, duration: 6, color: "bg-yellow-400" },
-  { id: "11", name: "Uppföljning och mätning", startWeek: 15, duration: 10, color: "bg-orange-400" },
-  { id: "12", name: "Gate 2: Projektavslut", startWeek: 24, duration: 0, color: "bg-purple-500", isMilestone: true },
+  { id: "g1", name: "Gate 1: Projektdirektiv", startWeek: 1, duration: 0, color: "bg-purple-500", isMilestone: true },
+  { id: "g2", name: "Gate 2: Projektplan klar", startWeek: 4, duration: 0, color: "bg-purple-500", isMilestone: true },
+  { id: "g3", name: "Gate 3: Utredning klar", startWeek: 14, duration: 0, color: "bg-purple-500", isMilestone: true },
+  { id: "g4", name: "Gate 4: Slutredovisning", startWeek: 24, duration: 0, color: "bg-purple-500", isMilestone: true },
 ];
 
 const TOTAL_WEEKS = 26;

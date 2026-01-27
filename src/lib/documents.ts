@@ -172,6 +172,93 @@ PERSONLIG REFLEKTION:
 Vi tappar kompetens på kvällen snabbare än vi kan bygga upp den.
 Var och varannan månad är det någon ny som ska läras upp.
 Och med bara 15 minuters överlämning hinner jag knappt säga hej.`
+  },
+
+  org_chart: {
+    id: "org_chart",
+    name: "Organisationsschema BLS",
+    description: "Bright Light Solutions organisationsstruktur",
+    availableFrom: ["maria"],
+    content: `ORGANISATIONSSCHEMA - BRIGHT LIGHT SOLUTIONS AB
+================================================
+
+                    ┌─────────────────┐
+                    │   STYRELSE      │
+                    │ Henrik Wallin   │
+                    └────────┬────────┘
+                             │
+                    ┌────────┴────────┐
+                    │      VD         │
+                    │   Maria Ek      │
+                    └────────┬────────┘
+                             │
+         ┌───────────┬───────┼───────────┬──────────────┐
+         │           │       │           │              │
+   ┌─────┴─────┐ ┌──┴───┐ ┌─┴──────┐ ┌──┴──────┐ ┌────┴─────┐
+   │ Ekonomi   │ │Inköp │ │Produkt-│ │ HR      │ │Produkt-  │
+   │Anna Berg  │ │Thomas│ │ ion    │ │Peter    │ │utveckling│
+   │           │ │Gren  │ │Mikael  │ │Holm     │ │Jonas Holm│
+   └───────────┘ └──────┘ │Ström   │ └─────────┘ └──────────┘
+                          └───┬────┘
+                              │
+                    ┌─────────┼──────────┐
+                    │         │          │
+              ┌─────┴──┐ ┌───┴───┐ ┌────┴────┐
+              │Kvalitet│ │Dag-   │ │Kvälls-  │
+              │Karin   │ │skift  │ │skift    │
+              │Lind-   │ │Kenneth│ │Emma     │
+              │ström   │ │m.fl.  │ │m.fl.    │
+              └────────┘ └───────┘ └─────────┘
+
+ANTAL ANSTÄLLDA: 145 totalt
+- Produktion: 89 (tvåskift)
+  - Dagskift (06:00-14:00): ~50 personer
+  - Kvällsskift (14:00-22:00): ~39 personer
+- Administration/Support: 56
+
+FACKLIG REPRESENTANT: Linda Bergqvist`
+  },
+
+  process_map: {
+    id: "process_map",
+    name: "Processkarta - Produktion",
+    description: "Produktionsprocessen för LED-armaturer",
+    availableFrom: ["mikael"],
+    content: `PROCESSKARTA - LED-ARMATURPRODUKTION
+=====================================
+Bright Light Solutions AB
+
+HUVUDPROCESS: Tillverkning av LED-armaturer
+
+┌──────────┐   ┌───────────┐   ┌──────────────┐   ┌──────────┐   ┌──────────┐
+│ Inkommande│──>│ Komponent-│──>│  SMT-lödning │──>│ Montering│──>│  Test &  │
+│ material  │   │ förbered- │   │  (JUKI JM-20)│   │ slutmont.│   │ kvalitet │
+│           │   │ ning      │   │              │   │          │   │ kontroll │
+└──────────┘   └───────────┘   └──────────────┘   └──────────┘   └─────┬────┘
+                                                                        │
+     Leverantörer:                  ▲ KRITISK                    ┌──────┴─────┐
+     - ElektroTech (drivdon)        │ STATION                    │  Godkänd?  │
+     - AsiaCore (drivdon, ny)       │                            └──┬─────┬───┘
+     - Diverse (LED, höljen)        │                               │     │
+                                    │                              JA    NEJ
+                              Kräver:                               │     │
+                              - Korrekt lödprofil per produkt  ┌────┴─┐ ┌─┴──────┐
+                              - Temperaturkontroll             │Pack &│ │Omarbete│
+                              - Utbildad operatör              │Lever-│ │eller   │
+                              - Kalibrering dagligen           │ans   │ │kassera │
+                                                               └──────┘ └────────┘
+
+IDENTIFIERADE PROBLEMOMRÅDEN:
+1. SMT-lödning (JUKI-station): Kalla lödningar, felaktig profil
+2. Kvällsskift: Högre felfrekvens, kortare erfarenhet
+3. Överlämning dag/kväll: Endast 15 min, otillräckligt
+4. Drivdon (AsiaCore): MTBF under specifikation
+
+NYCKELTAL (2024):
+- Produktionsvolym: ~45 000 armaturer/år
+- Kassationsgrad: 4,2% (mål: <2%)
+- Omarbetningsgrad: 7,8% (mål: <3%)
+- Reklamationer: 847 st (kostnad 4,8 MSEK)`
   }
 };
 

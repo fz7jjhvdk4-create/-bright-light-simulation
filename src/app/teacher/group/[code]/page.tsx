@@ -75,7 +75,16 @@ interface Proposal {
   description: string;
   responsible: string | null;
   cost: number | null;
+  timeline: string | null;
+  costReduction: number | null;
   createdAt: string;
+}
+
+interface InvestigationToolsData {
+  tools7qc: { completedTools: string[] } | null;
+  tools7qm: { completedTools: string[] } | null;
+  fiveWhy: { problem: string; responses: string[]; rootCause: string; analysis?: string } | null;
+  problems: string[] | null;
 }
 
 export default function TeacherGroupDetailPage() {
@@ -89,12 +98,13 @@ export default function TeacherGroupDetailPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "activity" | "interviews" | "data" | "proposals" | "projectplan" | "investigation"
+    "activity" | "interviews" | "data" | "proposals" | "projectplan" | "gate2" | "investigation" | "gate4"
   >("projectplan");
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectDefinition, setProjectDefinition] = useState<ProjectDefinition | null>(null);
   const [investigationReport, setInvestigationReport] = useState<InvestigationReport | null>(null);
+  const [investigationTools, setInvestigationTools] = useState<InvestigationToolsData | null>(null);
 
   useEffect(() => {
     const session = localStorage.getItem("teacher_session");
@@ -110,17 +120,19 @@ export default function TeacherGroupDetailPage() {
 
   const fetchGroupData = async () => {
     try {
-      const [groupRes, proposalsRes, definitionRes, investigationRes] = await Promise.all([
+      const [groupRes, proposalsRes, definitionRes, investigationRes, toolsRes] = await Promise.all([
         fetch(`/api/groups/${code}`),
         fetch(`/api/groups/${code}/proposals`),
         fetch(`/api/groups/${code}/project-definition`),
         fetch(`/api/groups/${code}/investigation-report`),
+        fetch(`/api/groups/${code}/investigation-tools`),
       ]);
 
       const groupData = await groupRes.json();
       const proposalsData = await proposalsRes.json();
       const definitionData = await definitionRes.json();
       const investigationData = await investigationRes.json();
+      const toolsData = await toolsRes.json();
 
       if (groupData.success) {
         setGroup(groupData.group);
@@ -139,6 +151,10 @@ export default function TeacherGroupDetailPage() {
 
       if (investigationData.success && investigationData.report) {
         setInvestigationReport(investigationData.report);
+      }
+
+      if (toolsData.success && toolsData.data) {
+        setInvestigationTools(toolsData.data);
       }
     } catch (error) {
       console.error("Error fetching group data:", error);
@@ -496,6 +512,23 @@ export default function TeacherGroupDetailPage() {
                 )}
               </button>
               <button
+                onClick={() => setActiveTab("gate2")}
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === "gate2"
+                    ? "border-yellow-500 text-yellow-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <FileText className="w-4 h-4 inline mr-1" />
+                Gate 2 (Projektplan)
+                {group.gate2Status === 'pending' && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                )}
+                {group.gate2Status === 'approved' && (
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
+                )}
+              </button>
+              <button
                 onClick={() => setActiveTab("investigation")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "investigation"
@@ -504,21 +537,30 @@ export default function TeacherGroupDetailPage() {
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
-                Gate 2 & 3 (Projektplan & Utredning)
-                {(group.gate2Status === 'pending' || group.gate3Status === 'pending') && (
+                Gate 3 (Utredning)
+                {group.gate3Status === 'pending' && (
                   <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                )}
+                {group.gate3Status === 'approved' && (
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
                 )}
               </button>
               <button
-                onClick={() => setActiveTab("proposals")}
+                onClick={() => setActiveTab("gate4")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === "proposals"
+                  activeTab === "gate4"
                     ? "border-yellow-500 text-yellow-600"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 <ClipboardList className="w-4 h-4 inline mr-1" />
-                Åtgärdsförslag
+                Gate 4 (Slutredovisning)
+                {group.gate4Status === 'pending' && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                )}
+                {group.gate4Status === 'approved' && (
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
+                )}
               </button>
               <button
                 onClick={() => setActiveTab("interviews")}
@@ -603,11 +645,11 @@ export default function TeacherGroupDetailPage() {
                       </div>
                     </div>
 
-                    {!group.projectPlanApproved && (
+                    {!group.projectPlanApproved && group.gate1Status !== 'approved' && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <h4 className="font-medium text-yellow-800 mb-2">Godkänn projektplan</h4>
+                        <h4 className="font-medium text-yellow-800 mb-2">Godkänn projektdirektiv</h4>
                         <p className="text-sm text-yellow-700 mb-4">
-                          När du godkänner projektplanen får studenterna tillgång till intervjufunktionen.
+                          Granska projektdirektivet och godkänn för att låsa upp Fas 2 (Projektplan).
                         </p>
                         <div className="mb-4">
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -621,14 +663,25 @@ export default function TeacherGroupDetailPage() {
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
                           />
                         </div>
-                        <Button
-                          onClick={handleProjectPlanApproval}
-                          disabled={isSubmitting}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          {isSubmitting ? "Godkänner..." : "Godkänn projektplan"}
-                        </Button>
+                        <div className="flex gap-4">
+                          <Button
+                            onClick={() => handleGateApproval(1, true)}
+                            disabled={isSubmitting}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            {isSubmitting ? "Godkänner..." : "Godkänn projektdirektiv"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => handleGateApproval(1, false)}
+                            disabled={isSubmitting}
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Avslå
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </>
@@ -636,18 +689,67 @@ export default function TeacherGroupDetailPage() {
               </div>
             )}
 
-            {activeTab === "investigation" && (
+            {activeTab === "gate2" && (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Utredningsrapport</h3>
-                  {group.investigationApproved ? (
+                  <h3 className="text-lg font-semibold">Gate 2: Projektplan</h3>
+                  {group.gate2Status === 'approved' ? (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       Godkänd
                     </span>
-                  ) : group.status === "pending_investigation_approval" ? (
-                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                  ) : group.gate2Status === 'pending' ? (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
                       Väntar på godkännande
+                    </span>
+                  ) : group.gate2Status === 'rejected' ? (
+                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                      Avvisad
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                      Ej inlämnad
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Projektplanen inkluderar WBS, Gantt-schema, intressentanalys och riskanalys.
+                  Studenterna arbetar med dessa verktyg i simuleringen.
+                </p>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium text-gray-700 mb-1">Intervjuer genomförda</h4>
+                    <p className="text-2xl font-bold">{interviews.length}</p>
+                  </div>
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium text-gray-700 mb-1">Datafiler nedladdade</h4>
+                    <p className="text-2xl font-bold">{downloads.length}</p>
+                  </div>
+                </div>
+                {group.phase < 2 && (
+                  <div className="text-center py-4 text-gray-500">
+                    <p>Studenterna har ännu inte nått Fas 2.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "investigation" && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Gate 3: Utredningsrapport</h3>
+                  {group.gate3Status === 'approved' ? (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4" />
+                      Godkänd
+                    </span>
+                  ) : group.gate3Status === 'pending' ? (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                      Väntar på godkännande
+                    </span>
+                  ) : group.gate3Status === 'rejected' ? (
+                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                      Avvisad
                     </span>
                   ) : (
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
@@ -656,119 +758,243 @@ export default function TeacherGroupDetailPage() {
                   )}
                 </div>
 
-                {!investigationReport ? (
+                {/* Investigation tools overview */}
+                {investigationTools && (
+                  <div className="mb-6 space-y-4">
+                    <h4 className="font-semibold text-gray-800 border-b pb-2">Använda analysverktyg</h4>
+
+                    {/* 7QC Tools */}
+                    <div className="p-4 border rounded-lg bg-blue-50">
+                      <h5 className="font-medium text-blue-800 mb-2">7 QC-verktyg ({investigationTools.tools7qc?.completedTools?.length || 0}/7 använda)</h5>
+                      {investigationTools.tools7qc?.completedTools && investigationTools.tools7qc.completedTools.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {investigationTools.tools7qc.completedTools.map((tool) => {
+                            const toolNames: Record<string, string> = {
+                              checksheet: "Datainsamlingsblad",
+                              histogram: "Histogram",
+                              pareto: "Paretodiagram",
+                              causeEffect: "Orsak-verkan (Ishikawa)",
+                              scatter: "Spridningsdiagram",
+                              controlChart: "Styrdiagram",
+                              stratification: "Stratifiering"
+                            };
+                            return (
+                              <span key={tool} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm">
+                                {toolNames[tool] || tool}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-blue-600 italic">Inga 7QC-verktyg använda</p>
+                      )}
+                    </div>
+
+                    {/* 7QM Tools */}
+                    <div className="p-4 border rounded-lg bg-purple-50">
+                      <h5 className="font-medium text-purple-800 mb-2">7 QM-verktyg ({investigationTools.tools7qm?.completedTools?.length || 0}/7 använda)</h5>
+                      {investigationTools.tools7qm?.completedTools && investigationTools.tools7qm.completedTools.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {investigationTools.tools7qm.completedTools.map((tool) => {
+                            const toolNames: Record<string, string> = {
+                              affinity: "Affinitetsdiagram",
+                              relations: "Relationsdiagram",
+                              tree: "Träddiagram",
+                              matrix: "Matrisdiagram",
+                              arrow: "Pildiagram",
+                              pdpc: "PDPC",
+                              prioritization: "Prioriteringsmatris"
+                            };
+                            return (
+                              <span key={tool} className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm">
+                                {toolNames[tool] || tool}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-purple-600 italic">Inga 7QM-verktyg använda</p>
+                      )}
+                    </div>
+
+                    {/* 5 Why */}
+                    {investigationTools.fiveWhy && (
+                      <div className="p-4 border rounded-lg bg-orange-50">
+                        <h5 className="font-medium text-orange-800 mb-2">5 Varför-analys</h5>
+                        {investigationTools.fiveWhy.problem && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-orange-700">Problem: </span>
+                            <span className="text-sm text-orange-600">{investigationTools.fiveWhy.problem}</span>
+                          </div>
+                        )}
+                        {investigationTools.fiveWhy.responses && investigationTools.fiveWhy.responses.length > 0 && (
+                          <div className="space-y-1 mb-2">
+                            {investigationTools.fiveWhy.responses.map((response, i) => (
+                              <div key={i} className="text-sm">
+                                <span className="font-medium text-orange-700">Varför {i + 1}: </span>
+                                <span className="text-orange-600">{response}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {investigationTools.fiveWhy.rootCause && (
+                          <div className="mt-2 p-2 bg-orange-100 rounded">
+                            <span className="text-sm font-medium text-orange-800">Rotorsak: </span>
+                            <span className="text-sm text-orange-700">{investigationTools.fiveWhy.rootCause}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Investigation report */}
+                {!investigationReport && !investigationTools ? (
                   <div className="text-center py-8 text-gray-500">
                     <p>Studenterna har inte skickat in någon utredningsrapport än.</p>
                     <p className="text-sm mt-2">Delfas: {group.subPhase}</p>
                   </div>
-                ) : (
-                  <>
-                    <div className="space-y-4 mb-6">
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Sammanfattning</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.summary || <em className="text-gray-400">Ej ifyllt</em>}</p>
-                      </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Metodik</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.methodology || <em className="text-gray-400">Ej ifyllt</em>}</p>
-                      </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-2">Identifierade rotorsaker ({investigationReport.root_causes?.length || 0})</h4>
-                        {investigationReport.root_causes && investigationReport.root_causes.length > 0 ? (
-                          <div className="space-y-3">
-                            {investigationReport.root_causes.map((rc, index) => (
-                              <div key={rc.id} className="p-3 bg-white border rounded">
-                                <h5 className="font-medium text-gray-800">{index + 1}. {rc.title || "Utan titel"}</h5>
-                                <p className="text-gray-600 text-sm mt-1">{rc.description}</p>
-                                {rc.evidence && (
-                                  <p className="text-gray-500 text-xs mt-1 italic">Bevis: {rc.evidence}</p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <em className="text-gray-400">Inga rotorsaker dokumenterade</em>
-                        )}
-                      </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Slutsatser</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.conclusions || <em className="text-gray-400">Ej ifyllt</em>}</p>
-                      </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Rekommendationer</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.recommendations || <em className="text-gray-400">Ej ifyllt</em>}</p>
-                      </div>
+                ) : investigationReport ? (
+                  <div className="space-y-4 mb-6">
+                    <h4 className="font-semibold text-gray-800 border-b pb-2">Utredningsrapport</h4>
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                      <h4 className="font-medium text-gray-700 mb-1">Sammanfattning</h4>
+                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.summary || <em className="text-gray-400">Ej ifyllt</em>}</p>
                     </div>
-
-                    {group.status === "pending_investigation_approval" && !group.investigationApproved && (
-                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                        <h4 className="font-medium text-orange-800 mb-2">Godkänn utredning</h4>
-                        <p className="text-sm text-orange-700 mb-4">
-                          När du godkänner utredningen får studenterna tillgång till Fas 2 (Implementering).
-                        </p>
-                        <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Feedback (valfritt)
-                          </label>
-                          <textarea
-                            value={feedback}
-                            onChange={(e) => setFeedback(e.target.value)}
-                            placeholder="Skriv feedback till studenterna..."
-                            rows={2}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                          />
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                      <h4 className="font-medium text-gray-700 mb-1">Metodik</h4>
+                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.methodology || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                      <h4 className="font-medium text-gray-700 mb-2">Identifierade rotorsaker ({investigationReport.root_causes?.length || 0})</h4>
+                      {investigationReport.root_causes && investigationReport.root_causes.length > 0 ? (
+                        <div className="space-y-3">
+                          {investigationReport.root_causes.map((rc, index) => (
+                            <div key={rc.id} className="p-3 bg-white border rounded">
+                              <h5 className="font-medium text-gray-800">{index + 1}. {rc.title || "Utan titel"}</h5>
+                              <p className="text-gray-600 text-sm mt-1">{rc.description}</p>
+                              {rc.evidence && (
+                                <p className="text-gray-500 text-xs mt-1 italic">Bevis: {rc.evidence}</p>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                        <Button
-                          onClick={handleInvestigationApproval}
-                          disabled={isSubmitting}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          {isSubmitting ? "Godkänner..." : "Godkänn utredning och lås upp Fas 2"}
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
+                      ) : (
+                        <em className="text-gray-400">Inga rotorsaker dokumenterade</em>
+                      )}
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                      <h4 className="font-medium text-gray-700 mb-1">Slutsatser</h4>
+                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.conclusions || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gray-50">
+                      <h4 className="font-medium text-gray-700 mb-1">Rekommendationer</h4>
+                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.recommendations || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
 
-            {activeTab === "proposals" && (
+            {activeTab === "gate4" && (
               <div>
-                <h3 className="text-lg font-semibold mb-4">Åtgärdsförslag</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Gate 4: Slutredovisning — Åtgärdsmatris</h3>
+                  {group.gate4Status === 'approved' ? (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4" />
+                      Godkänd
+                    </span>
+                  ) : group.gate4Status === 'pending' ? (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                      Väntar på godkännande
+                    </span>
+                  ) : group.gate4Status === 'rejected' ? (
+                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                      Avvisad
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                      Ej inlämnad
+                    </span>
+                  )}
+                </div>
+
                 {proposals.length === 0 ? (
-                  <p className="text-gray-500">
-                    Inga åtgärdsförslag inlämnade än.
-                  </p>
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Inga åtgärdsförslag inlämnade än.</p>
+                  </div>
                 ) : (
-                  <div className="space-y-4">
-                    {proposals.map((proposal) => (
-                      <div
-                        key={proposal.id}
-                        className="p-4 border rounded-lg bg-gray-50"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
-                            {getRootCauseName(proposal.rootCauseId)}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(proposal.createdAt).toLocaleString("sv-SE")}
-                          </span>
-                        </div>
-                        <p className="text-gray-900 mb-2">{proposal.description}</p>
-                        <div className="flex gap-4 text-sm text-gray-500">
-                          {proposal.responsible && (
-                            <span>Ansvarig: {proposal.responsible}</span>
-                          )}
-                          {proposal.cost && (
-                            <span>
-                              Kostnad: {proposal.cost.toLocaleString()} SEK
-                            </span>
-                          )}
+                  <>
+                    <div className="overflow-x-auto mb-6">
+                      <table className="w-full border-collapse text-sm">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="border p-3 text-left font-semibold text-gray-700">Rotorsak</th>
+                            <th className="border p-3 text-left font-semibold text-gray-700">Aktivitet</th>
+                            <th className="border p-3 text-left font-semibold text-gray-700">Ansvarig</th>
+                            <th className="border p-3 text-left font-semibold text-gray-700">Tidplan</th>
+                            <th className="border p-3 text-right font-semibold text-gray-700">Kostnad (SEK)</th>
+                            <th className="border p-3 text-right font-semibold text-gray-700">Förväntad besparing (SEK)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {proposals.map((proposal) => (
+                            <tr key={proposal.id} className="hover:bg-gray-50">
+                              <td className="border p-3">
+                                <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
+                                  {getRootCauseName(proposal.rootCauseId)}
+                                </span>
+                              </td>
+                              <td className="border p-3 text-gray-900">{proposal.description}</td>
+                              <td className="border p-3 text-gray-700">{proposal.responsible || <em className="text-gray-400">—</em>}</td>
+                              <td className="border p-3 text-gray-700">{proposal.timeline || <em className="text-gray-400">—</em>}</td>
+                              <td className="border p-3 text-right text-gray-700">
+                                {proposal.cost != null && proposal.cost > 0
+                                  ? proposal.cost.toLocaleString("sv-SE")
+                                  : <em className="text-gray-400">—</em>}
+                              </td>
+                              <td className="border p-3 text-right font-medium text-green-700">
+                                {proposal.costReduction != null && proposal.costReduction > 0
+                                  ? proposal.costReduction.toLocaleString("sv-SE")
+                                  : <em className="text-gray-400">—</em>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="bg-gray-50 font-semibold">
+                            <td className="border p-3" colSpan={4}>Totalt</td>
+                            <td className="border p-3 text-right">
+                              {proposals.reduce((sum, p) => sum + (p.cost || 0), 0).toLocaleString("sv-SE")}
+                            </td>
+                            <td className="border p-3 text-right text-green-700">
+                              {proposals.reduce((sum, p) => sum + (p.costReduction || 0), 0).toLocaleString("sv-SE")}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="p-4 border rounded-lg bg-gray-50 text-center">
+                        <div className="text-sm text-gray-500 mb-1">Antal åtgärder</div>
+                        <div className="text-2xl font-bold">{proposals.length}</div>
+                      </div>
+                      <div className="p-4 border rounded-lg bg-gray-50 text-center">
+                        <div className="text-sm text-gray-500 mb-1">Total kostnad</div>
+                        <div className="text-2xl font-bold">
+                          {proposals.reduce((sum, p) => sum + (p.cost || 0), 0).toLocaleString("sv-SE")} SEK
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      <div className="p-4 border rounded-lg bg-green-50 text-center">
+                        <div className="text-sm text-green-600 mb-1">Förväntad total besparing</div>
+                        <div className="text-2xl font-bold text-green-700">
+                          {proposals.reduce((sum, p) => sum + (p.costReduction || 0), 0).toLocaleString("sv-SE")} SEK
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}

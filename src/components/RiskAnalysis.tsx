@@ -17,43 +17,7 @@ interface RiskAnalysisProps {
   groupCode: string;
 }
 
-const defaultRisks: Risk[] = [
-  {
-    id: "1",
-    description: "Thomas blockerar leverantörsbyte",
-    probability: 4,
-    consequence: 4,
-    mitigation: ""
-  },
-  {
-    id: "2",
-    description: "Kvällsskiftet hotar med sjukskrivning",
-    probability: 3,
-    consequence: 5,
-    mitigation: ""
-  },
-  {
-    id: "3",
-    description: "Budget överskrids",
-    probability: 3,
-    consequence: 4,
-    mitigation: ""
-  },
-  {
-    id: "4",
-    description: "Ny leverantör har samma kvalitetsproblem",
-    probability: 2,
-    consequence: 5,
-    mitigation: ""
-  },
-  {
-    id: "5",
-    description: "Utbildningsåtgärder tar längre tid än planerat",
-    probability: 3,
-    consequence: 3,
-    mitigation: ""
-  }
-];
+const defaultRisks: Risk[] = [];
 
 export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
   const [risks, setRisks] = useState<Risk[]>(defaultRisks);

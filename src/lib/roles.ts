@@ -39,6 +39,7 @@ export const roles: Role[] = [
     avatar: "👩‍💼",
     personality: "Resultatinriktad, rak, börjar tappa tålamodet. Styrelsen pressar.",
     hasData: false,
+    documents: ["org_chart"],
     knowledge: {
       surface: "Reklamationer ökat dramatiskt. Styrelsen orolig. Budget 800k, deadline 6 månader.",
       deeper: "Eskalerat senaste 18 månaderna. Besparingar 2022 kanske för aggressiva.",
@@ -136,7 +137,7 @@ export const roles: Role[] = [
     personality: "Skeptisk till konsulter men ärlig. Skyddar sitt team.",
     hasData: true,
     dataFiles: ["produktion", "personal"],
-    documents: ["shift_log", "training_plan"],
+    documents: ["shift_log", "training_plan", "process_map"],
     knowledge: {
       surface: "89 i produktion. Tvåskift: dag 06-14, kväll 14-22. Ny JUKI-lödstation feb 2023.",
       deeper: "Kvällsskift har lite mer omsättning. Utbildning på JUKI var 2 halvdagar. Överlappning nu 15 min.",

@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { deleteGroup } from '@/lib/db';
 
 // Disable caching for this route
 export const dynamic = 'force-dynamic';
@@ -54,6 +55,39 @@ export async function GET() {
     console.error('Error fetching groups:', error);
     return Response.json(
       { success: false, error: 'Kunde inte hämta grupper' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { groupId } = await request.json();
+
+    if (!groupId) {
+      return NextResponse.json(
+        { success: false, error: 'Grupp-ID krävs' },
+        { status: 400 }
+      );
+    }
+
+    const deleted = await deleteGroup(groupId);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, error: 'Gruppen hittades inte' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Grupp "${deleted.name}" (${deleted.code}) har tagits bort`
+    });
+  } catch (error) {
+    console.error('Error deleting group:', error);
+    return NextResponse.json(
+      { success: false, error: 'Kunde inte ta bort gruppen' },
       { status: 500 }
     );
   }

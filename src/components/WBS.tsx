@@ -19,37 +19,11 @@ interface WBSProps {
 
 const defaultWBS: WBSItem[] = [
   {
-    id: "1",
-    name: "Kvalitetsförbättringsprojekt",
+    id: "root",
+    name: "Kvalitetsförbättringsprojekt BLS",
     duration: "6 månader",
     expanded: true,
-    children: [
-      {
-        id: "1.1",
-        name: "Fas 1: Utredning",
-        duration: "2 månader",
-        expanded: true,
-        children: [
-          { id: "1.1.1", name: "Projektplanering", duration: "1 vecka", expanded: false, children: [] },
-          { id: "1.1.2", name: "Datainsamling", duration: "2 veckor", expanded: false, children: [] },
-          { id: "1.1.3", name: "Intervjuer", duration: "3 veckor", expanded: false, children: [] },
-          { id: "1.1.4", name: "Rotorsaksanalys", duration: "2 veckor", expanded: false, children: [] },
-          { id: "1.1.5", name: "Åtgärdsförslag", duration: "1 vecka", expanded: false, children: [] }
-        ]
-      },
-      {
-        id: "1.2",
-        name: "Fas 2: Implementering",
-        duration: "4 månader",
-        expanded: true,
-        children: [
-          { id: "1.2.1", name: "Leverantörsåtgärder", duration: "2 månader", expanded: false, children: [] },
-          { id: "1.2.2", name: "Utbildningsinsatser", duration: "1 månad", expanded: false, children: [] },
-          { id: "1.2.3", name: "Processförbättringar", duration: "2 månader", expanded: false, children: [] },
-          { id: "1.2.4", name: "Uppföljning och mätning", duration: "Löpande", expanded: false, children: [] }
-        ]
-      }
-    ]
+    children: []
   }
 ];
 
@@ -105,11 +79,16 @@ export function WBS({ groupCode }: WBSProps) {
     setSaved(false);
   };
 
-  const addChild = (parentId: string) => {
-    const addChildToParent = (items: WBSItem[]): WBSItem[] => {
+  const addChild = (parentId: string, level: number = 0) => {
+    const addChildToParent = (items: WBSItem[], currentLevel: number): WBSItem[] => {
       return items.map(item => {
         if (item.id === parentId) {
-          const newId = `${item.id}.${item.children.length + 1}`;
+          // Root level (level 0): children get ids "1", "2", etc.
+          // All other levels: children get ids like "1.1", "1.2", etc.
+          const isRoot = currentLevel === 0;
+          const newId = isRoot
+            ? `${item.children.length + 1}`
+            : `${item.id}.${item.children.length + 1}`;
           return {
             ...item,
             expanded: true,
@@ -119,10 +98,10 @@ export function WBS({ groupCode }: WBSProps) {
             ]
           };
         }
-        return { ...item, children: addChildToParent(item.children) };
+        return { ...item, children: addChildToParent(item.children, currentLevel + 1) };
       });
     };
-    setWbs(addChildToParent(wbs));
+    setWbs(addChildToParent(wbs, 0));
     setSaved(false);
   };
 
@@ -140,7 +119,9 @@ export function WBS({ groupCode }: WBSProps) {
     const generateText = (items: WBSItem[], level: number = 0): string => {
       return items.map(item => {
         const indent = "  ".repeat(level);
-        let text = `${indent}${item.id} ${item.name} (${item.duration})\n`;
+        const isRoot = item.id === "root" || (level === 0 && item.id === "1");
+        const prefix = isRoot ? "" : `${item.id} `;
+        let text = `${indent}${prefix}${item.name} (${item.duration})\n`;
         if (item.children.length > 0) {
           text += generateText(item.children, level + 1);
         }
@@ -217,7 +198,9 @@ export function WBS({ groupCode }: WBSProps) {
             </div>
           ) : (
             <>
-              <span className="text-sm text-gray-500 font-mono">{item.id}</span>
+              {level > 0 && (
+                <span className="text-sm text-gray-500 font-mono">{item.id}</span>
+              )}
               <span
                 className="flex-1 cursor-pointer hover:text-yellow-600"
                 onClick={() => startEdit(item)}
@@ -276,11 +259,23 @@ export function WBS({ groupCode }: WBSProps) {
           </div>
         </div>
         <p className="text-sm text-gray-500">
-          Strukturera projektet i faser och aktiviteter. Klicka på text för att redigera.
+          Strukturera projektet i faser och aktiviteter. Klicka på text för att redigera, + för att lägga till underaktiviteter.
         </p>
       </div>
 
       <div id="wbs-content" className="flex-1 overflow-y-auto p-4 bg-white">
+        {wbs[0]?.children.length === 0 && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+            <p className="font-medium mb-2">Tips för er WBS:</p>
+            <ul className="list-disc list-inside space-y-1 text-blue-700">
+              <li>Börja med att bryta ner projektet i faser (t.ex. Utredning, Analys, Implementering)</li>
+              <li>Bryt ner varje fas i konkreta aktiviteter</li>
+              <li>Ange tidsuppskattning för varje aktivitet</li>
+              <li>Hovra över en rad och klicka + för att lägga till underaktiviteter</li>
+              <li>Klicka på texten för att redigera namn och tid</li>
+            </ul>
+          </div>
+        )}
         <div className="space-y-1">
           {wbs.map(item => renderItem(item))}
         </div>

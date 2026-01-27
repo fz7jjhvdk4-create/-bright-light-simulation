@@ -12,6 +12,7 @@ import {
   LogOut,
   Search,
   Eye,
+  Trash2,
 } from "lucide-react";
 
 type GateStatus = 'not_submitted' | 'pending' | 'approved' | 'rejected';
@@ -68,6 +69,29 @@ export default function TeacherDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("teacher_session");
     router.push("/teacher");
+  };
+
+  const handleDeleteGroup = async (group: GroupSummary) => {
+    if (!confirm(`Är du säker på att du vill ta bort gruppen "${group.name}" (${group.code})?\n\nAll data (intervjuer, nedladdningar, aktivitetslogg, åtgärdsförslag) kommer att tas bort permanent.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/teacher/groups", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId: group.id }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setGroups(groups.filter((g) => g.id !== group.id));
+      } else {
+        alert(`Kunde inte ta bort gruppen: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      alert("Ett fel uppstod vid borttagning av gruppen.");
+    }
   };
 
   const getStatusBadge = (status: string, phase: number) => {
@@ -288,14 +312,24 @@ export default function TeacherDashboard() {
                         {group.proposalsCount}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => router.push(`/teacher/group/${group.code}`)}
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Visa
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => router.push(`/teacher/group/${group.code}`)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Visa
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteGroup(group)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );

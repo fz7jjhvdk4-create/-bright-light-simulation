@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGroupByCode, getGroupStats, getInterviews, getDownloads, getActivityLog, getDocumentViews } from '@/lib/db';
+import { sql } from '@vercel/postgres';
 
 // Disable caching for this route
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,22 @@ export async function GET(
         { error: 'Grupp hittades inte' },
         { status: 404 }
       );
+    }
+
+    // Self-healing: fix phase inconsistencies based on gate statuses
+    // The correct phase is determined by the highest approved gate + 1
+    const g = group as any;
+    let correctPhase = 1;
+    if (g.gate1_status === 'approved') correctPhase = 2;
+    if (g.gate2_status === 'approved') correctPhase = 3;
+    if (g.gate3_status === 'approved') correctPhase = 4;
+    // gate4 approved = project completed, phase stays at 4
+
+    if (group.phase < correctPhase) {
+      console.log(`Phase fix: group ${group.code} phase ${group.phase} -> ${correctPhase}`);
+      await sql`UPDATE groups SET phase = ${correctPhase}, status = 'active' WHERE id = ${group.id}`;
+      group.phase = correctPhase;
+      group.status = 'active';
     }
 
     const stats = await getGroupStats(group.id);
