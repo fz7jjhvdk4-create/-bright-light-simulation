@@ -14,9 +14,12 @@ export function useAutosave<T>(
   delayMs = 2000
 ) {
   const [status, setStatus] = useState<AutosaveStatus>("idle");
-  const lastSavedRef = useRef<string>(JSON.stringify(data));
+  const lastSavedRef = useRef<string | null>(null);
   const saveRef = useRef(save);
-  saveRef.current = save;
+
+  useEffect(() => {
+    saveRef.current = save;
+  }, [save]);
 
   const markSaved = useCallback((saved: T) => {
     lastSavedRef.current = JSON.stringify(saved);
@@ -25,6 +28,11 @@ export function useAutosave<T>(
 
   useEffect(() => {
     const serialized = JSON.stringify(data);
+    // First render establishes the baseline — nothing is saved until data changes
+    if (lastSavedRef.current === null) {
+      lastSavedRef.current = serialized;
+      return;
+    }
     if (serialized === lastSavedRef.current) return;
 
     setStatus("pending");

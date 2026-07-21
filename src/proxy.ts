@@ -3,7 +3,7 @@ import { getTeacherToken, TEACHER_COOKIE } from '@/lib/teacher-auth';
 
 // Guards all teacher-only API routes. Valid instructions come only from a
 // signed-in teacher (httpOnly cookie set by /api/teacher/login).
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // The login route itself must stay open
   if (request.nextUrl.pathname === '/api/teacher/login') {
     return NextResponse.next();

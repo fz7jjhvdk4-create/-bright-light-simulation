@@ -61,7 +61,7 @@ Dokument som roller kan dela vid intervju:
 
 ## Tech Stack
 
-- **Frontend:** Next.js 14 (App Router), React 18, Tailwind CSS
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS
 - **Backend:** Next.js API Routes, Vercel Postgres
 - **AI:** Anthropic Claude API (sdk v0.71)
 - **Export:** xlsx, jspdf, html2canvas, docx, pptxgenjs
@@ -180,7 +180,7 @@ Vercel Postgres med följande tabeller:
 - API-nycklar lagras som miljövariabler i Vercel — aldrig i koden
 - `.env.local` finns i `.gitignore`
 - Lärarportalen skyddas med lösenord (`TEACHER_PASSWORD`) som verifieras på servern;
-  sessionen lagras i en httpOnly-cookie och alla lärar-API:er vaktas av `src/middleware.ts`
+  sessionen lagras i en httpOnly-cookie och alla lärar-API:er vaktas av `src/proxy.ts`
 - AI-endpoints kräver giltig gruppkod; chatthistorik byggs på servern från databasen
 - Skrivande endpoints validerar att gruppen är i rätt fas
 
