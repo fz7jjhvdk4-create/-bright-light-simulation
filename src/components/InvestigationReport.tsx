@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, CheckCircle, AlertCircle, Send, Loader2 } from "lucide-react";
+import { useAutosave, autosaveLabel } from "@/hooks/useAutosave";
 
 interface RootCause {
   id: string;
@@ -40,6 +41,28 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
   const [conclusions, setConclusions] = useState("");
   const [recommendations, setRecommendations] = useState("");
 
+  const reportData = useMemo(() => ({
+    summary,
+    methodology,
+    root_causes: rootCauses,
+    conclusions,
+    recommendations,
+  }), [summary, methodology, rootCauses, conclusions, recommendations]);
+
+  const postReport = useCallback(async (report: typeof reportData) => {
+    const response = await fetch(`/api/groups/${groupCode}/investigation-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(report),
+    });
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      throw new Error(data.error || "Kunde inte spara");
+    }
+  }, [groupCode]);
+
+  const { status: autosaveStatus, markSaved } = useAutosave(reportData, postReport);
+
   useEffect(() => {
     loadReport();
     loadProposals();
@@ -55,6 +78,13 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
         setRootCauses(data.report.root_causes || []);
         setConclusions(data.report.conclusions || "");
         setRecommendations(data.report.recommendations || "");
+        markSaved({
+          summary: data.report.summary || "",
+          methodology: data.report.methodology || "",
+          root_causes: data.report.root_causes || [],
+          conclusions: data.report.conclusions || "",
+          recommendations: data.report.recommendations || "",
+        });
       }
     } catch (error) {
       console.error("Error loading report:", error);
@@ -92,17 +122,8 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
   const saveReport = async () => {
     setSaving(true);
     try {
-      await fetch(`/api/groups/${groupCode}/investigation-report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          summary,
-          methodology,
-          root_causes: rootCauses,
-          conclusions,
-          recommendations
-        })
-      });
+      await postReport(reportData);
+      markSaved(reportData);
     } catch (error) {
       console.error("Error saving report:", error);
     } finally {
@@ -179,6 +200,11 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
             <p className="text-gray-600">
               Sammanfatta er utredning av kvalitetsproblemen. Denna rapport kommer att granskas av läraren.
             </p>
+            {!isSubmitted && (
+              <p className={`text-sm mt-1 min-h-5 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+                {autosaveLabel(autosaveStatus)}
+              </p>
+            )}
           </div>
 
           {isSubmitted ? (

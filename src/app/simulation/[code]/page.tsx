@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { roleCategories, getRoleById, getRolesForPhase, Role } from "@/lib/roles";
-import { Send, Users, FileText, ClipboardList, Download, X, BookOpen, Menu, Lock, CheckCircle, ChevronRight } from "lucide-react";
+import { Send, Users, FileText, ClipboardList, Download, X, BookOpen, Menu, Lock } from "lucide-react";
 import { dataFiles } from "@/lib/data-generator";
 import { documents, getDocumentsForRole, Document } from "@/lib/documents";
 import { ActionProposals } from "@/components/ActionProposals";
@@ -26,6 +26,7 @@ import { FinalReport } from "@/components/FinalReport";
 import { FiveWhyAnalysis } from "@/components/FiveWhyAnalysis";
 import { QualityTools7QC } from "@/components/QualityTools7QC";
 import { QualityTools7QM } from "@/components/QualityTools7QM";
+import { PhaseGateTimeline } from "@/components/PhaseGateTimeline";
 
 type SubPhase = 'intro' | 'prestudy' | 'planning' | 'execution' | 'closing';
 
@@ -430,67 +431,16 @@ export default function SimulationPage() {
               <span className="text-gray-400 ml-1 sm:ml-2">({group.code})</span>
             </div>
             <div className="hidden sm:block h-4 border-l border-gray-300" />
-            {/* Four-phase indicator */}
-            <div className="flex items-center gap-1">
-              {[
-                { num: 1, name: "Projektdefinition", color: "blue" },
-                { num: 2, name: "Projektplan", color: "purple" },
-                { num: 3, name: "Utredning", color: "orange" },
-                { num: 4, name: "Redovisning", color: "green" }
-              ].map((phase, index) => {
-                const isActive = group.phase === phase.num;
-                const isCompleted = group.phase > phase.num ||
-                  (phase.num === 1 && (group.gate1Status === 'approved' || group.projectPlanApproved)) ||
-                  (phase.num === 2 && group.gate2Status === 'approved') ||
-                  (phase.num === 3 && group.gate3Status === 'approved') ||
-                  (phase.num === 4 && group.gate4Status === 'approved');
-                const isPending =
-                  (phase.num === 1 && group.gate1Status === 'pending') ||
-                  (phase.num === 2 && group.gate2Status === 'pending') ||
-                  (phase.num === 3 && group.gate3Status === 'pending') ||
-                  (phase.num === 4 && group.gate4Status === 'pending');
-                const isViewing = effectivePhase === phase.num;
-                const canNavigate = isCompleted || isActive;
-
-                const bgColor = isViewing && viewingPhase !== null
-                  ? "bg-blue-200 text-blue-800 ring-2 ring-blue-400"
-                  : isCompleted
-                  ? "bg-green-100 text-green-700"
-                  : isPending
-                  ? "bg-yellow-100 text-yellow-700"
-                  : isActive
-                  ? phase.color === "blue" ? "bg-blue-100 text-blue-700"
-                    : phase.color === "purple" ? "bg-purple-100 text-purple-700"
-                    : phase.color === "orange" ? "bg-orange-100 text-orange-700"
-                    : "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-400";
-
-                return (
-                  <div key={phase.num} className="flex items-center">
-                    <button
-                      onClick={() => {
-                        if (canNavigate) {
-                          if (phase.num === group.phase) {
-                            setViewingPhase(null);
-                          } else {
-                            setViewingPhase(phase.num);
-                          }
-                          setActiveTool(null);
-                        }
-                      }}
-                      disabled={!canNavigate}
-                      className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${bgColor} ${canNavigate ? "cursor-pointer hover:opacity-80" : "cursor-default"}`}
-                    >
-                      {isCompleted && <CheckCircle className="w-3 h-3 inline mr-1" />}
-                      {isPending && <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1 animate-pulse" />}
-                      <span className="hidden sm:inline">{phase.num}. {phase.name}</span>
-                      <span className="sm:hidden">{phase.num}</span>
-                    </button>
-                    {index < 3 && <ChevronRight className="w-3 h-3 text-gray-300 mx-0.5" />}
-                  </div>
-                );
-              })}
-            </div>
+            {/* Phase + gate timeline */}
+            <PhaseGateTimeline
+              group={group}
+              effectivePhase={effectivePhase}
+              viewingPhase={viewingPhase}
+              onNavigate={(phase) => {
+                setViewingPhase(phase);
+                setActiveTool(null);
+              }}
+            />
           </div>
           <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
             <div className="flex items-center gap-1" aria-label={`${interviews.length} intervjuer genomförda`}>

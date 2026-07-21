@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Save, CheckCircle, Lightbulb } from "lucide-react";
+import { useAutosave, autosaveLabel } from "@/hooks/useAutosave";
 
 interface ProjectDefinitionProps {
   groupCode: string;
@@ -29,32 +30,41 @@ export function ProjectDefinition({ groupCode, onSave }: ProjectDefinitionProps)
   const [saved, setSaved] = useState(false);
   const [showTips, setShowTips] = useState<string | null>(null);
 
+  const saveDefinition = useCallback(async (def: Definition) => {
+    const response = await fetch(`/api/groups/${groupCode}/project-definition`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(def),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "Kunde inte spara");
+    }
+  }, [groupCode]);
+
+  const { status: autosaveStatus, markSaved } = useAutosave(definition, saveDefinition);
+
   useEffect(() => {
     // Load existing definition
     fetch(`/api/groups/${groupCode}/project-definition`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.definition) {
+          markSaved(data.definition);
           setDefinition(data.definition);
         }
       })
       .catch(console.error);
-  }, [groupCode]);
+  }, [groupCode, markSaved]);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/groups/${groupCode}/project-definition`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(definition),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
-        onSave?.();
-      }
+      await saveDefinition(definition);
+      markSaved(definition);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      onSave?.();
     } catch (error) {
       console.error("Error saving definition:", error);
     } finally {
@@ -123,10 +133,14 @@ export function ProjectDefinition({ groupCode, onSave }: ProjectDefinitionProps)
 
       <div className="mt-6 flex items-center justify-between">
         <div className="text-sm text-gray-500">
-          {saved && (
+          {saved ? (
             <span className="text-green-600 flex items-center gap-1">
               <CheckCircle className="w-4 h-4" />
               Sparat!
+            </span>
+          ) : (
+            <span className={autosaveStatus === "error" ? "text-red-600" : "text-gray-500"}>
+              {autosaveLabel(autosaveStatus)}
             </span>
           )}
         </div>

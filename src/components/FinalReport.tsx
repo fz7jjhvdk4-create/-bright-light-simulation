@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, CheckCircle, Download, Send, Loader2, Award, TrendingDown, DollarSign } from "lucide-react";
 import { rootCauses } from "@/lib/root-causes";
+import { useAutosave, autosaveLabel } from "@/hooks/useAutosave";
 
 interface Proposal {
   id: number;
@@ -33,6 +34,28 @@ export function FinalReport({ groupCode, groupName, proposals, onSubmit }: Final
 
   const [eventImpact, setEventImpact] = useState(0);
 
+  const reportData = useMemo(() => ({
+    executive_summary: executiveSummary,
+    results_vs_goals: resultsVsGoals,
+    budget_summary: budgetSummary,
+    lessons_learned: lessonsLearned,
+    recommendations,
+  }), [executiveSummary, resultsVsGoals, budgetSummary, lessonsLearned, recommendations]);
+
+  const postReport = useCallback(async (report: typeof reportData) => {
+    const response = await fetch(`/api/groups/${groupCode}/final-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(report),
+    });
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      throw new Error(data.error || "Kunde inte spara");
+    }
+  }, [groupCode]);
+
+  const { status: autosaveStatus, markSaved } = useAutosave(reportData, postReport);
+
   useEffect(() => {
     loadReport();
     loadEventImpact();
@@ -48,6 +71,13 @@ export function FinalReport({ groupCode, groupName, proposals, onSubmit }: Final
         setBudgetSummary(data.report.budget_summary || "");
         setLessonsLearned(data.report.lessons_learned || "");
         setRecommendations(data.report.recommendations || "");
+        markSaved({
+          executive_summary: data.report.executive_summary || "",
+          results_vs_goals: data.report.results_vs_goals || "",
+          budget_summary: data.report.budget_summary || "",
+          lessons_learned: data.report.lessons_learned || "",
+          recommendations: data.report.recommendations || "",
+        });
       }
     } catch (error) {
       console.error("Error loading report:", error);
@@ -74,17 +104,8 @@ export function FinalReport({ groupCode, groupName, proposals, onSubmit }: Final
   const saveReport = async () => {
     setSaving(true);
     try {
-      await fetch(`/api/groups/${groupCode}/final-report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          executive_summary: executiveSummary,
-          results_vs_goals: resultsVsGoals,
-          budget_summary: budgetSummary,
-          lessons_learned: lessonsLearned,
-          recommendations
-        })
-      });
+      await postReport(reportData);
+      markSaved(reportData);
     } catch (error) {
       console.error("Error saving report:", error);
     } finally {
@@ -211,6 +232,9 @@ Rapport genererad av BLS Simuleringssystem
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Slutrapport</h2>
         <p className="text-gray-600">
           Sammanfatta projektet och dokumentera lärdomar för framtiden.
+        </p>
+        <p className={`text-sm mt-1 min-h-5 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+          {autosaveLabel(autosaveStatus)}
         </p>
       </div>
 
