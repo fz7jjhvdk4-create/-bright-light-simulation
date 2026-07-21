@@ -51,6 +51,7 @@ interface GroupData {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  isError?: boolean; // technical error, rendered distinctly from role replies
 }
 
 interface InterviewData {
@@ -227,25 +228,25 @@ export default function SimulationPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          groupId: group?.id,
+          code: group?.code,
           roleId: selectedRole.id,
-          messages: [...messages, userMessage],
+          message: userMessage.content,
         }),
       });
 
       const data = await response.json();
 
-      if (data.response) {
+      if (response.ok && data.response) {
         setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
 
-        // Update interview stats - add role if not already interviewed
+        // The server owns the question count — mirror it instead of counting locally
+        const serverCount: number | null = data.questionsAsked ?? null;
         if (selectedRole && !isRoleInterviewed(selectedRole.id)) {
-          setInterviews(prev => [...prev, { roleId: selectedRole.id, questionsAsked: 1 }]);
+          setInterviews(prev => [...prev, { roleId: selectedRole.id, questionsAsked: serverCount ?? 1 }]);
         } else if (selectedRole) {
-          // Increment question count for existing interview
           setInterviews(prev => prev.map(i =>
             i.roleId === selectedRole.id
-              ? { ...i, questionsAsked: i.questionsAsked + 1 }
+              ? { ...i, questionsAsked: serverCount ?? i.questionsAsked + 1 }
               : i
           ));
         }
@@ -263,11 +264,16 @@ export default function SimulationPage() {
             return combined.filter((item, index) => combined.indexOf(item) === index);
           });
         }
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", isError: true, content: data.error || "Ett tekniskt fel uppstod. Försök igen." },
+        ]);
       }
     } catch {
       setMessages(prev => [
         ...prev,
-        { role: "assistant", content: "Ett fel uppstod. Försök igen." },
+        { role: "assistant", isError: true, content: "Kunde inte nå servern. Kontrollera anslutningen och försök igen." },
       ]);
     } finally {
       setIsSending(false);
@@ -647,6 +653,7 @@ export default function SimulationPage() {
             <div className="max-w-3xl mx-auto h-full">
               <IntroMeeting
                 groupName={group.name}
+                groupCode={group.code}
                 onComplete={() => updateSubPhase('prestudy')}
               />
             </div>
@@ -908,11 +915,14 @@ export default function SimulationPage() {
                     >
                       <div
                         className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                          message.role === "user"
+                          message.isError
+                            ? "bg-red-50 border border-red-200 text-red-700 text-sm"
+                            : message.role === "user"
                             ? "bg-yellow-500 text-white"
                             : "bg-gray-100 text-gray-900"
                         }`}
                       >
+                        {message.isError && <span className="font-medium">⚠ Tekniskt fel: </span>}
                         {message.content}
                       </div>
                     </div>

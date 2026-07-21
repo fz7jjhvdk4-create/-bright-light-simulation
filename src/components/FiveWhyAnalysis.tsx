@@ -144,7 +144,7 @@ Svara endast med frågan på svenska, ingen ytterligare text.`;
       const response = await fetch('/api/five-why', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, type: 'question' })
+        body: JSON.stringify({ code: groupCode, prompt, type: 'question' })
       });
 
       const data = await response.json();
@@ -230,7 +230,7 @@ Formatera ditt svar som JSON med följande struktur:
       const response = await fetch('/api/five-why', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, type: 'analysis' })
+        body: JSON.stringify({ code: groupCode, prompt, type: 'analysis' })
       });
 
       const data = await response.json();

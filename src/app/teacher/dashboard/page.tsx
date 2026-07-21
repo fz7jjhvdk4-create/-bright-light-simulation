@@ -55,6 +55,11 @@ export default function TeacherDashboard() {
   const fetchGroups = async () => {
     try {
       const response = await fetch("/api/teacher/groups");
+      if (response.status === 401) {
+        localStorage.removeItem("teacher_session");
+        router.push("/teacher");
+        return;
+      }
       const data = await response.json();
       if (data.success) {
         setGroups(data.groups);
@@ -66,8 +71,13 @@ export default function TeacherDashboard() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("teacher_session");
+    try {
+      await fetch("/api/teacher/login", { method: "DELETE" });
+    } catch {
+      // Cookie expires on its own if the request fails
+    }
     router.push("/teacher");
   };
 

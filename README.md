@@ -1,99 +1,199 @@
-# Bright Light Solutions - Kvalitetssimulering
+# Bright Light Solutions - Projektledningssimulering
 
-En interaktiv företagssimulering där studenter agerar som konsulter och löser ett kvalitetsproblem genom att intervjua medarbetare.
+Interaktiv webbaserad simulering för högskole- och universitetsutbildning i projektledning och kvalitetsstyrning. Studentgrupper arbetar som konsulter för att utreda och åtgärda kvalitetsproblem hos en fiktiv LED-armaturtillverkare.
 
-## Deploy till Vercel (Steg-för-steg)
+## Snabbstart
 
-### 1. Skapa GitHub-repo
+- **Live-app:** https://bright-light-simulation.vercel.app
+- **Lärarportal:** https://bright-light-simulation.vercel.app/teacher (lösenordet sätts via miljövariabeln `TEACHER_PASSWORD` i Vercel)
 
-1. Gå till [github.com](https://github.com) och logga in
-2. Klicka på **"+"** → **"New repository"**
-3. Namn: `bright-light-simulation` (eller valfritt)
-4. Välj **Private** (rekommenderas)
-5. Klicka **"Create repository"**
+## Översikt
 
-### 2. Ladda upp koden till GitHub
+Simuleringen guidar studentgrupper genom ett fyrafasigt konsultprojekt med Gate-godkännanden:
 
-Öppna Terminal och kör:
-
-```bash
-cd "/Users/claeshansen/Documents/Kod simulering/bright-light-sim"
-
-# Initiera git
-git init
-
-# Lägg till alla filer
-git add .
-
-# Skapa första commit
-git commit -m "Initial commit - Bright Light Simulation"
-
-# Koppla till ditt GitHub-repo (byt ut USERNAME mot ditt användarnamn)
-git remote add origin https://github.com/USERNAME/bright-light-simulation.git
-
-# Ladda upp
-git branch -M main
-git push -u origin main
+```
+Fas 1                Fas 2              Fas 3              Fas 4
+Projektdefinition    Projektplan        Utredning          Redovisning
+      |                   |                  |                  |
+   Gate 1 ──────────> Gate 2 ──────────> Gate 3 ──────────> Gate 4
+   (Godkänn           (Godkänn           (Godkänn           (Godkänn
+    direktiv)          projektplan)       utredning)         slutrapport)
 ```
 
-### 3. Deploy på Vercel
+Varje Gate kräver lärargodkännande för att låsa upp nästa fas.
 
-1. Gå till [vercel.com](https://vercel.com) och logga in med GitHub
-2. Klicka **"Add New..."** → **"Project"**
-3. Välj ditt `bright-light-simulation` repo
-4. **VIKTIGT:** Innan du klickar Deploy, lägg till miljövariabel:
-   - Klicka på **"Environment Variables"**
-   - Name: `ANTHROPIC_API_KEY`
-   - Value: `din-api-nyckel-här`
-   - Klicka **"Add"**
-5. Klicka **"Deploy"**
+### Fasernas innehåll
 
-### 4. Klart!
+| Fas | Innehåll | Verktyg |
+|-----|----------|---------|
+| 1. Projektdefinition | Definiera mål, syfte, omfattning, framgångskriterier | Projektdefinition |
+| 2. Projektplan | Planera utredningsarbetet | WBS, Gantt-schema, Intressentanalys, Riskanalys |
+| 3. Utredning | Intervjua roller, analysera data, identifiera rotorsaker | Intervjuer, 7QC-verktyg, 7QM-verktyg, 5 Varför, Åtgärdsförslag |
+| 4. Redovisning | Presentera åtgärdsplan med kostnad/besparing | Åtgärdsmatris, Resultatberäkning |
 
-Efter 1-2 minuter får du en URL som t.ex:
-`https://bright-light-simulation.vercel.app`
+### Rollsystem
 
-Dela denna URL med dina studenter!
+12 intervjubara roller fördelade på fyra kategorier:
+- **Ledning:** Maria (VD), Anna (Ekonomichef), Henrik (Styrelserepresentant)
+- **Operativ:** Karin (Kvalitetschef), Thomas (Inköpschef), Mikael (Produktionschef), Peter (HR-chef), Jonas (Produktutvecklingschef)
+- **Golvet:** Kenneth (Lödoperatör dagskift), Emma (Testoperatör kvällsskift), Linda (Facklig representant)
+- **Externa:** Anders (JUKI-tekniker, låses upp i Fas 3)
 
----
+Intervjuer drivs av Claude AI och rollerna avslöjar information baserat på hur bra frågor studenterna ställer.
 
-## Lokal utveckling (valfritt)
+### Datafiler (Excel)
 
-Om du vill testa lokalt först:
+Fem datafiler tillgängliga för nedladdning:
+- **Reklamationer** — 847 reklamationer 2023–2025
+- **Produktion** — Produktionsstatistik per linje, skift, operatör
+- **Leverantörer** — Jämförelse ElektroTech vs AsiaCore
+- **Ekonomi** — Kostnadsfördelning, ROI-beräkningar
+- **Personal** — Personalomsättning per skift, utbildningsnivå
+
+### Interna dokument
+
+Dokument som roller kan dela vid intervju:
+- Organisationsschema (via Maria)
+- Skiftloggbok (via Mikael/Kenneth)
+- Utbildningsplan JUKI (via Mikael)
+- Processkarta (via Mikael)
+- AsiaCore-mejl (via Thomas, kräver bra frågor)
+
+## Tech Stack
+
+- **Frontend:** Next.js 14 (App Router), React 18, Tailwind CSS
+- **Backend:** Next.js API Routes, Vercel Postgres
+- **AI:** Anthropic Claude API (sdk v0.71)
+- **Export:** xlsx, jspdf, html2canvas, docx, pptxgenjs
+- **Deployment:** Vercel
+
+## Lokal utveckling
+
+### Förutsättningar
+- Node.js 18+
+- npm
+- Vercel Postgres-databas
+- Anthropic API-nyckel
+
+### Installation
 
 ```bash
-cd "/Users/claeshansen/Documents/Kod simulering/bright-light-sim"
-
-# Installera dependencies
+git clone https://github.com/fz7jjhvdk4-create/-bright-light-simulation.git
+cd bright-light-simulation
 npm install
+```
 
-# Skapa .env.local med din API-nyckel
-echo "ANTHROPIC_API_KEY=din-nyckel-här" > .env.local
+### Miljövariabler
 
-# Starta utvecklingsserver
+Skapa `.env.local`:
+
+```env
+# Vercel Postgres
+POSTGRES_URL=postgres://...
+POSTGRES_PRISMA_URL=postgres://...
+POSTGRES_URL_NO_SSL=postgres://...
+POSTGRES_URL_NON_POOLING=postgres://...
+POSTGRES_USER=...
+POSTGRES_HOST=...
+POSTGRES_PASSWORD=...
+POSTGRES_DATABASE=...
+
+# Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Lärarportalen (välj ett eget starkt lösenord)
+TEACHER_PASSWORD=...
+```
+
+### Starta utvecklingsserver
+
+```bash
 npm run dev
 ```
 
-Öppna http://localhost:3000
+Appen körs på http://localhost:3000.
 
----
+### Deploya till Vercel
+
+```bash
+vercel --prod
+```
+
+## Projektstruktur
+
+```
+src/
+  app/
+    page.tsx                          # Startsida (registrering/inloggning)
+    simulation/[code]/page.tsx        # Huvudsimulering (student)
+    teacher/
+      page.tsx                        # Lärarinloggning
+      dashboard/page.tsx              # Läraröversikt alla grupper
+      group/[code]/page.tsx           # Gruppdetaljer med Gate-flikar
+    api/
+      groups/[code]/
+        route.ts                      # Hämta/uppdatera grupp
+        submit/route.ts               # Skicka in för godkännande
+        approve/route.ts              # Lärargodkännande
+        submit-gate/route.ts          # Gate-specifik inlämning
+        approve-gate/route.ts         # Gate-specifikt godkännande
+        proposals/route.ts            # Åtgärdsförslag CRUD
+        investigation-tools/route.ts  # 7QC/7QM/5Why-data
+        investigation-report/route.ts # Utredningsrapport
+        project-definition/route.ts   # Projektdefinition
+        log-activity/route.ts         # Aktivitetslogg
+      chat/route.ts                   # AI-chattendpoint
+      data/[type]/route.ts            # Datafiler (Excel)
+  components/
+    QualityTools7QC.tsx               # 7 QC-verktyg (Ishikawa, Pareto m.m.)
+    QualityTools7QM.tsx               # 7 QM-verktyg (Affinitet, Träddiagram m.m.)
+    ActionProposals.tsx               # Åtgärdsförslag
+    GanttChart.tsx                    # Gantt-schema
+    RiskAnalysis.tsx                  # Riskanalys
+    WBS.tsx                           # Work Breakdown Structure
+  lib/
+    db.ts                             # Databasanslutning och queries
+    roles.ts                          # 12 rolldefinitioner
+    documents.ts                      # Interna dokument
+    root-causes.ts                    # 5 rotorsaker och poängberäkning
+    data-generator.ts                 # Excel-datagenerering
+```
+
+## Databas
+
+Vercel Postgres med följande tabeller:
+
+| Tabell | Beskrivning |
+|--------|-------------|
+| `groups` | Grupper med fas, gate-status, sub_phase |
+| `interviews` | Genomförda intervjuer |
+| `downloads` | Nedladdade datafiler |
+| `activity_log` | Aktivitetslogg |
+| `proposals` | Åtgärdsförslag |
+| `project_definitions` | Projektdefinitioner |
+| `investigation_reports` | Utredningsrapporter |
+| `investigation_tools_data` | 7QC/7QM/5Why-analysdata |
+| `document_views` | Visade dokument |
 
 ## Säkerhet
 
-- API-nyckeln lagras säkert som miljövariabel i Vercel
-- Den är ALDRIG synlig i koden eller för studenter
-- `.env.local` är i `.gitignore` och laddas aldrig upp
-
----
+- API-nycklar lagras som miljövariabler i Vercel — aldrig i koden
+- `.env.local` finns i `.gitignore`
+- Lärarportalen skyddas med lösenord (`TEACHER_PASSWORD`) som verifieras på servern;
+  sessionen lagras i en httpOnly-cookie och alla lärar-API:er vaktas av `src/middleware.ts`
+- AI-endpoints kräver giltig gruppkod; chatthistorik byggs på servern från databasen
+- Skrivande endpoints validerar att gruppen är i rätt fas
 
 ## Kostnad
 
-- Vercel: Gratis (hobby plan)
-- Claude API: ~$0.01-0.03 per studentkonversation (Sonnet-modellen)
-- 100 studenter × 5 konversationer ≈ $5-15
+- **Vercel:** Gratis (Hobby-plan)
+- **Claude API:** ~$0.01–0.03 per studentkonversation
+- 100 studenter x 5 konversationer ≈ $5–15
 
----
+## Dokumentation
 
-## Anpassa
-
-Vill du ändra simuleringen? Redigera `app/api/chat/route.ts` och uppdatera `SYSTEM_PROMPT`.
+Se `docs/`-mappen för:
+- [Lärarhandledning](docs/Lararhandledning.md) — Setup, genomförande, bedömning
+- [Studentinstruktion](docs/Studentinstruktion.md) — Så här arbetar ni med simuleringen
+- [Lösningsförslag](docs/Losningsforslag.md) — Rotorsaker och förväntade åtgärder
+- [PRD](docs/PRD.md) — Produktkravsdokument

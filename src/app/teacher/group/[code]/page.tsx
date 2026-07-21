@@ -163,6 +163,16 @@ export default function TeacherGroupDetailPage() {
     }
   };
 
+  // Session cookie expired or missing — back to login
+  const redirectIfUnauthorized = (response: Response) => {
+    if (response.status === 401) {
+      localStorage.removeItem("teacher_session");
+      router.push("/teacher");
+      return true;
+    }
+    return false;
+  };
+
   const handleApproval = async (approved: boolean) => {
     if (!group) return;
 
@@ -173,6 +183,7 @@ export default function TeacherGroupDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ approved, feedback }),
       });
+      if (redirectIfUnauthorized(response)) return;
 
       const data = await response.json();
       console.log("Approval response:", data);
@@ -205,6 +216,7 @@ export default function TeacherGroupDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback }),
       });
+      if (redirectIfUnauthorized(response)) return;
 
       const data = await response.json();
       if (data.success) {
@@ -233,6 +245,7 @@ export default function TeacherGroupDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback }),
       });
+      if (redirectIfUnauthorized(response)) return;
 
       const data = await response.json();
       if (data.success) {
@@ -258,6 +271,7 @@ export default function TeacherGroupDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ gateNumber, approved, feedback }),
       });
+      if (redirectIfUnauthorized(response)) return;
 
       const data = await response.json();
       if (data.success) {

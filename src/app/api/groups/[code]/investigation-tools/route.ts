@@ -1,4 +1,5 @@
 import { getGroupByCode } from '@/lib/db';
+import { requirePhase } from '@/lib/api-guards';
 import { sql } from '@vercel/postgres';
 
 export async function GET(
@@ -52,6 +53,8 @@ export async function POST(
     if (!group) {
       return Response.json({ success: false, error: 'Grupp hittades inte' }, { status: 404 });
     }
+    const phaseError = requirePhase(group, 3);
+    if (phaseError) return phaseError;
 
     const tools7qcJson = tools7qc ? JSON.stringify(tools7qc) : null;
     const tools7qmJson = tools7qm ? JSON.stringify(tools7qm) : null;

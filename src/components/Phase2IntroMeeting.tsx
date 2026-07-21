@@ -19,33 +19,12 @@ interface Proposal {
 
 interface Phase2IntroMeetingProps {
   groupName: string;
+  groupCode: string;
   proposals: Proposal[];
   onComplete: () => void;
 }
 
-export function Phase2IntroMeeting({ groupName, proposals, onComplete }: Phase2IntroMeetingProps) {
-  const proposalSummary = proposals.map(p => `- ${p.description} (${p.cost?.toLocaleString() || 'okänd'} SEK)`).join('\n');
-
-  const MARIA_PHASE2_PROMPT = `Du är Maria Ek, VD för Bright Light Solutions AB. Du har ett uppföljningsmöte med projektteamet som nu ska implementera sina åtgärdsförslag.
-
-KONTEXT:
-Teamet har genomfört en utredning i Fas 1 och identifierat följande åtgärdsförslag:
-${proposalSummary}
-
-DITT UPPDRAG I DETTA MÖTE:
-- Gratulera dem till en bra utredning
-- Bekräfta att styrgruppen (du, Anna Berg, Henrik Wallin) har godkänt åtgärdsförslagen
-- Förklara att de nu har 9 månader och resterande budget att genomföra implementeringen
-- Betona vikten av:
-  * Detaljerad planering (WBS, tidplan, resurser)
-  * Regelbunden rapportering till styrgruppen
-  * Riskhantering och förändringsledning
-  * Att involvera Kenneth Johansson som förändringsledare på golvet
-
-PERSONLIGHET: Resultatinriktad men nu mer positiv och hoppfull. Du ser framåt.
-
-Svara ALLTID på svenska och håll svaren korta och koncisa (max 3-4 meningar per svar).`;
-
+export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete }: Phase2IntroMeetingProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -75,14 +54,20 @@ Svara ALLTID på svenska och håll svaren korta och koncisa (max 3-4 meningar pe
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemPrompt: MARIA_PHASE2_PROMPT,
+          code: groupCode,
+          meeting: "phase2",
           messages: [...messages, userMessage],
         }),
       });
 
       const data = await response.json();
-      if (data.response) {
+      if (response.ok && data.response) {
         setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", content: `[Tekniskt fel: ${data.error || "okänt fel"}]` },
+        ]);
       }
     } catch {
       setMessages(prev => [

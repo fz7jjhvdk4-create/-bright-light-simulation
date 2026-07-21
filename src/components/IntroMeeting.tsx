@@ -11,30 +11,11 @@ interface Message {
 
 interface IntroMeetingProps {
   groupName: string;
+  groupCode: string;
   onComplete: () => void;
 }
 
-const MARIA_INTRO_PROMPT = `Du är Maria Ek, VD för Bright Light Solutions AB. Du har ett inledande möte med projektteamet som ska utreda era kvalitetsproblem.
-
-VIKTIGT:
-- Beskriv PROBLEMET (ökade reklamationer) men INTE orsakerna - det ska de utreda
-- Var tydlig med att detta är ett UTREDNINGSPROJEKT först, sedan implementering
-- Ge dem budget (800 000 SEK) och tidsram (6 månader för utredning, sedan 6 månader implementering)
-- Introducera styrgruppen (du, Anna Berg ekonomichef, Henrik Wallin från styrelsen)
-- Betona att de måste börja med att PLANERA projektet innan de börjar intervjua folk
-- Du vet INTE vad som orsakar problemen - det är deras jobb att ta reda på
-
-BAKGRUND du kan dela:
-- Reklamationerna har ökat från 412 till 847 på två år
-- Kostnaderna har gått från 2,1 till 4,8 MSEK
-- Styrelsen är orolig och kräver resultat
-- Det finns olika teorier internt men ingen vet säkert vad som är fel
-
-PERSONLIGHET: Resultatinriktad, rak, lite stressad. Styrelsen andas dig i nacken.
-
-Svara ALLTID på svenska och håll svaren korta och koncisa (max 3-4 meningar per svar).`;
-
-export function IntroMeeting({ groupName, onComplete }: IntroMeetingProps) {
+export function IntroMeeting({ groupName, groupCode, onComplete }: IntroMeetingProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -64,14 +45,20 @@ export function IntroMeeting({ groupName, onComplete }: IntroMeetingProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemPrompt: MARIA_INTRO_PROMPT,
+          code: groupCode,
+          meeting: "intro",
           messages: [...messages, userMessage],
         }),
       });
 
       const data = await response.json();
-      if (data.response) {
+      if (response.ok && data.response) {
         setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+      } else {
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", content: `[Tekniskt fel: ${data.error || "okänt fel"}]` },
+        ]);
       }
     } catch {
       setMessages(prev => [

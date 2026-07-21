@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Lock, LogIn } from "lucide-react";
 
-const TEACHER_PASSWORD = "BLS2025";
-
 export default function TeacherLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -18,15 +16,26 @@ export default function TeacherLoginPage() {
     setError("");
     setIsLoading(true);
 
-    if (password === TEACHER_PASSWORD) {
-      // Store session in localStorage
-      localStorage.setItem("teacher_session", "authenticated");
-      router.push("/teacher/dashboard");
-    } else {
-      setError("Fel lösenord");
-    }
+    try {
+      const response = await fetch("/api/teacher/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await response.json();
 
-    setIsLoading(false);
+      if (response.ok && data.success) {
+        // UI flag only — the real session is the httpOnly cookie
+        localStorage.setItem("teacher_session", "authenticated");
+        router.push("/teacher/dashboard");
+      } else {
+        setError(data.error || "Fel lösenord");
+      }
+    } catch {
+      setError("Kunde inte ansluta till servern");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -1,4 +1,5 @@
 import { getGroupByCode, logActivity } from '@/lib/db';
+import { requirePhase } from '@/lib/api-guards';
 import { sql } from '@vercel/postgres';
 
 export async function GET(
@@ -66,6 +67,8 @@ export async function POST(
         { status: 404 }
       );
     }
+    const phaseError = requirePhase(group, 3);
+    if (phaseError) return phaseError;
 
     const result = await sql`
       INSERT INTO action_proposals (group_id, root_cause_id, description, responsible, cost, timeline, cost_reduction)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { getGroupByCode } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,9 +10,15 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, type } = await request.json();
+    const { code, prompt, type } = await request.json();
 
-    if (!prompt) {
+    // Only registered groups may use the AI endpoints
+    const group = await getGroupByCode(String(code || ''));
+    if (!group) {
+      return NextResponse.json({ error: 'Ogiltig gruppkod' }, { status: 403 });
+    }
+
+    if (!prompt || typeof prompt !== 'string' || prompt.length > 8000) {
       return NextResponse.json(
         { error: 'Prompt krävs' },
         { status: 400 }
@@ -25,7 +32,7 @@ export async function POST(request: NextRequest) {
          Ge alltid svar på svenska. Var kortfattad och fokuserad.`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 1024,
       system: systemPrompt,
       messages: [

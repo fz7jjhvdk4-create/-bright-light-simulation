@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres';
+import { sql, db } from '@vercel/postgres';
 
 // Database schema types
 export type SubPhase = 'intro' | 'prestudy' | 'planning' | 'execution' | 'closing';
@@ -369,12 +369,14 @@ export async function startInterview(groupId: number, roleId: string) {
 }
 
 export async function incrementQuestions(groupId: number, roleId: string) {
-  await sql`
+  const result = await sql`
     UPDATE interviews
     SET questions_asked = questions_asked + 1,
         last_message_at = CURRENT_TIMESTAMP
     WHERE group_id = ${groupId} AND role_id = ${roleId}
+    RETURNING questions_asked
   `;
+  return result.rows[0]?.questions_asked as number | undefined;
 }
 
 export async function getInterviews(groupId: number) {
@@ -620,15 +622,23 @@ export async function saveBudgetAllocation(
   groupId: number,
   allocations: Array<{ proposalId: number; allocated: number; notes: string }>
 ) {
-  // Delete existing allocations
-  await sql`DELETE FROM budget_allocations WHERE group_id = ${groupId}`;
-
-  // Insert new allocations
-  for (const allocation of allocations) {
-    await sql`
-      INSERT INTO budget_allocations (group_id, proposal_id, allocated, notes)
-      VALUES (${groupId}, ${allocation.proposalId}, ${allocation.allocated}, ${allocation.notes})
-    `;
+  // Replace-all inside a transaction so a mid-write failure can't wipe the old data
+  const client = await db.connect();
+  try {
+    await client.sql`BEGIN`;
+    await client.sql`DELETE FROM budget_allocations WHERE group_id = ${groupId}`;
+    for (const allocation of allocations) {
+      await client.sql`
+        INSERT INTO budget_allocations (group_id, proposal_id, allocated, notes)
+        VALUES (${groupId}, ${allocation.proposalId}, ${allocation.allocated}, ${allocation.notes})
+      `;
+    }
+    await client.sql`COMMIT`;
+  } catch (error) {
+    await client.sql`ROLLBACK`;
+    throw error;
+  } finally {
+    client.release();
   }
 }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGroupByCode, saveInvestigationReport, getInvestigationReport, logActivity } from '@/lib/db';
+import { requirePhase } from '@/lib/api-guards';
 
 export async function GET(
   request: NextRequest,
@@ -34,6 +35,8 @@ export async function POST(
     if (!group) {
       return NextResponse.json({ error: 'Grupp hittades inte' }, { status: 404 });
     }
+    const phaseError = requirePhase(group, 3);
+    if (phaseError) return phaseError;
 
     const report = await saveInvestigationReport(group.id, {
       summary: body.summary || '',

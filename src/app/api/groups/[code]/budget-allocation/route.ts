@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGroupByCode, saveBudgetAllocation, getBudgetAllocation, logActivity } from '@/lib/db';
+import { requirePhase } from '@/lib/api-guards';
 
 export async function GET(
   request: NextRequest,
@@ -33,6 +34,12 @@ export async function POST(
     const group = await getGroupByCode(code.toUpperCase());
     if (!group) {
       return NextResponse.json({ error: 'Grupp hittades inte' }, { status: 404 });
+    }
+    const phaseError = requirePhase(group, 4);
+    if (phaseError) return phaseError;
+
+    if (!Array.isArray(allocations)) {
+      return NextResponse.json({ error: 'Ogiltig allokeringslista' }, { status: 400 });
     }
 
     await saveBudgetAllocation(group.id, allocations);

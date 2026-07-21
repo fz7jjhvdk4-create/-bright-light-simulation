@@ -12,34 +12,34 @@ describe('IntroMeeting', () => {
   });
 
   it('should render the component with Maria Ek header', () => {
-    render(<IntroMeeting groupName="Test Group" onComplete={mockOnComplete} />);
+    render(<IntroMeeting groupName="Test Group" groupCode="ABC123" onComplete={mockOnComplete} />);
 
     // Multiple elements contain Maria Ek, so use heading role
     expect(screen.getByRole('heading', { name: /Uppdragsmöte med Maria Ek/i })).toBeInTheDocument();
   });
 
   it('should display the initial welcome message', () => {
-    render(<IntroMeeting groupName="Test Group" onComplete={mockOnComplete} />);
+    render(<IntroMeeting groupName="Test Group" groupCode="ABC123" onComplete={mockOnComplete} />);
 
     expect(screen.getByText(/Välkomna till Bright Light Solutions/i)).toBeInTheDocument();
   });
 
   it('should have an input field for questions', () => {
-    render(<IntroMeeting groupName="Test Group" onComplete={mockOnComplete} />);
+    render(<IntroMeeting groupName="Test Group" groupCode="ABC123" onComplete={mockOnComplete} />);
 
     const input = screen.getByPlaceholderText(/Ställ en fråga till Maria/i);
     expect(input).toBeInTheDocument();
   });
 
   it('should have a continue button', () => {
-    render(<IntroMeeting groupName="Test Group" onComplete={mockOnComplete} />);
+    render(<IntroMeeting groupName="Test Group" groupCode="ABC123" onComplete={mockOnComplete} />);
 
     const continueButton = screen.getByRole('button', { name: /Gå vidare till projektplanering/i });
     expect(continueButton).toBeInTheDocument();
   });
 
   it('should call onComplete when continue button is clicked', () => {
-    render(<IntroMeeting groupName="Test Group" onComplete={mockOnComplete} />);
+    render(<IntroMeeting groupName="Test Group" groupCode="ABC123" onComplete={mockOnComplete} />);
 
     const continueButton = screen.getByRole('button', { name: /Gå vidare till projektplanering/i });
     fireEvent.click(continueButton);
@@ -49,10 +49,11 @@ describe('IntroMeeting', () => {
 
   it('should send message when form is submitted', async () => {
     mockFetch.mockResolvedValueOnce({
+      ok: true,
       json: () => Promise.resolve({ response: 'Test response from Maria' })
     });
 
-    render(<IntroMeeting groupName="Test Group" onComplete={mockOnComplete} />);
+    render(<IntroMeeting groupName="Test Group" groupCode="ABC123" onComplete={mockOnComplete} />);
 
     const input = screen.getByPlaceholderText(/Ställ en fråga till Maria/i);
     // Find all buttons - the send button is the one that's not the continue button
@@ -70,7 +71,7 @@ describe('IntroMeeting', () => {
   });
 
   it('should show question count', () => {
-    render(<IntroMeeting groupName="Test Group" onComplete={mockOnComplete} />);
+    render(<IntroMeeting groupName="Test Group" groupCode="ABC123" onComplete={mockOnComplete} />);
 
     expect(screen.getByText(/0 frågor ställda/i)).toBeInTheDocument();
   });
