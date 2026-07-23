@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { roleCategories, getRoleById, getRolesForPhase, Role } from "@/lib/roles";
 import { Send, Users, FileText, ClipboardList, Download, X, BookOpen, Menu, Lock } from "lucide-react";
 import { dataFiles } from "@/lib/data-generator";
-import { documents, getDocumentsForRole, Document } from "@/lib/documents";
+import { documents, Document } from "@/lib/documents";
 import { ActionProposals } from "@/components/ActionProposals";
 import { StakeholderAnalysis } from "@/components/StakeholderAnalysis";
 import { RiskAnalysis } from "@/components/RiskAnalysis";
@@ -27,78 +27,62 @@ import { FiveWhyAnalysis } from "@/components/FiveWhyAnalysis";
 import { QualityTools7QC } from "@/components/QualityTools7QC";
 import { QualityTools7QM } from "@/components/QualityTools7QM";
 import { PhaseGateTimeline } from "@/components/PhaseGateTimeline";
-
-type SubPhase = 'intro' | 'prestudy' | 'planning' | 'execution' | 'closing';
-
-type GateStatus = 'not_submitted' | 'pending' | 'approved' | 'rejected';
-
-interface GroupData {
-  id: number;
-  code: string;
-  name: string;
-  studentNames: string;
-  phase: number; // 1 = Projektdefinition, 2 = Projektplan, 3 = Utredning, 4 = Redovisning
-  subPhase: SubPhase;
-  projectPlanApproved: boolean;
-  investigationApproved: boolean;
-  // Four-gate system
-  gate1Status: GateStatus;
-  gate2Status: GateStatus;
-  gate3Status: GateStatus;
-  gate4Status: GateStatus;
-  status: string;
-}
-
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-  isError?: boolean; // technical error, rendered distinctly from role replies
-}
-
-interface InterviewData {
-  roleId: string;
-  questionsAsked: number;
-}
-
-interface DownloadData {
-  fileId: string;
-}
-
-interface ActivityLogItem {
-  id: number;
-  timestamp: string;
-  action: string;
-  detail: string;
-}
+import { useGroupData } from "@/hooks/useGroupData";
+import { useInterviewChat } from "@/hooks/useInterviewChat";
 
 export default function SimulationPage() {
   const params = useParams();
   const code = params.code as string;
   const router = useRouter();
-  const [group, setGroup] = useState<GroupData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  // Chat state
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  // Server-backed group state (group, stats, proposals, downloads, documents)
+  const {
+    group,
+    loading,
+    error,
+    interviews,
+    setInterviews,
+    downloads,
+    isDownloading,
+    activityLog,
+    viewedDocuments,
+    proposals,
+    fetchGroupData,
+    isRoleInterviewed,
+    isFileDownloaded,
+    isDocumentViewed,
+    handleDownload,
+    logDocumentView,
+    updateSubPhase,
+  } = useGroupData(code);
 
-  // Stats
-  const [interviews, setInterviews] = useState<InterviewData[]>([]);
-  const [downloads, setDownloads] = useState<DownloadData[]>([]);
-  const [isDownloading, setIsDownloading] = useState<string | null>(null);
-  const [activityLog, setActivityLog] = useState<ActivityLogItem[]>([]);
-  const [viewedDocuments, setViewedDocuments] = useState<string[]>([]);
+  // Interview chat state and actions
+  const {
+    selectedRole,
+    messages,
+    input,
+    setInput,
+    isSending,
+    chatEndRef,
+    offeredData,
+    offeredDocuments,
+    handleSelectRole,
+    handleSendMessage,
+    handleKeyDown,
+  } = useInterviewChat(group, (roleId, serverCount) => {
+    if (!isRoleInterviewed(roleId)) {
+      setInterviews(prev => [...prev, { roleId, questionsAsked: serverCount ?? 1 }]);
+    } else {
+      setInterviews(prev => prev.map(i =>
+        i.roleId === roleId
+          ? { ...i, questionsAsked: serverCount ?? i.questionsAsked + 1 }
+          : i
+      ));
+    }
+  });
 
   // Document modal
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-
-  // Data/document offers from chat
-  const [offeredData, setOfferedData] = useState<string[]>([]);
-  const [offeredDocuments, setOfferedDocuments] = useState<string[]>([]);
 
   // Active tab and tool tab
   const [activeTab, setActiveTab] = useState<"interview" | "tools" | "log">("interview");
@@ -110,57 +94,10 @@ export default function SimulationPage() {
 
   // Phase 2 state
   const [currentWeek, setCurrentWeek] = useState(1);
-  const [proposals, setProposals] = useState<Array<{
-    id: number;
-    rootCauseId: string;
-    description: string;
-    responsible: string | null;
-    cost: number | null;
-  }>>([]);
 
   // Effective phase: either viewing a past phase or the current group phase
   const effectivePhase = viewingPhase ?? group?.phase ?? 1;
   const isReadOnly = viewingPhase !== null && group !== null && viewingPhase < group.phase;
-
-  useEffect(() => {
-    if (code) {
-      fetchGroupData();
-    }
-  }, [code]);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const fetchGroupData = async () => {
-    try {
-      const response = await fetch(`/api/groups/${code}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setGroup(data.group);
-        setInterviews(data.interviews || []);
-        setDownloads(data.downloads || []);
-        setActivityLog(data.activityLog || []);
-        setViewedDocuments(data.viewedDocuments || []);
-
-        // Fetch proposals if in phase 3 or 4
-        if (data.group.phase >= 3) {
-          const proposalsRes = await fetch(`/api/groups/${code}/proposals`);
-          const proposalsData = await proposalsRes.json();
-          if (proposalsData.success) {
-            setProposals(proposalsData.proposals);
-          }
-        }
-      } else {
-        setError("Gruppen hittades inte");
-      }
-    } catch {
-      setError("Kunde inte ladda gruppdata");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toolNames: Record<string, string> = {
     wbs: "WBS",
@@ -193,204 +130,9 @@ export default function SimulationPage() {
     }
   };
 
-  const handleSelectRole = async (role: Role) => {
-    setSelectedRole(role);
-    setMessages([]);
-    setOfferedData([]);
-    setOfferedDocuments([]);
-
-    // Load chat history for this role
-    if (group) {
-      try {
-        const response = await fetch(`/api/groups/${group.code}/chat-history?roleId=${role.id}`);
-        const data = await response.json();
-        if (data.success && data.messages.length > 0) {
-          setMessages(data.messages.map((m: { role: string; content: string }) => ({
-            role: m.role as "user" | "assistant",
-            content: m.content
-          })));
-        }
-      } catch (error) {
-        console.error('Error loading chat history:', error);
-      }
-    }
-  };
-
-  const handleSendMessage = async () => {
-    if (!input.trim() || !selectedRole || isSending) return;
-
-    const userMessage: Message = { role: "user", content: input.trim() };
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
-    setIsSending(true);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: group?.code,
-          roleId: selectedRole.id,
-          message: userMessage.content,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.response) {
-        setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
-
-        // The server owns the question count — mirror it instead of counting locally
-        const serverCount: number | null = data.questionsAsked ?? null;
-        if (selectedRole && !isRoleInterviewed(selectedRole.id)) {
-          setInterviews(prev => [...prev, { roleId: selectedRole.id, questionsAsked: serverCount ?? 1 }]);
-        } else if (selectedRole) {
-          setInterviews(prev => prev.map(i =>
-            i.roleId === selectedRole.id
-              ? { ...i, questionsAsked: serverCount ?? i.questionsAsked + 1 }
-              : i
-          ));
-        }
-
-        // Handle offered data/documents
-        if (data.offeredData) {
-          setOfferedData(prev => {
-            const combined = [...prev, ...data.offeredData];
-            return combined.filter((item, index) => combined.indexOf(item) === index);
-          });
-        }
-        if (data.offeredDocuments) {
-          setOfferedDocuments(prev => {
-            const combined = [...prev, ...data.offeredDocuments];
-            return combined.filter((item, index) => combined.indexOf(item) === index);
-          });
-        }
-      } else {
-        setMessages(prev => [
-          ...prev,
-          { role: "assistant", isError: true, content: data.error || "Ett tekniskt fel uppstod. Försök igen." },
-        ]);
-      }
-    } catch {
-      setMessages(prev => [
-        ...prev,
-        { role: "assistant", isError: true, content: "Kunde inte nå servern. Kontrollera anslutningen och försök igen." },
-      ]);
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const isRoleInterviewed = (roleId: string) => {
-    return interviews.some(i => i.roleId === roleId);
-  };
-
-  const isFileDownloaded = (fileId: string) => {
-    return downloads.some(d => d.fileId === fileId);
-  };
-
-  const handleDownload = async (fileId: string) => {
-    if (isDownloading || !group) return;
-
-    setIsDownloading(fileId);
-    try {
-      // Record the download
-      await fetch(`/api/groups/${group.code}/downloads`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileId }),
-      });
-
-      // Trigger the actual download
-      const response = await fetch(`/api/download/${fileId}`);
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = dataFiles[fileId as keyof typeof dataFiles]?.filename || `${fileId}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        // Update downloads list
-        if (!isFileDownloaded(fileId)) {
-          setDownloads(prev => [...prev, { fileId }]);
-        }
-      }
-    } catch (error) {
-      console.error("Download error:", error);
-    } finally {
-      setIsDownloading(null);
-    }
-  };
-
   const handleViewDocument = async (doc: Document) => {
     setSelectedDocument(doc);
-
-    // Log the document view
-    if (group && !viewedDocuments.includes(doc.id)) {
-      try {
-        await fetch(`/api/groups/${group.code}/documents`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ documentId: doc.id }),
-        });
-        setViewedDocuments(prev => [...prev, doc.id]);
-      } catch (error) {
-        console.error("Error logging document view:", error);
-      }
-    }
-  };
-
-  const isDocumentViewed = (docId: string) => {
-    return viewedDocuments.includes(docId);
-  };
-
-  const getRoleDocuments = (roleId: string): Document[] => {
-    return getDocumentsForRole(roleId);
-  };
-
-  const updateSubPhase = async (newSubPhase: SubPhase) => {
-    if (!group) return;
-    try {
-      const response = await fetch(`/api/groups/${group.code}/sub-phase`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subPhase: newSubPhase }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setGroup(prev => prev ? { ...prev, subPhase: newSubPhase } : null);
-      }
-    } catch (error) {
-      console.error("Error updating sub-phase:", error);
-    }
-  };
-
-  const subPhaseLabels: Record<SubPhase, string> = {
-    intro: "Uppdragsmöte",
-    prestudy: "Förstudie",
-    planning: "Planering",
-    execution: "Genomförande",
-    closing: "Avslut"
-  };
-
-  const subPhaseOrder: SubPhase[] = ['intro', 'prestudy', 'planning', 'execution', 'closing'];
-
-  const canAccessSubPhase = (phase: SubPhase): boolean => {
-    if (!group) return false;
-    const currentIndex = subPhaseOrder.indexOf(group.subPhase);
-    const targetIndex = subPhaseOrder.indexOf(phase);
-    return targetIndex <= currentIndex;
+    await logDocumentView(doc);
   };
 
   // Check if interviews are locked
