@@ -120,11 +120,15 @@ export async function POST(request: NextRequest) {
       const completion = await anthropic.messages.create({
         model: CHAT_MODEL,
         max_tokens: 400,
+        // Sonnet 5 runs adaptive thinking by default; disabled for short roleplay replies
+        thinking: { type: 'disabled' },
         system: systemPrompt,
         messages: apiMessages,
       });
-      const block = completion.content[0];
-      responseText = block?.type === 'text' ? block.text : 'Hmm, låt mig tänka på det...';
+      const textBlock = completion.content.find(b => b.type === 'text');
+      responseText = textBlock?.type === 'text' && textBlock.text
+        ? textBlock.text
+        : 'Hmm, låt mig tänka på det...';
     } catch (apiError) {
       console.error('Anthropic API error:', apiError);
       return NextResponse.json(

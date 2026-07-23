@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-5',
       max_tokens: 1024,
+      // Sonnet 5 runs adaptive thinking by default; disabled so the token
+      // budget goes to the JSON/text answer
+      thinking: { type: 'disabled' },
       system: systemPrompt,
       messages: [
         {

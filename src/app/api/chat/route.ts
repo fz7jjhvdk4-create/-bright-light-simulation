@@ -111,11 +111,17 @@ Lägg till taggen [ERBJUD_DOKUMENT:${role.documents.join(',')}] när du erbjuder
       const completion = await anthropic.messages.create({
         model: CHAT_MODEL,
         max_tokens: 500,
+        // Sonnet 5 runs adaptive thinking by default; disabled here since the
+        // roleplay replies are short — thinking would eat the token budget and
+        // put a thinking block first in content
+        thinking: { type: 'disabled' },
         system: systemPrompt,
         messages: apiMessages,
       });
-      const block = completion.content[0];
-      responseText = block?.type === 'text' ? block.text : 'Inget svar.';
+      const textBlock = completion.content.find(b => b.type === 'text');
+      responseText = textBlock?.type === 'text' && textBlock.text
+        ? textBlock.text
+        : 'Inget svar.';
     } catch (apiError) {
       console.error('Anthropic API error:', apiError);
       return NextResponse.json(
