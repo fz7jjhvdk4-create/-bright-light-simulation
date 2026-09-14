@@ -42,6 +42,18 @@ function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
+// Feltyperna i reklamationsdatan — single source of truth, also used as the
+// Pareto tool's default categories so students analyse the actual case data
+const feltyper = [
+  { name: 'Ljusflimmer', weight: 0.29 },
+  { name: 'Tidig utbränning', weight: 0.24 },
+  { name: 'Drivdonshaveri', weight: 0.18 },
+  { name: 'Fuktinträngning', weight: 0.16 },
+  { name: 'Mekaniskt fel', weight: 0.13 },
+];
+
+export const FELTYPER: string[] = feltyper.map(f => f.name);
+
 // Generate reklamationsdata - 847 rows showing patterns that support root causes
 export function generateReklamationsdata(): XLSX.WorkBook {
   const products = [
@@ -50,14 +62,6 @@ export function generateReklamationsdata(): XLSX.WorkBook {
     { name: 'StreetLight Pro', weight: 0.32 },
     { name: 'SportArena', weight: 0.13 },
     { name: 'ParkZone', weight: 0.09 },
-  ];
-
-  const feltyper = [
-    { name: 'Ljusflimmer', weight: 0.29 },
-    { name: 'Tidig utbränning', weight: 0.24 },
-    { name: 'Drivdonshaveri', weight: 0.18 },
-    { name: 'Fuktinträngning', weight: 0.16 },
-    { name: 'Mekaniskt fel', weight: 0.13 },
   ];
 
   const rows = [];

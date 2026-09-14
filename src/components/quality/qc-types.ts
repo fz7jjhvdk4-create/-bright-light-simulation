@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { FELTYPER } from "@/lib/data-generator";
 
 export interface ChecksheetData {
   title: string;
@@ -84,13 +85,10 @@ export const defaultState: ToolsState = {
     ]
   },
   pareto: {
-    title: "Felorsaker",
-    items: [
-      { name: "Materialfel", count: 0 },
-      { name: "Maskinfel", count: 0 },
-      { name: "Mänskligt fel", count: 0 },
-      { name: "Metodfel", count: 0 }
-    ]
+    title: "Feltyper i reklamationsdatan",
+    // Prefilled with the actual fault types from Reklamationer.xlsx —
+    // students read the data and fill in the counts
+    items: FELTYPER.map(name => ({ name, count: 0 }))
   },
   causeEffect: [
     {
