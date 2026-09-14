@@ -3,15 +3,54 @@ import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
 import * as XLSX from 'xlsx';
 
-// Export element as PNG image
-export async function exportAsImage(elementId: string, filename: string): Promise<Blob> {
+// Capture the FULL content of an element — including anything hidden behind
+// scrollbars (issue #4). html2canvas photographs the element as displayed, so
+// we render an off-screen clone with every overflow unclipped and shoot that.
+async function captureFullElement(elementId: string): Promise<HTMLCanvasElement> {
   const element = document.getElementById(elementId);
   if (!element) throw new Error(`Element ${elementId} not found`);
 
-  const canvas = await html2canvas(element, {
-    backgroundColor: '#ffffff',
-    scale: 2,
+  const baseWidth = Math.max(element.scrollWidth, element.clientWidth);
+
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'fixed';
+  wrapper.style.left = '-100000px';
+  wrapper.style.top = '0';
+  wrapper.style.width = `${baseWidth}px`;
+  wrapper.style.background = '#ffffff';
+
+  const clone = element.cloneNode(true) as HTMLElement;
+  clone.style.width = `${baseWidth}px`;
+  clone.style.height = 'auto';
+  clone.style.maxHeight = 'none';
+  clone.style.overflow = 'visible';
+  clone.querySelectorAll<HTMLElement>('*').forEach(el => {
+    el.style.overflow = 'visible';
+    el.style.maxHeight = 'none';
   });
+
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
+  try {
+    // Wide inner content (e.g. the Gantt timeline) may exceed the element's
+    // own width — grow the clone to the widest descendant before capturing
+    const fullWidth = Math.max(clone.scrollWidth, baseWidth);
+    clone.style.width = `${fullWidth}px`;
+    wrapper.style.width = `${fullWidth}px`;
+
+    return await html2canvas(clone, {
+      backgroundColor: '#ffffff',
+      scale: 2,
+      windowWidth: fullWidth,
+    });
+  } finally {
+    wrapper.remove();
+  }
+}
+
+// Export element as PNG image
+export async function exportAsImage(elementId: string, filename: string): Promise<Blob> {
+  const canvas = await captureFullElement(elementId);
 
   return new Promise((resolve) => {
     canvas.toBlob((blob) => {
@@ -20,36 +59,49 @@ export async function exportAsImage(elementId: string, filename: string): Promis
   });
 }
 
-// Export element as PDF
+// Export element as PDF, split across A4 pages when the content is taller
+// than one page (previously tall content was clipped to a single page)
 export async function exportAsPDF(elementId: string, filename: string, title?: string): Promise<Blob> {
-  const element = document.getElementById(elementId);
-  if (!element) throw new Error(`Element ${elementId} not found`);
+  const canvas = await captureFullElement(elementId);
 
-  const canvas = await html2canvas(element, {
-    backgroundColor: '#ffffff',
-    scale: 2,
-  });
-
-  const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF({
     orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
     unit: 'mm',
+    format: 'a4',
   });
 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 10;
 
-  // Add title if provided
   if (title) {
     pdf.setFontSize(16);
-    pdf.text(title, 10, 15);
+    pdf.text(title, margin, 15);
   }
 
-  const startY = title ? 25 : 10;
-  const imgWidth = pageWidth - 20;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  const imgWidth = pageWidth - margin * 2;
+  const pxPerMm = canvas.width / imgWidth;
 
-  pdf.addImage(imgData, 'PNG', 10, startY, imgWidth, Math.min(imgHeight, pageHeight - startY - 10));
+  let renderedPx = 0;
+  let page = 0;
+  while (renderedPx < canvas.height) {
+    const topY = page === 0 ? (title ? 25 : margin) : margin;
+    const availablePx = Math.floor((pageHeight - topY - margin) * pxPerMm);
+    const slicePx = Math.min(canvas.height - renderedPx, availablePx);
+
+    const slice = document.createElement('canvas');
+    slice.width = canvas.width;
+    slice.height = slicePx;
+    const ctx = slice.getContext('2d');
+    if (!ctx) throw new Error('Kunde inte skapa canvas för PDF-export');
+    ctx.drawImage(canvas, 0, renderedPx, canvas.width, slicePx, 0, 0, canvas.width, slicePx);
+
+    if (page > 0) pdf.addPage();
+    pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, topY, imgWidth, slicePx / pxPerMm);
+
+    renderedPx += slicePx;
+    page++;
+  }
 
   return pdf.output('blob');
 }
