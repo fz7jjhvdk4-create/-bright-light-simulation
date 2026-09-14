@@ -6,7 +6,6 @@ import { Save, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { ToolsState, defaultState, toolDescriptions } from "./quality/qm-types";
 import { QMAffinity } from "./quality/QMAffinity";
 import { QMTree } from "./quality/QMTree";
-import { QMMatrix } from "./quality/QMMatrix";
 import { QMPDPC } from "./quality/QMPDPC";
 import { QMPrioritization } from "./quality/QMPrioritization";
 import { QMRelations } from "./quality/QMRelations";
@@ -45,10 +44,11 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
     }
   };
 
-  const completedCount = state.completedTools.length;
+  // Only count tools that are still part of the course (matrix was removed
+  // from toolDescriptions but may linger in old completedTools data)
+  const availableToolCount = Object.keys(toolDescriptions).length;
+  const completedCount = state.completedTools.filter(key => key in toolDescriptions).length;
   const requiredCount = 2;
-
-  // Affinity Diagram
 
   const toolProps = { state, setState, markToolComplete };
 
@@ -57,7 +57,6 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
       case "affinity": return <QMAffinity {...toolProps} />;
       case "relations": return <QMRelations {...toolProps} relFrom={relFrom} setRelFrom={setRelFrom} relTo={relTo} setRelTo={setRelTo} />;
       case "tree": return <QMTree {...toolProps} />;
-      case "matrix": return <QMMatrix {...toolProps} />;
       case "arrow": return <QMArrow {...toolProps} />;
       case "pdpc": return <QMPDPC {...toolProps} />;
       case "prioritization": return <QMPrioritization {...toolProps} />;
@@ -76,13 +75,13 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
           </Button>
         </div>
         <p className="text-sm text-gray-500">
-          Använd minst {requiredCount} av de 7 ledningsverktygen för planering och beslutsfattande.
+          Använd minst {requiredCount} av de {availableToolCount} ledningsverktygen för planering och beslutsfattande.
         </p>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex-1 bg-gray-200 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all ${completedCount >= requiredCount ? 'bg-green-500' : 'bg-yellow-500'}`}
-              style={{ width: `${(completedCount / 7) * 100}%` }}
+              style={{ width: `${(completedCount / availableToolCount) * 100}%` }}
             />
           </div>
           <span className={`text-sm font-medium ${completedCount >= requiredCount ? 'text-green-600' : 'text-gray-600'}`}>

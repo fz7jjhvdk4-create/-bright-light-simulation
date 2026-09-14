@@ -127,11 +127,8 @@ export const toolDescriptions = {
     description: "Bryt ned mål i delmål och åtgärder",
     icon: "🌳"
   },
-  matrix: {
-    name: "Matrisdiagram",
-    description: "Analysera samband mellan olika faktorer",
-    icon: "📋"
-  },
+  // Matrisdiagram ingår inte i kursen (issue #7) — data och komponent finns
+  // kvar (QMMatrix) men verktyget visas inte i listan
   arrow: {
     name: "Pildiagram",
     description: "Planera aktiviteter och beroenden över tid",
