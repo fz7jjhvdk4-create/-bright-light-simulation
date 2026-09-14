@@ -19,10 +19,10 @@ interface StakeholderAnalysisProps {
 }
 
 const quadrantInfo: Record<Quadrant, { name: string; description: string; color: string; borderColor: string }> = {
-  manage_closely: { name: "Manage Closely", description: "Hög makt, högt intresse", color: "bg-red-100", borderColor: "border-red-300" },
-  keep_satisfied: { name: "Keep Satisfied", description: "Hög makt, lågt intresse", color: "bg-yellow-100", borderColor: "border-yellow-300" },
-  keep_informed: { name: "Keep Informed", description: "Låg makt, högt intresse", color: "bg-blue-100", borderColor: "border-blue-300" },
-  monitor: { name: "Monitor", description: "Låg makt, lågt intresse", color: "bg-gray-100", borderColor: "border-gray-300" },
+  manage_closely: { name: "Hantera aktivt", description: "Hög makt, högt intresse", color: "bg-red-100", borderColor: "border-red-300" },
+  keep_satisfied: { name: "Håll nöjd", description: "Hög makt, lågt intresse", color: "bg-yellow-100", borderColor: "border-yellow-300" },
+  keep_informed: { name: "Håll informerad", description: "Låg makt, högt intresse", color: "bg-blue-100", borderColor: "border-blue-300" },
+  monitor: { name: "Bevaka", description: "Låg makt, lågt intresse", color: "bg-gray-100", borderColor: "border-gray-300" },
   unassigned: { name: "Ej placerade", description: "Dra till en ruta", color: "bg-white", borderColor: "border-gray-200" }
 };
 
@@ -100,7 +100,7 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
       console.error("Export error:", error);
       const content = stakeholders.map(s => {
         const role = roles.find(r => r.id === s.roleId);
-        return `${role?.name} (${role?.title}): ${quadrantInfo[s.quadrant].name}, Strategy: ${s.strategy || "Ej angiven"}`;
+        return `${role?.name} (${role?.title}): ${quadrantInfo[s.quadrant].name}, Strategi: ${s.strategy || "Ej angiven"}`;
       }).join("\n");
       const blob = new Blob([content], { type: "text/plain" });
       downloadBlob(blob, `intressentanalys-${groupCode}.txt`);
@@ -137,10 +137,10 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
       >
         <span className="text-lg">{role.avatar}</span>
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm truncate">{role.name}</div>
-          <div className="text-xs text-gray-500 truncate">{role.title}</div>
+          <div className="font-medium text-sm break-words">{role.name}</div>
+          <div className="text-xs text-gray-500 break-words">{role.title}</div>
           {showStrategy && stakeholder.strategy && (
-            <div className="text-xs text-gray-600 mt-1 italic truncate">{stakeholder.strategy}</div>
+            <div className="text-xs text-gray-600 mt-1 italic break-words">{stakeholder.strategy}</div>
           )}
         </div>
       </div>
@@ -224,7 +224,7 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
 
         {/* Power/Interest Matrix */}
         <div className="mb-6">
-          <h4 className="font-medium mb-3 text-center">Power/Interest-matris</h4>
+          <h4 className="font-medium mb-3 text-center">Makt/intresse-matris</h4>
           <div className="flex gap-2">
             {/* Y-axis label */}
             <div className="hidden sm:flex flex-col justify-between items-center py-4 text-xs text-gray-500">
