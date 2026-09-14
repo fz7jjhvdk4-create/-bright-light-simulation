@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Save, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { ToolsState, defaultState, toolDescriptions } from "./quality/qm-types";
+import { useInvestigationToolStorage } from "@/hooks/useInvestigationToolStorage";
+import { autosaveLabel } from "@/hooks/useAutosave";
 import { QMAffinity } from "./quality/QMAffinity";
 import { QMTree } from "./quality/QMTree";
 import { QMPDPC } from "./quality/QMPDPC";
@@ -22,17 +24,25 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
   const [relFrom, setRelFrom] = useState<number | "">("");
   const [relTo, setRelTo] = useState<number | "">("");
 
-  useEffect(() => {
-    const savedData = localStorage.getItem(`7qm-${groupCode}`);
-    if (savedData) {
-      setState(JSON.parse(savedData));
-    }
-  }, [groupCode]);
+  // Server-backed storage (teacher can see the analysis; survives browser
+  // switches). Old localStorage-only data is adopted and uploaded on load.
+  const { status: autosaveStatus, saveNow } = useInvestigationToolStorage<ToolsState>(
+    groupCode,
+    "tools7qm",
+    `7qm-${groupCode}`,
+    state,
+    setState,
+    (raw) => ({ ...defaultState, ...(raw as ToolsState) })
+  );
 
-  const handleSave = () => {
-    localStorage.setItem(`7qm-${groupCode}`, JSON.stringify(state));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      await saveNow();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error("Save error:", error);
+    }
   };
 
   const markToolComplete = (toolKey: string) => {
@@ -76,6 +86,9 @@ export function QualityTools7QM({ groupCode }: QualityTools7QMProps) {
         </div>
         <p className="text-sm text-gray-500">
           Använd minst {requiredCount} av de {availableToolCount} ledningsverktygen för planering och beslutsfattande.
+        </p>
+        <p className={`text-xs min-h-4 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+          {autosaveLabel(autosaveStatus)}
         </p>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex-1 bg-gray-200 rounded-full h-2">

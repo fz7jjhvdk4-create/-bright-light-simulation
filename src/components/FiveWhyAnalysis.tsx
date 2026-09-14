@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Send, Lightbulb, AlertCircle, CheckCircle, Target, Save } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useInvestigationToolStorage } from "@/hooks/useInvestigationToolStorage";
+import { autosaveLabel } from "@/hooks/useAutosave";
 
 interface FiveWhyAnalysisProps {
   groupCode: string;
@@ -68,31 +70,43 @@ export function FiveWhyAnalysis({ groupCode }: FiveWhyAnalysisProps) {
   const analysisRef = useRef<HTMLDivElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  // Load saved data
-  useEffect(() => {
-    const savedData = localStorage.getItem(`five-why-${groupCode}`);
-    if (savedData) {
-      const data = JSON.parse(savedData);
-      setProblem(data.problem || '');
-      setWhys(data.whys || ['', '', '', '', '']);
-      setFollowUpQuestions(data.followUpQuestions || ['', '', '', '', '']);
-      setCurrentStep(data.currentStep || 0);
-      setShowAnalysis(data.showAnalysis || false);
-      setAnalysis(data.analysis || null);
-    }
-  }, [groupCode]);
+  // Server-backed storage (teacher can see the analysis; survives browser
+  // switches). Old localStorage-only data is adopted and uploaded on load.
+  const fiveWhyData = useMemo(() => ({
+    problem,
+    whys,
+    followUpQuestions,
+    currentStep,
+    showAnalysis,
+    analysis,
+  }), [problem, whys, followUpQuestions, currentStep, showAnalysis, analysis]);
 
-  const handleSave = () => {
-    localStorage.setItem(`five-why-${groupCode}`, JSON.stringify({
-      problem,
-      whys,
-      followUpQuestions,
-      currentStep,
-      showAnalysis,
-      analysis
-    }));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const applyFiveWhyData = useCallback((data: typeof fiveWhyData) => {
+    setProblem(data.problem || '');
+    setWhys(data.whys || ['', '', '', '', '']);
+    setFollowUpQuestions(data.followUpQuestions || ['', '', '', '', '']);
+    setCurrentStep(data.currentStep || 0);
+    setShowAnalysis(data.showAnalysis || false);
+    setAnalysis(data.analysis || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const { status: autosaveStatus, saveNow } = useInvestigationToolStorage(
+    groupCode,
+    "fiveWhy",
+    `five-why-${groupCode}`,
+    fiveWhyData,
+    applyFiveWhyData
+  );
+
+  const handleSave = async () => {
+    try {
+      await saveNow();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error("Save error:", error);
+    }
   };
 
   useEffect(() => {
@@ -300,6 +314,9 @@ Formatera ditt svar som JSON med följande struktur:
           </Button>
         </div>
         <p className="text-sm text-gray-500">{t('subtitle')}</p>
+        <p className={`text-xs min-h-4 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+          {autosaveLabel(autosaveStatus)}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4" style={{ backgroundColor: '#f9fafb' }}>

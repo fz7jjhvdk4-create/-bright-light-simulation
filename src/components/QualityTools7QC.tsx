@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Save, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { ToolsState, defaultState, toolDescriptions } from "./quality/qc-types";
+import { useInvestigationToolStorage } from "@/hooks/useInvestigationToolStorage";
+import { autosaveLabel } from "@/hooks/useAutosave";
 import { QCChecksheet } from "./quality/QCChecksheet";
 import { QCPareto } from "./quality/QCPareto";
 import { QCCauseEffect } from "./quality/QCCauseEffect";
@@ -23,26 +25,33 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
   const [rawStratValues, setRawStratValues] = useState<Record<number, string>>({});
   const [activeCEDiagram, setActiveCEDiagram] = useState(0);
 
-  useEffect(() => {
-    const savedData = localStorage.getItem(`7qc-${groupCode}`);
-    if (savedData) {
-      const parsed = JSON.parse(savedData);
+  // Server-backed storage (teacher can see the analysis; survives browser
+  // switches). Old localStorage-only data is adopted and uploaded on load.
+  const { status: autosaveStatus, saveNow } = useInvestigationToolStorage<ToolsState>(
+    groupCode,
+    "tools7qc",
+    `7qc-${groupCode}`,
+    state,
+    setState,
+    (raw) => {
+      const parsed = raw as ToolsState & { causeEffect: unknown };
       // Migrate old causeEffect format (single object) to new format (array)
       if (parsed.causeEffect && !Array.isArray(parsed.causeEffect)) {
-        parsed.causeEffect = [{
-          id: "ce-1",
-          problem: parsed.causeEffect.problem,
-          categories: parsed.causeEffect.categories
-        }];
+        const old = parsed.causeEffect as { problem: string; categories: { name: string; causes: string[] }[] };
+        parsed.causeEffect = [{ id: "ce-1", problem: old.problem, categories: old.categories }];
       }
-      setState(parsed);
+      return { ...defaultState, ...parsed };
     }
-  }, [groupCode]);
+  );
 
-  const handleSave = () => {
-    localStorage.setItem(`7qc-${groupCode}`, JSON.stringify(state));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      await saveNow();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error("Save error:", error);
+    }
   };
 
   const markToolComplete = (toolKey: string) => {
@@ -86,6 +95,9 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
         </div>
         <p className="text-sm text-gray-500">
           Använd minst {requiredCount} av de 7 kvalitetsverktygen för att analysera kvalitetsdata.
+        </p>
+        <p className={`text-xs min-h-4 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+          {autosaveLabel(autosaveStatus)}
         </p>
         <div className="mt-2 flex items-center gap-2">
           <div className="flex-1 bg-gray-200 rounded-full h-2">

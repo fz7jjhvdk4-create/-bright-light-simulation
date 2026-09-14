@@ -61,15 +61,17 @@ export async function POST(
     const fiveWhyJson = fiveWhy ? JSON.stringify(fiveWhy) : null;
     const problemsJson = problems ? JSON.stringify(problems) : null;
 
+    // COALESCE keeps existing columns when a client saves only its own tool
+    // (7QC, 7QM and 5 Varför autosave independently of each other)
     await sql`
       INSERT INTO investigation_tools_data (group_id, tools_7qc, tools_7qm, five_why, problems)
       VALUES (${group.id}, ${tools7qcJson}, ${tools7qmJson}, ${fiveWhyJson}, ${problemsJson})
       ON CONFLICT (group_id)
       DO UPDATE SET
-        tools_7qc = ${tools7qcJson},
-        tools_7qm = ${tools7qmJson},
-        five_why = ${fiveWhyJson},
-        problems = ${problemsJson}
+        tools_7qc = COALESCE(${tools7qcJson}, investigation_tools_data.tools_7qc),
+        tools_7qm = COALESCE(${tools7qmJson}, investigation_tools_data.tools_7qm),
+        five_why = COALESCE(${fiveWhyJson}, investigation_tools_data.five_why),
+        problems = COALESCE(${problemsJson}, investigation_tools_data.problems)
     `;
 
     return Response.json({ success: true });
