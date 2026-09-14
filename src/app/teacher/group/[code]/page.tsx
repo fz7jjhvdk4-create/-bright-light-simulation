@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { rootCauses } from "@/lib/root-causes";
 import { roles } from "@/lib/roles";
+import { TeacherLabReport } from "@/components/TeacherLabReport";
 import {
   ArrowLeft,
   CheckCircle,
@@ -98,7 +99,7 @@ export default function TeacherGroupDetailPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "activity" | "interviews" | "data" | "proposals" | "projectplan" | "gate2" | "investigation" | "gate4"
+    "activity" | "interviews" | "data" | "proposals" | "projectplan" | "gate2" | "investigation" | "gate4" | "labreport"
   >("projectplan");
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -609,6 +610,17 @@ export default function TeacherGroupDetailPage() {
                 <MessageSquare className="w-4 h-4 inline mr-1" />
                 Aktivitetslogg
               </button>
+              <button
+                onClick={() => setActiveTab("labreport")}
+                className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === "labreport"
+                    ? "border-yellow-500 text-yellow-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <FileText className="w-4 h-4 inline mr-1" />
+                Labbrapport
+              </button>
             </div>
           </div>
 
@@ -1088,6 +1100,10 @@ export default function TeacherGroupDetailPage() {
                   </div>
                 )}
               </div>
+            )}
+
+            {activeTab === "labreport" && group && (
+              <TeacherLabReport groupCode={group.code} />
             )}
           </div>
         </div>
