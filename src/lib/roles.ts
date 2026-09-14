@@ -84,6 +84,24 @@ export const roles: Role[] = [
     },
     refersTo: ["maria", "anna"]
   },
+  {
+    id: "lisa",
+    name: "Lisa Nordin",
+    title: "Key Account Manager",
+    projectRole: "Kundansvarig",
+    stance: "engagerad",
+    years: 8,
+    age: 38,
+    avatar: "🧑‍💼",
+    personality: "Relationsorienterad och rak. Får ta emot kundernas ilska och är frustrerad över att städa upp efter andras misstag. Rapporterar direkt till VD.",
+    hasData: false,
+    knowledge: {
+      surface: "Tre av våra sju nyckelkunder är missnöjda. IKEA Industry har sagt rakt ut att de överväger att byta leverantör – 8 MSEK i årlig försäljning på spel. Kunderna klagar på flimmer, drivdon som går sönder och veckolånga reklamationstider.",
+      deeper: "Vi förlorade två upphandlingar 2025 värda 15 MSEK – kunderna angav kvalitetsryktet. Win rate ned från 35% till 22%. Nyckelkundernas reklamationsandel är högre än snittet, runt 6-8%. IndustriLux 500W är värst – jag har slutat sälja den aktivt.",
+      hidden: "Kunderna som köper de nya produkterna klagar mest – de som köpt före 2023 säger att 'era gamla produkter fungerar fortfarande'. En kundtekniker på Stockholms Hamnar analyserade ett trasigt drivdon: amatörmässiga lödningar och fukt inuti trots tätningen. Han frågade om vi bytt underleverantör. Jag kunde inte svara."
+    },
+    refersTo: ["maria", "karin", "mikael"]
+  },
 
   // Operations
   {
@@ -266,7 +284,7 @@ export const roleCategories: RoleCategory[] = [
   {
     id: "management",
     name: "Ledning",
-    roles: roles.filter(r => ["maria", "anna", "henrik"].includes(r.id))
+    roles: roles.filter(r => ["maria", "anna", "henrik", "lisa"].includes(r.id))
   },
   {
     id: "operations",

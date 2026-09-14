@@ -32,6 +32,7 @@ Bright Light Solutions AB har sett en dramatisk ökning av reklamationer:
 - Karin (deeper): Vet om AsiaCore-problem och att de är nya sedan 2022
 - Jonas (hidden): Förstår varför det är ett problem när han får veta
 - Anna (deeper): Besparingen på 3,8 MSEK nu uppäten av reklamationskostnader
+- Lisa, KAM (hidden): Kundtekniker hittade amatörmässiga lödningar och fukt i ett drivdon och frågade om leverantörsbyte; kunder med produkter köpta före 2023 har inga problem — kundperspektivet som pekar mot både leverantörsbytet och produktionen
 
 **Möjliga åtgärder:**
 - Byta tillbaka till ElektroTech eller annan kvalitetsleverantör

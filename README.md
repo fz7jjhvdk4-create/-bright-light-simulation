@@ -33,8 +33,8 @@ Varje Gate kräver lärargodkännande för att låsa upp nästa fas.
 
 ### Rollsystem
 
-12 intervjubara roller fördelade på fyra kategorier:
-- **Ledning:** Maria (VD), Anna (Ekonomichef), Henrik (Styrelserepresentant)
+13 intervjubara roller fördelade på fyra kategorier:
+- **Ledning:** Maria (VD), Anna (Ekonomichef), Henrik (Styrelserepresentant), Lisa (Key Account Manager)
 - **Operativ:** Karin (Kvalitetschef), Thomas (Inköpschef), Mikael (Produktionschef), Peter (HR-chef), Jonas (Produktutvecklingschef)
 - **Golvet:** Kenneth (Lödoperatör dagskift), Emma (Testoperatör kvällsskift), Linda (Facklig representant)
 - **Externa:** Anders (JUKI-tekniker, låses upp i Fas 3)

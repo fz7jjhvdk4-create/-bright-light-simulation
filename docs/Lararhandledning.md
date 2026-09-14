@@ -71,7 +71,7 @@ Studenterna planerar utredningsarbetet med:
 
 #### Fas 3: Utredning
 Studenterna genomför:
-- **Intervjuer** (AI-drivna) — 12 roller att intervjua
+- **Intervjuer** (AI-drivna) — 13 roller att intervjua
 - **7 QC-verktyg** — Datainsamlingsblad, Histogram, Pareto, Ishikawa, Spridningsdiagram, Styrdiagram, Stratifiering
 - **7 QM-verktyg** — Affinitet, Relationsdiagram, Träddiagram, Matris, Pildiagram, PDPC, Prioriteringsmatris
 - **5 Varför** — Rotorsaksanalys
