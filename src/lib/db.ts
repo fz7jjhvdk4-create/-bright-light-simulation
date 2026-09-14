@@ -379,6 +379,14 @@ export async function incrementQuestions(groupId: number, roleId: string) {
   return result.rows[0]?.questions_asked as number | undefined;
 }
 
+export async function getQuestionsAsked(groupId: number, roleId: string) {
+  const result = await sql`
+    SELECT questions_asked FROM interviews
+    WHERE group_id = ${groupId} AND role_id = ${roleId}
+  `;
+  return (result.rows[0]?.questions_asked as number | undefined) ?? 0;
+}
+
 export async function getInterviews(groupId: number) {
   const result = await sql`
     SELECT * FROM interviews WHERE group_id = ${groupId}

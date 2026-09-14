@@ -8,6 +8,7 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   isError?: boolean; // technical error, rendered distinctly from role replies
+  isInfo?: boolean;  // system notice (e.g. question limit reached), not a role reply
 }
 
 // Interview chat against /api/chat: role selection, history loading,
@@ -75,7 +76,7 @@ export function useInterviewChat(
       const data = await response.json();
 
       if (response.ok && data.response) {
-        setMessages(prev => [...prev, { role: "assistant", content: data.response }]);
+        setMessages(prev => [...prev, { role: "assistant", content: data.response, isInfo: !!data.limitReached }]);
 
         // The server owns the question count — mirror it instead of counting locally
         onQuestionCounted(selectedRole.id, data.questionsAsked ?? null);

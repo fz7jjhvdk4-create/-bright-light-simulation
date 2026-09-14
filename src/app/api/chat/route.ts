@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { getRoleById, getRolesForPhase } from '@/lib/roles';
 import { generateSystemPrompt } from '@/lib/prompts';
-import { getGroupByCode, startInterview, incrementQuestions, saveChatMessage, getChatHistory, logActivity } from '@/lib/db';
+import { getGroupByCode, startInterview, incrementQuestions, saveChatMessage, getChatHistory, getQuestionsAsked, logActivity } from '@/lib/db';
 import { dataFiles } from '@/lib/data-generator';
+import { MAX_INTERVIEW_QUESTIONS } from '@/lib/interview';
 
 const anthropic = new Anthropic();
 
@@ -41,6 +42,19 @@ export async function POST(request: NextRequest) {
         { error: `${role.name} är inte tillgänglig i er nuvarande fas` },
         { status: 403 }
       );
+    }
+
+    // Question budget per role — enforced server-side so it can't be bypassed.
+    // The question is neither saved nor answered when the budget is spent.
+    const alreadyAsked = await getQuestionsAsked(group.id, roleId);
+    if (alreadyAsked >= MAX_INTERVIEW_QUESTIONS) {
+      return NextResponse.json({
+        response: `${role.name} har avböjt fler frågor — ni har använt alla ${MAX_INTERVIEW_QUESTIONS} frågor för den här intervjun. Sammanställ det ni har fått veta, eller intervjua någon annan.`,
+        questionsAsked: alreadyAsked,
+        limitReached: true,
+        offeredData: null,
+        offeredDocuments: null,
+      });
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {

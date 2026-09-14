@@ -29,6 +29,7 @@ import { QualityTools7QM } from "@/components/QualityTools7QM";
 import { PhaseGateTimeline } from "@/components/PhaseGateTimeline";
 import { useGroupData } from "@/hooks/useGroupData";
 import { useInterviewChat } from "@/hooks/useInterviewChat";
+import { MAX_INTERVIEW_QUESTIONS } from "@/lib/interview";
 
 export default function SimulationPage() {
   const params = useParams();
@@ -138,6 +139,12 @@ export default function SimulationPage() {
   // Check if interviews are locked
   // Interviews are available in Phase 3 (Utredning) and Phase 4 (Redovisning)
   const interviewsLocked = !group || effectivePhase < 3;
+
+  // Question budget for the selected role (server enforces the same limit)
+  const selectedRoleQuestions = selectedRole
+    ? (interviews.find(i => i.roleId === selectedRole.id)?.questionsAsked ?? 0)
+    : 0;
+  const questionLimitReached = selectedRoleQuestions >= MAX_INTERVIEW_QUESTIONS;
 
   if (loading) {
     return (
@@ -457,6 +464,7 @@ export default function SimulationPage() {
                         const isAvailable = isPhaseAvailable && !interviewsLocked;
                         const isInterviewed = isRoleInterviewed(role.id);
                         const isSelected = selectedRole?.id === role.id;
+                        const questionsUsed = interviews.find(i => i.roleId === role.id)?.questionsAsked ?? 0;
 
                         return (
                           <button
@@ -490,7 +498,13 @@ export default function SimulationPage() {
                               </div>
                             </div>
                             {isInterviewed && (
-                              <span className="w-2 h-2 bg-green-500 rounded-full" title="Intervjuad" aria-label="Intervjuad" />
+                              <span
+                                className={`text-xs font-medium tabular-nums ${questionsUsed >= MAX_INTERVIEW_QUESTIONS ? "text-red-500" : "text-green-600"}`}
+                                title={`${questionsUsed} av ${MAX_INTERVIEW_QUESTIONS} frågor ställda`}
+                                aria-label={`${questionsUsed} av ${MAX_INTERVIEW_QUESTIONS} frågor ställda`}
+                              >
+                                {questionsUsed}/{MAX_INTERVIEW_QUESTIONS}
+                              </span>
                             )}
                             {!isAvailable && (
                               <span className="text-xs text-gray-400" aria-hidden="true">🔒</span>
@@ -609,6 +623,8 @@ export default function SimulationPage() {
                         className={`max-w-[80%] rounded-lg px-4 py-2 ${
                           message.isError
                             ? "bg-red-50 border border-red-200 text-red-700 text-sm"
+                            : message.isInfo
+                            ? "bg-blue-50 border border-blue-200 text-blue-800 text-sm"
                             : message.role === "user"
                             ? "bg-yellow-500 text-white"
                             : "bg-gray-100 text-gray-900"
@@ -692,13 +708,22 @@ export default function SimulationPage() {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder={isReadOnly ? "Skrivskyddat läge" : "Skriv din fråga..."}
+                      placeholder={
+                        isReadOnly
+                          ? "Skrivskyddat läge"
+                          : questionLimitReached
+                          ? `Max ${MAX_INTERVIEW_QUESTIONS} frågor ställda till ${selectedRole.name}`
+                          : "Skriv din fråga..."
+                      }
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
-                      disabled={isSending || isReadOnly}
+                      disabled={isSending || isReadOnly || questionLimitReached}
                     />
-                    <Button onClick={handleSendMessage} disabled={isSending || !input.trim() || isReadOnly}>
+                    <Button onClick={handleSendMessage} disabled={isSending || !input.trim() || isReadOnly || questionLimitReached}>
                       <Send className="w-4 h-4" />
                     </Button>
+                  </div>
+                  <div className={`mt-1.5 text-xs tabular-nums ${questionLimitReached ? "text-red-500 font-medium" : "text-gray-400"}`}>
+                    {selectedRoleQuestions}/{MAX_INTERVIEW_QUESTIONS} frågor ställda
                   </div>
                 </div>
               )}
