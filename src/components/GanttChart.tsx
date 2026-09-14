@@ -49,11 +49,21 @@ export function GanttChart({ groupCode }: GanttChartProps) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Load saved data
+  // Load saved data. Older versions gave every added task the id "NaN"
+  // (issue #2), so duplicate/invalid ids are reassigned on load.
   useEffect(() => {
     const savedData = localStorage.getItem(`gantt-${groupCode}`);
     if (savedData) {
-      setTasks(JSON.parse(savedData));
+      const parsed = JSON.parse(savedData) as GanttTask[];
+      const seen = new Set<string>();
+      setTasks(parsed.map((task, index) => {
+        let id = task.id;
+        if (!id || id === "NaN" || seen.has(id)) {
+          id = `t${index}-${Date.now()}`;
+        }
+        seen.add(id);
+        return { ...task, id };
+      }));
     }
   }, [groupCode]);
 
@@ -69,7 +79,9 @@ export function GanttChart({ groupCode }: GanttChartProps) {
   };
 
   const addTask = () => {
-    const newId = String(Math.max(...tasks.map(t => parseInt(t.id))) + 1);
+    // Timestamp id — the old parseInt-based scheme produced "NaN" for every
+    // new task since the default ids are non-numeric ("g1"..."g4")
+    const newId = `t${Date.now()}`;
     const newColor = taskColors[tasks.length % taskColors.length];
     setTasks([...tasks, {
       id: newId,
@@ -103,6 +115,64 @@ export function GanttChart({ groupCode }: GanttChartProps) {
     } catch (error) {
       console.error("PDF export error:", error);
       alert("Kunde inte exportera som PDF");
+    }
+  };
+
+  // Drag to move a bar (or milestone), drag the right edge to resize (issue #1).
+  // Pointer events with capture, so the drag survives leaving the bar.
+  const dragRef = useRef<{
+    taskId: string;
+    mode: "move" | "resize";
+    startX: number;
+    origStart: number;
+    origDuration: number;
+    moved: boolean;
+    lastApplied: number;
+  } | null>(null);
+
+  const handleBarPointerDown = (e: React.PointerEvent, task: GanttTask, mode: "move" | "resize") => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragRef.current = {
+      taskId: task.id,
+      mode,
+      startX: e.clientX,
+      origStart: task.startWeek,
+      origDuration: task.duration,
+      moved: false,
+      lastApplied: mode === "move" ? task.startWeek : task.duration,
+    };
+  };
+
+  const handleBarPointerMove = (e: React.PointerEvent) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const deltaWeeks = Math.round((e.clientX - drag.startX) / WEEK_WIDTH);
+    if (deltaWeeks !== 0) drag.moved = true;
+
+    if (drag.mode === "move") {
+      const lastStart = drag.origDuration > 0 ? TOTAL_WEEKS - drag.origDuration + 1 : TOTAL_WEEKS;
+      const newStart = Math.min(Math.max(1, drag.origStart + deltaWeeks), Math.max(1, lastStart));
+      if (newStart !== drag.lastApplied) {
+        drag.lastApplied = newStart;
+        updateTask(drag.taskId, { startWeek: newStart });
+      }
+    } else {
+      const newDuration = Math.min(Math.max(1, drag.origDuration + deltaWeeks), TOTAL_WEEKS - drag.origStart + 1);
+      if (newDuration !== drag.lastApplied) {
+        drag.lastApplied = newDuration;
+        updateTask(drag.taskId, { duration: newDuration });
+      }
+    }
+  };
+
+  const handleBarPointerUp = (task: GanttTask) => {
+    const drag = dragRef.current;
+    dragRef.current = null;
+    // A plain click (no movement) opens the editor panel
+    if (drag && !drag.moved) {
+      setEditingTask(task.id);
     }
   };
 
@@ -145,7 +215,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
           </div>
         </div>
         <p className="text-sm text-gray-500">
-          Visualisera projekttidslinjen. Klicka på en aktivitet för att redigera. Dra i staplarna för att ändra tid.
+          Dra i staplarna för att flytta aktiviteter, dra i högerkanten för att ändra längd — eller skriv start och antal veckor direkt i fälten. Klicka på en stapel eller ett namn för fler alternativ.
         </p>
       </div>
 
@@ -167,11 +237,14 @@ export function GanttChart({ groupCode }: GanttChartProps) {
           className="overflow-x-auto border rounded-lg"
           onScroll={(e) => setScrollPosition((e.target as HTMLDivElement).scrollLeft)}
         >
-          <div style={{ minWidth: `${TOTAL_WEEKS * WEEK_WIDTH + 250}px` }}>
+          <div style={{ minWidth: `${TOTAL_WEEKS * WEEK_WIDTH + 340}px` }}>
             {/* Header row with weeks */}
             <div className="flex border-b bg-gray-50 sticky top-0">
-              <div className="w-[250px] min-w-[250px] p-2 font-medium text-sm border-r">
-                Aktivitet
+              <div className="w-[340px] min-w-[340px] p-2 font-medium text-sm border-r flex items-end gap-2">
+                <span className="flex-1">Aktivitet</span>
+                <span className="w-14 text-center text-xs text-gray-500 font-normal">Start</span>
+                <span className="w-14 text-center text-xs text-gray-500 font-normal">Veckor</span>
+                <span className="w-4" />
               </div>
               <div className="flex">
                 {Array.from({ length: TOTAL_WEEKS }, (_, i) => (
@@ -194,38 +267,45 @@ export function GanttChart({ groupCode }: GanttChartProps) {
             {/* Task rows */}
             {tasks.map((task) => (
               <div key={task.id} className="flex border-b hover:bg-gray-50 group">
-                {/* Task name */}
-                <div className="w-[250px] min-w-[250px] p-2 border-r flex items-center gap-2">
-                  {editingTask === task.id ? (
-                    <input
-                      type="text"
-                      value={task.name}
-                      onChange={(e) => updateTask(task.id, { name: e.target.value })}
-                      onBlur={() => setEditingTask(null)}
-                      onKeyDown={(e) => e.key === "Enter" && setEditingTask(null)}
-                      className="flex-1 px-2 py-1 border rounded text-sm"
-                      autoFocus
-                    />
+                {/* Task name + always-visible time fields (issues #1/#2) */}
+                <div className="w-[340px] min-w-[340px] p-2 border-r flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded flex-shrink-0 ${task.color}`} />
+                  <span
+                    className="flex-1 text-sm cursor-pointer hover:text-yellow-600 truncate min-w-0"
+                    onClick={() => setEditingTask(task.id)}
+                    title={`${task.name} — klicka för att redigera`}
+                  >
+                    {task.name}
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={TOTAL_WEEKS}
+                    value={task.startWeek}
+                    onChange={(e) => updateTask(task.id, { startWeek: Math.min(Math.max(1, parseInt(e.target.value) || 1), TOTAL_WEEKS) })}
+                    className="w-14 px-1 py-0.5 border rounded text-sm text-center"
+                    aria-label={`Startvecka för ${task.name}`}
+                  />
+                  {task.isMilestone ? (
+                    <span className="w-14 text-center text-xs text-gray-400" title="Milstolpe har ingen längd">—</span>
                   ) : (
-                    <>
-                      <div
-                        className={`w-3 h-3 rounded ${task.color}`}
-                      />
-                      <span
-                        className="flex-1 text-sm cursor-pointer hover:text-yellow-600 truncate"
-                        onClick={() => setEditingTask(task.id)}
-                        title={task.name}
-                      >
-                        {task.name}
-                      </span>
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-xs"
-                      >
-                        ✕
-                      </button>
-                    </>
+                    <input
+                      type="number"
+                      min={1}
+                      max={TOTAL_WEEKS}
+                      value={task.duration}
+                      onChange={(e) => updateTask(task.id, { duration: Math.min(Math.max(1, parseInt(e.target.value) || 1), TOTAL_WEEKS) })}
+                      className="w-14 px-1 py-0.5 border rounded text-sm text-center"
+                      aria-label={`Längd i veckor för ${task.name}`}
+                    />
                   )}
+                  <button
+                    onClick={() => deleteTask(task.id)}
+                    className="w-4 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-xs"
+                    title="Ta bort aktivitet"
+                  >
+                    ✕
+                  </button>
                 </div>
 
                 {/* Timeline */}
@@ -242,28 +322,44 @@ export function GanttChart({ groupCode }: GanttChartProps) {
                   {/* Task bar */}
                   {task.isMilestone ? (
                     <div
-                      className="absolute top-1/2 -translate-y-1/2"
+                      className="absolute top-1/2 -translate-y-1/2 cursor-grab active:cursor-grabbing p-1"
                       style={{
-                        left: `${(task.startWeek - 1) * WEEK_WIDTH + WEEK_WIDTH / 2 - 8}px`,
+                        left: `${(task.startWeek - 1) * WEEK_WIDTH + WEEK_WIDTH / 2 - 12}px`,
+                        touchAction: "none",
                       }}
+                      onPointerDown={(e) => handleBarPointerDown(e, task, "move")}
+                      onPointerMove={handleBarPointerMove}
+                      onPointerUp={() => handleBarPointerUp(task)}
                     >
                       <div
                         className={`w-4 h-4 ${task.color} rotate-45`}
-                        title={`${task.name} - Vecka ${task.startWeek}`}
+                        title={`${task.name} - Vecka ${task.startWeek}. Dra för att flytta, klicka för att redigera.`}
                       />
                     </div>
                   ) : (
                     <div
-                      className={`absolute top-1/2 -translate-y-1/2 h-6 ${task.color} rounded cursor-ew-resize opacity-90 hover:opacity-100 flex items-center justify-center`}
+                      className={`absolute top-1/2 -translate-y-1/2 h-6 ${task.color} rounded cursor-grab active:cursor-grabbing opacity-90 hover:opacity-100 flex items-center justify-center select-none`}
                       style={{
                         left: `${(task.startWeek - 1) * WEEK_WIDTH}px`,
                         width: `${Math.max(task.duration * WEEK_WIDTH, 20)}px`,
+                        touchAction: "none",
                       }}
-                      title={`${task.name} - Vecka ${task.startWeek}-${task.startWeek + task.duration - 1}`}
+                      title={`${task.name} - Vecka ${task.startWeek}-${task.startWeek + task.duration - 1}. Dra för att flytta, dra i högerkanten för att ändra längd, klicka för att redigera.`}
+                      onPointerDown={(e) => handleBarPointerDown(e, task, "move")}
+                      onPointerMove={handleBarPointerMove}
+                      onPointerUp={() => handleBarPointerUp(task)}
                     >
-                      <span className="text-white text-xs font-medium truncate px-1">
+                      <span className="text-white text-xs font-medium truncate px-1 pointer-events-none">
                         {task.duration > 2 ? task.name : ""}
                       </span>
+                      {/* Resize handle on the right edge */}
+                      <div
+                        className="absolute right-0 top-0 h-full w-2.5 cursor-ew-resize rounded-r bg-black/20"
+                        style={{ touchAction: "none" }}
+                        onPointerDown={(e) => handleBarPointerDown(e, task, "resize")}
+                        onPointerMove={handleBarPointerMove}
+                        onPointerUp={() => handleBarPointerUp(task)}
+                      />
                     </div>
                   )}
                 </div>
@@ -272,7 +368,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
 
             {/* Add task row */}
             <div className="flex border-b">
-              <div className="w-[250px] min-w-[250px] p-2 border-r">
+              <div className="w-[340px] min-w-[340px] p-2 border-r">
                 <Button size="sm" variant="outline" onClick={addTask} className="w-full">
                   + Lägg till aktivitet
                 </Button>
