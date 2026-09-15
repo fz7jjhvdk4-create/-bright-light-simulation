@@ -158,9 +158,9 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
 
   const getEventTypeColor = (type: Event["type"]) => {
     switch (type) {
-      case "conflict": return "border-orange-300 bg-orange-50";
-      case "crisis": return "border-red-300 bg-red-50";
-      case "milestone": return "border-green-300 bg-green-50";
+      case "conflict": return "border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/30";
+      case "crisis": return "border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/30";
+      case "milestone": return "border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30";
     }
   };
 
@@ -170,7 +170,7 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold">Händelser & Konflikter</h3>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">Aktuell vecka:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">Aktuell vecka:</span>
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
@@ -192,7 +192,7 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
             </div>
           </div>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Hantera händelser som uppstår under implementeringen. Ändra vecka för att trigga nya händelser.
         </p>
       </div>
@@ -200,7 +200,7 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
       <div className="flex-1 overflow-y-auto p-4">
         {/* Timeline */}
         <div className="relative">
-          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
+          <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
 
           {events.map((event) => {
             const isPast = event.week <= currentWeek;
@@ -218,7 +218,7 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
                       ? "bg-green-500 border-green-500"
                       : isPast
                       ? "bg-yellow-500 border-yellow-500 animate-pulse"
-                      : "bg-white border-gray-300"
+                      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                   }`}
                 />
 
@@ -228,26 +228,26 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
                     {getEventTypeIcon(event.type)}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-gray-500">Vecka {event.week}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Vecka {event.week}</span>
                         <span className={`text-xs px-2 py-0.5 rounded ${
                           event.type === "conflict"
-                            ? "bg-orange-200 text-orange-800"
+                            ? "bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200"
                             : event.type === "crisis"
-                            ? "bg-red-200 text-red-800"
-                            : "bg-green-200 text-green-800"
+                            ? "bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200"
+                            : "bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200"
                         }`}>
                           {event.type === "conflict" ? "Konflikt" : event.type === "crisis" ? "Kris" : "Milstolpe"}
                         </span>
                       </div>
                       <h4 className="font-medium">{event.title}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{event.description}</p>
 
                       {event.resolved && choice && (
-                        <div className="mt-3 p-3 bg-white rounded border">
-                          <div className="text-sm font-medium text-gray-700">
+                        <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded border">
+                          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             Valt: {choice.label}
                           </div>
-                          <div className="text-sm text-gray-600 mt-1">
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                             {choice.consequence}
                           </div>
                         </div>
@@ -278,13 +278,13 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
       {/* Event modal */}
       {showModal && activeEvent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-lg w-full">
             <div className={`p-4 border-b ${getEventTypeColor(activeEvent.type)} rounded-t-lg`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {getEventTypeIcon(activeEvent.type)}
                   <div>
-                    <div className="text-xs text-gray-500">Vecka {activeEvent.week}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Vecka {activeEvent.week}</div>
                     <h3 className="font-semibold">{activeEvent.title}</h3>
                   </div>
                 </div>
@@ -298,7 +298,7 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
             </div>
 
             <div className="p-4">
-              <p className="text-gray-700 mb-4">{activeEvent.description}</p>
+              <p className="text-gray-700 dark:text-gray-300 mb-4">{activeEvent.description}</p>
 
               <div className="space-y-3">
                 <h4 className="font-medium">Hur vill ni hantera situationen?</h4>
@@ -306,7 +306,7 @@ export function Phase2Events({ groupCode, currentWeek, onWeekChange }: Phase2Eve
                   <button
                     key={choice.id}
                     onClick={() => handleChoice(activeEvent.id, choice.id)}
-                    className="w-full text-left p-4 border rounded-lg hover:border-yellow-300 hover:bg-yellow-50 transition-colors"
+                    className="w-full text-left p-4 border rounded-lg hover:border-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 transition-colors"
                   >
                     <div className="font-medium">{choice.label}</div>
                   </button>

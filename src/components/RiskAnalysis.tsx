@@ -47,9 +47,9 @@ export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
   const getRiskValue = (probability: number, consequence: number) => probability * consequence;
 
   const getRiskColor = (value: number): string => {
-    if (value > 12) return "bg-red-100 border-red-300 text-red-800";
-    if (value >= 8) return "bg-yellow-100 border-yellow-300 text-yellow-800";
-    return "bg-green-100 border-green-300 text-green-800";
+    if (value > 12) return "bg-red-100 dark:bg-red-900/40 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200";
+    if (value >= 8) return "bg-yellow-100 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200";
+    return "bg-green-100 dark:bg-green-900/40 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200";
   };
 
   const getRiskLevel = (value: number): string => {
@@ -125,7 +125,7 @@ export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Identifiera risker och bedöm sannolikhet (1-5) och konsekvens (1-5). Riskvärde = S × K.
         </p>
       </div>
@@ -134,26 +134,26 @@ export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
         {/* Risk legend */}
         <div className="mb-4 flex gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-red-100 border border-red-300"></div>
+            <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900/40 border border-red-300 dark:border-red-700"></div>
             <span>Hög (&gt;12)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-yellow-100 border border-yellow-300"></div>
+            <div className="w-4 h-4 rounded bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-300 dark:border-yellow-700"></div>
             <span>Medel (8-12)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-green-100 border border-green-300"></div>
+            <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700"></div>
             <span>Låg (&lt;8)</span>
           </div>
         </div>
 
         {/* Add risk form */}
         {showForm && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
             <h4 className="font-medium mb-3">Ny risk</h4>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Riskbeskrivning
                 </label>
                 <input
@@ -166,7 +166,7 @@ export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Sannolikhet: {newRisk.probability}
                   </label>
                   <input
@@ -179,7 +179,7 @@ export function RiskAnalysis({ groupCode }: RiskAnalysisProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Konsekvens: {newRisk.consequence}
                   </label>
                   <input

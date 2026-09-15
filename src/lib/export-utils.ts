@@ -31,6 +31,13 @@ async function captureFullElement(elementId: string): Promise<HTMLCanvasElement>
 
   wrapper.appendChild(clone);
   document.body.appendChild(wrapper);
+
+  // Exports should always be light/printable regardless of the chosen theme —
+  // temporarily lift the dark class during the capture
+  const root = document.documentElement;
+  const hadDarkTheme = root.classList.contains('dark');
+  if (hadDarkTheme) root.classList.remove('dark');
+
   try {
     // Wide inner content (e.g. the Gantt timeline) may exceed the element's
     // own width — grow the clone to the widest descendant before capturing
@@ -44,6 +51,7 @@ async function captureFullElement(elementId: string): Promise<HTMLCanvasElement>
       windowWidth: fullWidth,
     });
   } finally {
+    if (hadDarkTheme) root.classList.add('dark');
     wrapper.remove();
   }
 }

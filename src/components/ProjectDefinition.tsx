@@ -92,7 +92,7 @@ export function ProjectDefinition({ groupCode, onSave }: ProjectDefinitionProps)
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-2">Projektdefinition</h2>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Definiera utredningsprojektets syfte, mål och omfattning. Detta är grunden för ert arbete.
         </p>
       </div>
@@ -101,20 +101,20 @@ export function ProjectDefinition({ groupCode, onSave }: ProjectDefinitionProps)
         {fields.map(({ key, label, placeholder, rows }) => (
           <div key={key} className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 {label}
               </label>
               <button
                 type="button"
                 onClick={() => setShowTips(showTips === key ? null : key)}
-                className="text-yellow-600 hover:text-yellow-700 text-sm flex items-center gap-1"
+                className="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 text-sm flex items-center gap-1"
               >
                 <Lightbulb className="w-4 h-4" />
                 Tips
               </button>
             </div>
             {showTips === key && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+              <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 text-sm text-yellow-800 dark:text-yellow-200">
                 {tips[key as keyof typeof tips]}
               </div>
             )}
@@ -125,21 +125,21 @@ export function ProjectDefinition({ groupCode, onSave }: ProjectDefinitionProps)
               }
               placeholder={placeholder}
               rows={rows}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none resize-none"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none resize-none"
             />
           </div>
         ))}
       </div>
 
       <div className="mt-6 flex items-center justify-between">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           {saved ? (
-            <span className="text-green-600 flex items-center gap-1">
+            <span className="text-green-600 dark:text-green-400 flex items-center gap-1">
               <CheckCircle className="w-4 h-4" />
               Sparat!
             </span>
           ) : (
-            <span className={autosaveStatus === "error" ? "text-red-600" : "text-gray-500"}>
+            <span className={autosaveStatus === "error" ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}>
               {autosaveLabel(autosaveStatus)}
             </span>
           )}
@@ -151,7 +151,7 @@ export function ProjectDefinition({ groupCode, onSave }: ProjectDefinitionProps)
       </div>
 
       {/* Progress indicator */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+      <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
         <h3 className="font-medium mb-2">Ifyllnadsgrad</h3>
         <div className="space-y-2">
           {fields.map(({ key, label }) => {
@@ -159,7 +159,7 @@ export function ProjectDefinition({ groupCode, onSave }: ProjectDefinitionProps)
             return (
               <div key={key} className="flex items-center gap-2 text-sm">
                 <span className={`w-2 h-2 rounded-full ${filled ? "bg-green-500" : "bg-gray-300"}`} />
-                <span className={filled ? "text-green-700" : "text-gray-500"}>{label}</span>
+                <span className={filled ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}>{label}</span>
               </div>
             );
           })}

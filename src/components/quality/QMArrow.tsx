@@ -17,13 +17,13 @@ export function QMArrow({ state, setState, markToolComplete }: QMToolProps) {
           className="text-lg font-medium w-full border-b border-transparent hover:border-gray-300 focus:border-yellow-500 focus:outline-none pb-1"
         />
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Definiera aktiviteter, deras varaktighet och beroenden. Använd Gantt-schemat för visuell planering.
         </p>
 
         <div className="space-y-3">
           {state.arrow.activities.map((act, idx) => (
-            <div key={idx} className="p-3 border rounded-lg bg-white">
+            <div key={idx} className="p-3 border rounded-lg bg-white dark:bg-gray-800">
               <div className="flex items-center gap-2 mb-2">
                 <span className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-bold">
                   {idx + 1}
@@ -57,7 +57,7 @@ export function QMArrow({ state, setState, markToolComplete }: QMToolProps) {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-gray-500">Varaktighet (veckor)</label>
+                  <label className="text-xs text-gray-500 dark:text-gray-400">Varaktighet (veckor)</label>
                   <input
                     type="number"
                     min="1"
@@ -74,7 +74,7 @@ export function QMArrow({ state, setState, markToolComplete }: QMToolProps) {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500">Beroende av (nummer)</label>
+                  <label className="text-xs text-gray-500 dark:text-gray-400">Beroende av (nummer)</label>
                   <input
                     type="text"
                     value={act.dependencies.join(", ")}

@@ -149,7 +149,7 @@ export default function SimulationPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-500">Laddar...</div>
+        <div className="text-gray-500 dark:text-gray-400">Laddar...</div>
       </div>
     );
   }
@@ -158,8 +158,8 @@ export default function SimulationPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Fel</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Fel</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <Button onClick={() => router.push("/")}>Tillbaka till start</Button>
         </div>
       </div>
@@ -171,15 +171,15 @@ export default function SimulationPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-80px)]">
       {/* Status bar */}
-      <div className="bg-white border-b px-2 sm:px-4 py-2">
+      <div className="bg-white dark:bg-gray-800 border-b px-2 sm:px-4 py-2">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <div className="text-xs sm:text-sm">
-              <span className="text-gray-500">Grupp:</span>{" "}
+              <span className="text-gray-500 dark:text-gray-400">Grupp:</span>{" "}
               <span className="font-semibold">{group.name}</span>
-              <span className="text-gray-400 ml-1 sm:ml-2">({group.code})</span>
+              <span className="text-gray-400 dark:text-gray-500 ml-1 sm:ml-2">({group.code})</span>
             </div>
-            <div className="hidden sm:block h-4 border-l border-gray-300" />
+            <div className="hidden sm:block h-4 border-l border-gray-300 dark:border-gray-600" />
             {/* Phase + gate timeline */}
             <PhaseGateTimeline
               group={group}
@@ -191,7 +191,7 @@ export default function SimulationPage() {
               }}
             />
           </div>
-          <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+          <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center gap-1" aria-label={`${interviews.length} intervjuer genomförda`}>
               <Users className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
               <span className="hidden xs:inline">{interviews.length} intervjuade</span>
@@ -209,26 +209,26 @@ export default function SimulationPage() {
         <div className="mt-2 pt-2 border-t">
           {isReadOnly && (
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+              <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
                 Skrivskyddat läge - Fas {viewingPhase}
               </span>
               <button
                 onClick={() => { setViewingPhase(null); setActiveTool(null); }}
-                className="text-xs text-blue-600 hover:text-blue-800 underline"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 underline"
               >
                 Tillbaka till aktuell fas (Fas {group.phase})
               </button>
             </div>
           )}
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-gray-600 dark:text-gray-400">
             {effectivePhase === 1 && (
               <>
                 <span className="font-medium">Fas 1 - Projektdefinition:</span> Definiera syfte, mål och avgränsningar.
                 {!isReadOnly && group.gate1Status === 'pending' && (
-                  <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
+                  <span className="ml-2 text-yellow-600 dark:text-yellow-400">⏳ Väntar på lärarens godkännande</span>
                 )}
                 {!isReadOnly && group.gate1Status === 'rejected' && (
-                  <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
+                  <span className="ml-2 text-red-600 dark:text-red-400">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
               </>
             )}
@@ -236,10 +236,10 @@ export default function SimulationPage() {
               <>
                 <span className="font-medium">Fas 2 - Projektplan:</span> Skapa WBS, Gantt, intressentanalys och riskanalys.
                 {!isReadOnly && group.gate2Status === 'pending' && (
-                  <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
+                  <span className="ml-2 text-yellow-600 dark:text-yellow-400">⏳ Väntar på lärarens godkännande</span>
                 )}
                 {!isReadOnly && group.gate2Status === 'rejected' && (
-                  <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
+                  <span className="ml-2 text-red-600 dark:text-red-400">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
               </>
             )}
@@ -247,13 +247,13 @@ export default function SimulationPage() {
               <>
                 <span className="font-medium">Fas 3 - Utredning:</span> Intervjua, samla data, analysera med 5 Varför, 7QC och 7QM. Hitta rotorsaker.
                 {!isReadOnly && group.gate3Status === 'pending' && (
-                  <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
+                  <span className="ml-2 text-yellow-600 dark:text-yellow-400">⏳ Väntar på lärarens godkännande</span>
                 )}
                 {!isReadOnly && group.gate3Status === 'rejected' && (
-                  <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
+                  <span className="ml-2 text-red-600 dark:text-red-400">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
                 {!isReadOnly && (!group.gate3Status || group.gate3Status === 'not_submitted') && (
-                  <span className="ml-2 text-gray-500">Intervjuer upplåsta</span>
+                  <span className="ml-2 text-gray-500 dark:text-gray-400">Intervjuer upplåsta</span>
                 )}
               </>
             )}
@@ -261,10 +261,10 @@ export default function SimulationPage() {
               <>
                 <span className="font-medium">Fas 4 - Redovisning:</span> Skapa handlingsplan och presentera kvalitetsverktyg och resultat.
                 {!isReadOnly && group.gate4Status === 'pending' && (
-                  <span className="ml-2 text-yellow-600">⏳ Väntar på lärarens godkännande</span>
+                  <span className="ml-2 text-yellow-600 dark:text-yellow-400">⏳ Väntar på lärarens godkännande</span>
                 )}
                 {!isReadOnly && group.gate4Status === 'rejected' && (
-                  <span className="ml-2 text-red-600">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
+                  <span className="ml-2 text-red-600 dark:text-red-400">❌ Begär komplettering - se feedback i aktivitetsloggen</span>
                 )}
               </>
             )}
@@ -366,9 +366,9 @@ export default function SimulationPage() {
             {/* Gate 1 submission */}
             {!isReadOnly && (group.gate1Status === 'not_submitted' || group.gate1Status === 'rejected') && (
               <div className="p-6 max-w-3xl mx-auto">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <h4 className="font-medium text-blue-800 mb-2">📝 Gate 1: Styrgruppsmöte - Projektdirektiv</h4>
-                  <p className="text-sm text-blue-700 mb-3">
+                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">📝 Gate 1: Styrgruppsmöte - Projektdirektiv</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
                     När ni har definierat syfte, mål och avgränsningar, skicka in för lärarens godkännande.
                     Efter godkännande får ni tillgång till Fas 2 (Projektplan).
                   </p>
@@ -403,9 +403,9 @@ export default function SimulationPage() {
             )}
             {!isReadOnly && group.gate1Status === 'pending' && (
               <div className="p-6 max-w-3xl mx-auto">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
-                  <p className="text-sm text-yellow-700">
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                  <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">⏳ Väntar på styrgruppens beslut</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
                     Ert projektdirektiv har skickats till Maria och styrgruppen. Ni får återkoppling inom kort.
                   </p>
                 </div>
@@ -426,7 +426,7 @@ export default function SimulationPage() {
 
             {/* Sidebar - Role list */}
             <aside
-              className={`fixed md:relative inset-y-0 left-0 z-40 w-72 bg-gray-50 border-r overflow-y-auto transform transition-transform duration-200 ease-in-out ${
+              className={`fixed md:relative inset-y-0 left-0 z-40 w-72 bg-gray-50 dark:bg-gray-900 border-r overflow-y-auto transform transition-transform duration-200 ease-in-out ${
                 sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
               }`}
               aria-label="Rollista"
@@ -434,20 +434,20 @@ export default function SimulationPage() {
               <div className="p-4">
                 {/* Close button for mobile */}
                 <div className="flex items-center justify-between mb-3 md:mb-0">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                  <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {interviewsLocked ? "Roller (låsta)" : "Tillgängliga roller"}
                   </h3>
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="md:hidden p-2 -mr-2 hover:bg-gray-200 rounded-lg"
+                    className="md:hidden p-2 -mr-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg"
                     aria-label="Stäng meny"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 {interviewsLocked && (
-                  <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="text-xs text-orange-700">
+                  <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg">
+                    <p className="text-xs text-orange-700 dark:text-orange-300">
                       <Lock className="w-3 h-3 inline mr-1" />
                       Intervjuer låses upp när läraren godkänner er projektplan.
                     </p>
@@ -455,7 +455,7 @@ export default function SimulationPage() {
                 )}
                 {roleCategories.map(category => (
                   <div key={category.id} className="mb-4">
-                    <h4 className="text-xs font-medium text-gray-400 uppercase mb-2">
+                    <h4 className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase mb-2">
                       {category.name}
                     </h4>
                     <div className="space-y-1" role="list">
@@ -478,9 +478,9 @@ export default function SimulationPage() {
                             disabled={!isAvailable}
                             className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
                               isSelected
-                                ? "bg-yellow-100 border border-yellow-300"
+                                ? "bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-300 dark:border-yellow-700"
                                 : isAvailable
-                                ? "hover:bg-gray-100"
+                                ? "hover:bg-gray-100 dark:hover:bg-gray-700"
                                 : "opacity-50 cursor-not-allowed"
                             }`}
                             title={!isAvailable ? (interviewsLocked ? "Väntar på godkännande" : "Låst till Fas 2") : role.title}
@@ -490,16 +490,16 @@ export default function SimulationPage() {
                           >
                             <span className="text-xl" aria-hidden="true">{role.avatar}</span>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm text-gray-900 truncate">
+                              <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
                                 {role.name}
                               </div>
-                              <div className="text-xs text-gray-500 truncate">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                 {role.title}
                               </div>
                             </div>
                             {isInterviewed && (
                               <span
-                                className={`text-xs font-medium tabular-nums ${questionsUsed >= MAX_INTERVIEW_QUESTIONS ? "text-red-500" : "text-green-600"}`}
+                                className={`text-xs font-medium tabular-nums ${questionsUsed >= MAX_INTERVIEW_QUESTIONS ? "text-red-500" : "text-green-600 dark:text-green-400"}`}
                                 title={`${questionsUsed} av ${MAX_INTERVIEW_QUESTIONS} frågor ställda`}
                                 aria-label={`${questionsUsed} av ${MAX_INTERVIEW_QUESTIONS} frågor ställda`}
                               >
@@ -507,7 +507,7 @@ export default function SimulationPage() {
                               </span>
                             )}
                             {!isAvailable && (
-                              <span className="text-xs text-gray-400" aria-hidden="true">🔒</span>
+                              <span className="text-xs text-gray-400 dark:text-gray-500" aria-hidden="true">🔒</span>
                             )}
                           </button>
                         );
@@ -519,14 +519,14 @@ export default function SimulationPage() {
             </aside>
 
             {/* Main area - Chat */}
-            <main className="flex-1 flex flex-col bg-white min-w-0">
+            <main className="flex-1 flex flex-col bg-white dark:bg-gray-800 min-w-0">
           {/* Tabs with mobile menu button */}
           <div className="border-b px-2 sm:px-4">
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="md:hidden p-2 -ml-2 hover:bg-gray-100 rounded-lg"
+                className="md:hidden p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                 aria-label="Öppna rollmeny"
               >
                 <Menu className="w-5 h-5" />
@@ -535,8 +535,8 @@ export default function SimulationPage() {
                 onClick={() => setActiveTab("interview")}
                 className={`py-3 px-1 text-xs sm:text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
                   activeTab === "interview"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
                 role="tab"
                 aria-selected={activeTab === "interview"}
@@ -550,8 +550,8 @@ export default function SimulationPage() {
                 onClick={() => setActiveTab("tools")}
                 className={`py-3 px-1 text-xs sm:text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
                   activeTab === "tools"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
                 role="tab"
                 aria-selected={activeTab === "tools"}
@@ -564,8 +564,8 @@ export default function SimulationPage() {
                 onClick={() => setActiveTab("log")}
                 className={`py-3 px-1 text-xs sm:text-sm font-medium border-b-2 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
                   activeTab === "log"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
                 role="tab"
                 aria-selected={activeTab === "log"}
@@ -582,12 +582,12 @@ export default function SimulationPage() {
             <>
               {/* Chat header - enkel utan synliga data/dokument */}
               {selectedRole && (
-                <div className="border-b px-4 py-3 bg-gray-50">
+                <div className="border-b px-4 py-3 bg-gray-50 dark:bg-gray-900">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{selectedRole.avatar}</span>
                     <div>
                       <h3 className="font-semibold">{selectedRole.name}</h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {selectedRole.title}
                       </p>
                     </div>
@@ -598,14 +598,14 @@ export default function SimulationPage() {
               {/* Chat messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {!selectedRole ? (
-                  <div className="flex items-center justify-center h-full text-gray-500">
+                  <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                     <div className="text-center">
                       <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                       <p>Välj en person att intervjua från listan till vänster</p>
                     </div>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="text-center text-gray-500 py-8">
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                     <p className="mb-2">
                       Du pratar nu med <strong>{selectedRole.name}</strong>
                     </p>
@@ -622,12 +622,12 @@ export default function SimulationPage() {
                       <div
                         className={`max-w-[80%] rounded-lg px-4 py-2 ${
                           message.isError
-                            ? "bg-red-50 border border-red-200 text-red-700 text-sm"
+                            ? "bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm"
                             : message.isInfo
-                            ? "bg-blue-50 border border-blue-200 text-blue-800 text-sm"
+                            ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 text-sm"
                             : message.role === "user"
                             ? "bg-yellow-500 text-white"
-                            : "bg-gray-100 text-gray-900"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         }`}
                       >
                         {message.isError && <span className="font-medium">⚠ Tekniskt fel: </span>}
@@ -638,7 +638,7 @@ export default function SimulationPage() {
                 )}
                 {isSending && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-lg px-4 py-2 text-gray-500">
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2 text-gray-500 dark:text-gray-400">
                       <span className="animate-pulse">Skriver...</span>
                     </div>
                   </div>
@@ -648,8 +648,8 @@ export default function SimulationPage() {
 
               {/* Offered data/documents */}
               {selectedRole && (offeredData.length > 0 || offeredDocuments.length > 0) && (
-                <div className="border-t bg-green-50 px-4 py-3">
-                  <p className="text-sm text-green-800 font-medium mb-2">
+                <div className="border-t bg-green-50 dark:bg-green-900/30 px-4 py-3">
+                  <p className="text-sm text-green-800 dark:text-green-200 font-medium mb-2">
                     📎 {selectedRole.name} har delat material med dig:
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -664,8 +664,8 @@ export default function SimulationPage() {
                           disabled={isDownloading === fileId}
                           className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm transition-colors ${
                             downloaded
-                              ? "bg-green-200 text-green-800 border border-green-300"
-                              : "bg-white text-green-700 border border-green-300 hover:bg-green-100"
+                              ? "bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 border border-green-300 dark:border-green-700"
+                              : "bg-white dark:bg-gray-800 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-900/50"
                           }`}
                         >
                           <Download className="w-4 h-4" />
@@ -685,8 +685,8 @@ export default function SimulationPage() {
                           onClick={() => handleViewDocument(doc)}
                           className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm transition-colors ${
                             viewed
-                              ? "bg-purple-200 text-purple-800 border border-purple-300"
-                              : "bg-white text-purple-700 border border-purple-300 hover:bg-purple-100"
+                              ? "bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 border border-purple-300 dark:border-purple-700"
+                              : "bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/50"
                           }`}
                         >
                           <BookOpen className="w-4 h-4" />
@@ -715,14 +715,14 @@ export default function SimulationPage() {
                           ? `Max ${MAX_INTERVIEW_QUESTIONS} frågor ställda till ${selectedRole.name}`
                           : "Skriv din fråga..."
                       }
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
                       disabled={isSending || isReadOnly || questionLimitReached}
                     />
                     <Button onClick={handleSendMessage} disabled={isSending || !input.trim() || isReadOnly || questionLimitReached}>
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>
-                  <div className={`mt-1.5 text-xs tabular-nums ${questionLimitReached ? "text-red-500 font-medium" : "text-gray-400"}`}>
+                  <div className={`mt-1.5 text-xs tabular-nums ${questionLimitReached ? "text-red-500 font-medium" : "text-gray-400 dark:text-gray-500"}`}>
                     {selectedRoleQuestions}/{MAX_INTERVIEW_QUESTIONS} frågor ställda
                   </div>
                 </div>
@@ -738,46 +738,46 @@ export default function SimulationPage() {
                   {effectivePhase === 2 ? (
                     <>
                       <h3 className="text-lg font-semibold mb-2">Fas 2 - Projektplan</h3>
-                      <p className="text-sm text-gray-500 mb-4">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                         Skapa WBS, tidplan, intressentanalys och riskanalys för projektet.
                       </p>
 
                       {/* Planning tools */}
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Planeringsverktyg</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Planeringsverktyg</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
                           onClick={() => handleOpenTool("wbs")}
-                          className="text-left border rounded-lg p-4 hover:border-blue-300 transition-colors border-blue-200 bg-blue-50"
+                          className="text-left border rounded-lg p-4 hover:border-blue-300 transition-colors border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30"
                         >
                           <h4 className="font-medium mb-2">📊 WBS</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Work Breakdown Structure - strukturera arbetet
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("gantt")}
-                          className="text-left border rounded-lg p-4 hover:border-teal-300 transition-colors border-teal-200 bg-teal-50"
+                          className="text-left border rounded-lg p-4 hover:border-teal-300 transition-colors border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/30"
                         >
                           <h4 className="font-medium mb-2">📅 Gantt-schema</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Visualisera projekttidslinjen
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("stakeholders")}
-                          className="text-left border rounded-lg p-4 hover:border-purple-300 transition-colors border-purple-200 bg-purple-50"
+                          className="text-left border rounded-lg p-4 hover:border-purple-300 transition-colors border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/30"
                         >
                           <h4 className="font-medium mb-2">👥 Intressentanalys</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Identifiera och analysera intressenter
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("risks")}
-                          className="text-left border rounded-lg p-4 hover:border-orange-300 transition-colors border-orange-200 bg-orange-50"
+                          className="text-left border rounded-lg p-4 hover:border-orange-300 transition-colors border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/30"
                         >
                           <h4 className="font-medium mb-2">⚠️ Riskanalys</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Identifiera och hantera projektrisker
                           </p>
                         </button>
@@ -785,9 +785,9 @@ export default function SimulationPage() {
 
                       {/* Gate 2 submission */}
                       {!isReadOnly && (group.gate2Status === 'not_submitted' || group.gate2Status === 'rejected') && (
-                        <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                          <h4 className="font-medium text-purple-800 mb-2">📝 Gate 2: Styrgruppsmöte - Projektplan</h4>
-                          <p className="text-sm text-purple-700 mb-3">
+                        <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-lg">
+                          <h4 className="font-medium text-purple-800 dark:text-purple-200 mb-2">📝 Gate 2: Styrgruppsmöte - Projektplan</h4>
+                          <p className="text-sm text-purple-700 dark:text-purple-300 mb-3">
                             När ni har skapat WBS, tidplan, intressentanalys och riskanalys, skicka in för lärarens godkännande.
                             Efter godkännande får ni tillgång till Fas 3 (Utredning) med intervjuer och dataanalys.
                           </p>
@@ -821,9 +821,9 @@ export default function SimulationPage() {
                       )}
 
                       {!isReadOnly && group.gate2Status === 'pending' && (
-                        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
-                          <p className="text-sm text-yellow-700">
+                        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                          <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">⏳ Väntar på styrgruppens beslut</h4>
+                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
                             Er projektplan har skickats till Maria och styrgruppen. Ni får återkoppling inom kort.
                           </p>
                         </div>
@@ -833,74 +833,74 @@ export default function SimulationPage() {
                     /* Fas 3: Utredning - intervjuer, data, analysverktyg */
                     <>
                       <h3 className="text-lg font-semibold mb-2">Fas 3 - Utredning</h3>
-                      <p className="text-sm text-gray-500 mb-4">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                         Intervjua medarbetare, samla data, analysera med 5 Varför, 7QC och 7QM. Identifiera rotorsaker.
                       </p>
 
                       {/* Analysis tools */}
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Analysverktyg</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Analysverktyg</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
                           onClick={() => handleOpenTool("fivewhy")}
-                          className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 bg-red-50"
+                          className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30"
                         >
                           <h4 className="font-medium mb-2">🔍 5 Varför</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Rotorsaksanalys med 5 Varför-metoden
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("7qc")}
-                          className="text-left border rounded-lg p-4 hover:border-cyan-300 transition-colors border-cyan-200 bg-cyan-50"
+                          className="text-left border rounded-lg p-4 hover:border-cyan-300 transition-colors border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-900/30"
                         >
                           <h4 className="font-medium mb-2">📊 7 Kvalitetsverktyg (7QC)</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Datainsamling, histogram, Pareto m.m. (minst 4 krävs)
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("7qm")}
-                          className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 bg-indigo-50"
+                          className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30"
                         >
                           <h4 className="font-medium mb-2">🗂️ 7 Ledningsverktyg (7QM)</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Affinitet, träddiagram, matris m.m. (minst 2 krävs)
                           </p>
                         </button>
                       </div>
 
                       {/* Action proposals */}
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Handlingsplan</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Handlingsplan</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
                           onClick={() => handleOpenTool("proposals")}
-                          className="text-left border rounded-lg p-4 hover:border-green-300 transition-colors border-green-200 bg-green-50"
+                          className="text-left border rounded-lg p-4 hover:border-green-300 transition-colors border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30"
                         >
                           <h4 className="font-medium mb-2">📋 Åtgärdsförslag</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Dokumentera åtgärdsförslag baserade på era analyser
                           </p>
                         </button>
                       </div>
 
                       {/* Documentation tools */}
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Dokumentation</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dokumentation</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
                           onClick={() => handleOpenTool("overview")}
                           className="text-left border rounded-lg p-4 hover:border-gray-300 transition-colors"
                         >
                           <h4 className="font-medium mb-2">📁 Nedladdade filer</h4>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             Se vilka datafiler ni har fått ({downloads.length} st)
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("export")}
-                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
+                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50 dark:bg-gray-900"
                         >
                           <h4 className="font-medium mb-2">📦 Exportera</h4>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             Ladda ner rapporter och dokumentation
                           </p>
                         </button>
@@ -908,13 +908,13 @@ export default function SimulationPage() {
 
                       {/* Gate 3 submission */}
                       {!isReadOnly && (group.gate3Status === 'not_submitted' || group.gate3Status === 'rejected') && (
-                        <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                          <h4 className="font-medium text-orange-800 mb-2">📝 Gate 3: Styrgruppsmöte - Utredningsrapport</h4>
-                          <p className="text-sm text-orange-700 mb-3">
+                        <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg">
+                          <h4 className="font-medium text-orange-800 dark:text-orange-200 mb-2">📝 Gate 3: Styrgruppsmöte - Utredningsrapport</h4>
+                          <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
                             När ni har genomfört intervjuer, använt analysverktyg och hittat rotorsaker,
                             skicka in för lärarens godkännande. Efter godkännande får ni tillgång till Fas 4 (Redovisning).
                           </p>
-                          <div className="text-xs text-orange-600 mb-3 space-y-1">
+                          <div className="text-xs text-orange-600 dark:text-orange-400 mb-3 space-y-1">
                             <p>Krav för godkännande:</p>
                             <ul className="list-disc list-inside pl-2">
                               <li>Minst 6 roller intervjuade ({interviews.length}/6)</li>
@@ -970,9 +970,9 @@ export default function SimulationPage() {
                       )}
 
                       {!isReadOnly && group.gate3Status === 'pending' && (
-                        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
-                          <p className="text-sm text-yellow-700">
+                        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                          <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">⏳ Väntar på styrgruppens beslut</h4>
+                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
                             Er utredningsrapport har skickats till Maria och styrgruppen. Ni får återkoppling inom kort.
                           </p>
                         </div>
@@ -982,63 +982,63 @@ export default function SimulationPage() {
                     /* Fas 4: Redovisning - handlingsplan och presentation */
                     <>
                       <h3 className="text-lg font-semibold mb-2">Fas 4 - Redovisning</h3>
-                      <p className="text-sm text-gray-500 mb-4">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                         Skapa handlingsplan med aktiviteter, ansvarig och tidplan. Presentera vilka kvalitetsverktyg ni använt och vilka resultat ni nått.
                       </p>
 
                       {/* Action plan tools */}
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Handlingsplan</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Handlingsplan</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
                           onClick={() => handleOpenTool("proposals")}
-                          className="text-left border-2 border-yellow-300 rounded-lg p-4 hover:bg-yellow-50 transition-colors bg-yellow-50"
+                          className="text-left border-2 border-yellow-300 dark:border-yellow-700 rounded-lg p-4 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 transition-colors bg-yellow-50 dark:bg-yellow-900/30"
                         >
                           <h4 className="font-medium mb-2">📋 Handlingsplan</h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Dokumentera åtgärder med aktivitet, ansvarig, tidplan och minskning (minst 3 krävs)
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("export")}
-                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
+                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50 dark:bg-gray-900"
                         >
                           <h4 className="font-medium mb-2">📦 Exportera</h4>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             Ladda ner rapporter och dokumentation
                           </p>
                         </button>
                       </div>
 
                       {/* Review previous analysis */}
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Granska era analysresultat</h4>
+                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Granska era analysresultat</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <button
                           onClick={() => handleOpenTool("fivewhy")}
-                          className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 bg-red-50"
+                          className="text-left border rounded-lg p-4 hover:border-red-300 transition-colors border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30"
                         >
                           <h4 className="font-medium mb-2">🔍 5 Varför</h4>
-                          <p className="text-sm text-gray-600">Se era 5 Varför-analyser</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Se era 5 Varför-analyser</p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("7qc")}
-                          className="text-left border rounded-lg p-4 hover:border-cyan-300 transition-colors border-cyan-200 bg-cyan-50"
+                          className="text-left border rounded-lg p-4 hover:border-cyan-300 transition-colors border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-900/30"
                         >
                           <h4 className="font-medium mb-2">📊 7QC</h4>
-                          <p className="text-sm text-gray-600">Se era 7QC-analyser</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Se era 7QC-analyser</p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("7qm")}
-                          className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 bg-indigo-50"
+                          className="text-left border rounded-lg p-4 hover:border-indigo-300 transition-colors border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30"
                         >
                           <h4 className="font-medium mb-2">🗂️ 7QM</h4>
-                          <p className="text-sm text-gray-600">Se era 7QM-analyser</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Se era 7QM-analyser</p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("overview")}
                           className="text-left border rounded-lg p-4 hover:border-gray-300 transition-colors"
                         >
                           <h4 className="font-medium mb-2">📁 Nedladdade filer</h4>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             Se vilka datafiler ni har fått ({downloads.length} st)
                           </p>
                         </button>
@@ -1046,13 +1046,13 @@ export default function SimulationPage() {
 
                       {/* Gate 4 submission */}
                       {!isReadOnly && (group.gate4Status === 'not_submitted' || group.gate4Status === 'rejected') && (
-                        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <h4 className="font-medium text-green-800 mb-2">📝 Gate 4: Slutredovisning till styrgruppen</h4>
-                          <p className="text-sm text-green-700 mb-3">
+                        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+                          <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">📝 Gate 4: Slutredovisning till styrgruppen</h4>
+                          <p className="text-sm text-green-700 dark:text-green-300 mb-3">
                             Presentera er handlingsplan med aktiviteter, ansvarig, tidplan och förväntad minskning
                             av reklamationskostnaderna. Redovisa vilka kvalitetsverktyg ni använt och era resultat.
                           </p>
-                          <div className="text-xs text-green-600 mb-3 space-y-1">
+                          <div className="text-xs text-green-600 dark:text-green-400 mb-3 space-y-1">
                             <p>Krav för godkännande:</p>
                             <ul className="list-disc list-inside pl-2">
                               <li>Minst 3 åtgärder med ansvarig, tidplan och förväntad effekt</li>
@@ -1090,18 +1090,18 @@ export default function SimulationPage() {
                       )}
 
                       {!isReadOnly && group.gate4Status === 'pending' && (
-                        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <h4 className="font-medium text-yellow-800 mb-2">⏳ Väntar på styrgruppens beslut</h4>
-                          <p className="text-sm text-yellow-700">
+                        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                          <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">⏳ Väntar på styrgruppens beslut</h4>
+                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
                             Er slutredovisning har skickats till Maria och Henrik från styrelsen. Ni får återkoppling inom kort.
                           </p>
                         </div>
                       )}
 
                       {group.gate4Status === 'approved' && (
-                        <div className="mb-6 p-4 bg-green-100 border border-green-300 rounded-lg">
-                          <h4 className="font-medium text-green-800 mb-2">✅ Projektet godkänt!</h4>
-                          <p className="text-sm text-green-700">
+                        <div className="mb-6 p-4 bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700 rounded-lg">
+                          <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">✅ Projektet godkänt!</h4>
+                          <p className="text-sm text-green-700 dark:text-green-300">
                             Grattis! Styrgruppen har godkänt er slutredovisning. Projektet är nu avslutat.
                           </p>
                         </div>
@@ -1117,16 +1117,16 @@ export default function SimulationPage() {
                           className="text-left border rounded-lg p-4 hover:border-yellow-300 transition-colors"
                         >
                           <h4 className="font-medium mb-2">📋 Åtgärdsförslag</h4>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             Se era godkända åtgärdsförslag
                           </p>
                         </button>
                         <button
                           onClick={() => handleOpenTool("export")}
-                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50"
+                          className="text-left border rounded-lg p-4 hover:border-gray-400 transition-colors bg-gray-50 dark:bg-gray-900"
                         >
                           <h4 className="font-medium mb-2">📦 Exportera</h4>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
                             Ladda ner rapporter och dokumentation
                           </p>
                         </button>
@@ -1136,15 +1136,15 @@ export default function SimulationPage() {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="px-4 py-2 border-b bg-gray-50 flex items-center gap-2 flex-shrink-0">
+                  <div className="px-4 py-2 border-b bg-gray-50 dark:bg-gray-900 flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => setActiveTool(null)}
-                      className="text-sm text-gray-500 hover:text-gray-700"
+                      className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       ← Tillbaka till verktyg
                     </button>
                     {isReadOnly && (
-                      <span className="ml-auto px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                      <span className="ml-auto px-2 py-0.5 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
                         Skrivskyddat läge
                       </span>
                     )}
@@ -1251,7 +1251,7 @@ export default function SimulationPage() {
                     <div className="p-6">
                       <h3 className="text-lg font-semibold mb-4">Nedladdade filer</h3>
                       {downloads.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                           <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                           <p className="mb-2">Ni har inte fått några datafiler än.</p>
                           <p className="text-sm">Intervjua medarbetare och fråga om data för att få tillgång till filer.</p>
@@ -1264,13 +1264,13 @@ export default function SimulationPage() {
                             return (
                               <div
                                 key={download.fileId}
-                                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border"
+                                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border"
                               >
                                 <div className="flex items-center gap-3">
-                                  <FileText className="w-8 h-8 text-green-600" />
+                                  <FileText className="w-8 h-8 text-green-600 dark:text-green-400" />
                                   <div>
                                     <p className="font-medium">{file.name}</p>
-                                    <p className="text-sm text-gray-500">{file.filename}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{file.filename}</p>
                                   </div>
                                 </div>
                                 <Button
@@ -1316,19 +1316,19 @@ export default function SimulationPage() {
                 </Button>
               </div>
               {activityLog.length === 0 ? (
-                <p className="text-gray-500">Ingen aktivitet loggad än.</p>
+                <p className="text-gray-500 dark:text-gray-400">Ingen aktivitet loggad än.</p>
               ) : (
                 <div className="space-y-2">
                   {activityLog.map((log) => (
                     <div
                       key={log.id}
-                      className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg text-sm"
+                      className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm"
                     >
-                      <div className="text-gray-400 whitespace-nowrap">
+                      <div className="text-gray-400 dark:text-gray-500 whitespace-nowrap">
                         {new Date(log.timestamp).toLocaleString("sv-SE")}
                       </div>
                       <div className="flex-1">
-                        <span className="font-medium text-gray-700">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
                           {log.action === "group_created" && "Grupp skapad"}
                           {log.action === "interview_started" && "Intervju startad"}
                           {log.action === "question_asked" && "Fråga ställd"}
@@ -1337,7 +1337,7 @@ export default function SimulationPage() {
                           {log.action === "phase_changed" && "Fas ändrad"}
                           {log.action === "status_changed" && "Status ändrad"}
                         </span>
-                        <span className="text-gray-500 ml-2">{log.detail}</span>
+                        <span className="text-gray-500 dark:text-gray-400 ml-2">{log.detail}</span>
                       </div>
                     </div>
                   ))}
@@ -1360,24 +1360,24 @@ export default function SimulationPage() {
           onClick={() => setSelectedDocument(null)}
         >
           <div
-            className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col"
+            className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-3 sm:p-4 border-b">
               <div className="min-w-0 flex-1">
                 <h3 id="document-title" className="font-semibold text-base sm:text-lg truncate">{selectedDocument.name}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 truncate">{selectedDocument.description}</p>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{selectedDocument.description}</p>
               </div>
               <button
                 onClick={() => setSelectedDocument(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors ml-2 flex-shrink-0"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ml-2 flex-shrink-0"
                 aria-label="Stäng dokument"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-              <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <pre className="whitespace-pre-wrap font-mono text-xs sm:text-sm bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg">
                 {selectedDocument.content}
               </pre>
             </div>

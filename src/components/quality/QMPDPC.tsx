@@ -18,7 +18,7 @@ export function QMPDPC({ state, setState, markToolComplete }: QMToolProps) {
         />
 
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Mål/syfte</label>
+          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Mål/syfte</label>
           <input
             type="text"
             value={state.pdpc.goal}
@@ -33,7 +33,7 @@ export function QMPDPC({ state, setState, markToolComplete }: QMToolProps) {
 
         <div className="space-y-4">
           {state.pdpc.steps.map((step, stepIdx) => (
-            <div key={stepIdx} className="border rounded-lg p-4 bg-white">
+            <div key={stepIdx} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
               <div className="flex items-center gap-2 mb-3">
                 <span className="bg-yellow-500 text-white px-2 py-1 rounded text-sm font-medium">
                   Steg {stepIdx + 1}
@@ -67,11 +67,11 @@ export function QMPDPC({ state, setState, markToolComplete }: QMToolProps) {
               </div>
 
               <div className="ml-4 space-y-2">
-                <div className="text-xs text-gray-500 font-medium">Möjliga problem och motåtgärder:</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Möjliga problem och motåtgärder:</div>
                 {step.problems.map((prob, probIdx) => (
-                  <div key={probIdx} className="grid grid-cols-2 gap-2 p-2 bg-gray-50 rounded">
+                  <div key={probIdx} className="grid grid-cols-2 gap-2 p-2 bg-gray-50 dark:bg-gray-900 rounded">
                     <div>
-                      <label className="text-xs text-red-600">Problem:</label>
+                      <label className="text-xs text-red-600 dark:text-red-400">Problem:</label>
                       <input
                         type="text"
                         value={prob.problem}
@@ -88,7 +88,7 @@ export function QMPDPC({ state, setState, markToolComplete }: QMToolProps) {
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-green-600">Motåtgärd:</label>
+                      <label className="text-xs text-green-600 dark:text-green-400">Motåtgärd:</label>
                       <div className="flex gap-1">
                         <input
                           type="text"
@@ -113,7 +113,7 @@ export function QMPDPC({ state, setState, markToolComplete }: QMToolProps) {
                               pdpc: { ...prev.pdpc, steps: newSteps }
                             }));
                           }}
-                          className="text-gray-400 hover:text-red-500"
+                          className="text-gray-400 dark:text-gray-500 hover:text-red-500"
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -130,7 +130,7 @@ export function QMPDPC({ state, setState, markToolComplete }: QMToolProps) {
                       pdpc: { ...prev.pdpc, steps: newSteps }
                     }));
                   }}
-                  className="text-xs text-yellow-600 hover:text-yellow-700"
+                  className="text-xs text-yellow-600 dark:text-yellow-400 hover:text-yellow-700"
                 >
                   + Lägg till problem/motåtgärd
                 </button>

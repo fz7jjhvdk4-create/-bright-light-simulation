@@ -182,7 +182,7 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
       </div>
     );
   }
@@ -194,26 +194,26 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
       <div className="flex-1 overflow-y-auto">
         <div className="p-6 max-w-4xl mx-auto">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Utredningsrapport
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Sammanfatta er utredning av kvalitetsproblemen. Denna rapport kommer att granskas av läraren.
             </p>
             {!isSubmitted && (
-              <p className={`text-sm mt-1 min-h-5 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+              <p className={`text-sm mt-1 min-h-5 ${autosaveStatus === "error" ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>
                 {autosaveLabel(autosaveStatus)}
               </p>
             )}
           </div>
 
           {isSubmitted ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-              <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-600" />
-              <h3 className="text-lg font-semibold text-green-800 mb-2">
+            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">
+              <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-600 dark:text-green-400" />
+              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
                 Rapport inskickad
               </h3>
-              <p className="text-green-700">
+              <p className="text-green-700 dark:text-green-300">
                 Er utredningsrapport har skickats in för granskning.
                 Invänta lärarens godkännande för att fortsätta.
               </p>
@@ -223,7 +223,7 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
               {/* Executive Summary */}
               <section>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
+                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Sammanfattning *
                 </h3>
                 <textarea
@@ -257,18 +257,18 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
                 </div>
 
                 {rootCauses.length === 0 ? (
-                  <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-gray-500">
+                  <div className="bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+                    <p className="text-gray-500 dark:text-gray-400">
                       Lägg till de rotorsaker ni identifierat under utredningen.
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {rootCauses.map((rc, index) => (
-                      <div key={rc.id} className="border rounded-lg p-4 bg-white">
+                      <div key={rc.id} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
                         <div className="flex justify-between items-start mb-3">
-                          <span className="text-sm font-medium text-gray-500">
+                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                             Rotorsak {index + 1}
                           </span>
                           <button
@@ -312,22 +312,22 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
               <section>
                 <h3 className="text-lg font-semibold mb-3">Åtgärdsförslag</h3>
                 {actionProposals.length === 0 ? (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-yellow-800 text-sm">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                    <p className="text-yellow-800 dark:text-yellow-200 text-sm">
                       <AlertCircle className="w-4 h-4 inline mr-1" />
                       Ni har inga åtgärdsförslag registrerade. Gå till verktyget &quot;Handlingsplan&quot;
                       under Verktyg-fliken för att lägga till era förslag.
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-600 mb-3">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       Ni har registrerat {actionProposals.length} åtgärdsförslag:
                     </p>
                     <ul className="space-y-2">
                       {actionProposals.map((proposal, index) => (
                         <li key={proposal.id} className="flex items-start gap-2 text-sm">
-                          <span className="text-green-600">✓</span>
+                          <span className="text-green-600 dark:text-green-400">✓</span>
                           <span>{proposal.description || `Åtgärd ${index + 1}`}</span>
                         </li>
                       ))}
@@ -361,26 +361,26 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
               </section>
 
               {/* Validation summary */}
-              <section className="bg-gray-50 rounded-lg p-4">
+              <section className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                 <h4 className="font-medium mb-3">Checklista för inlämning</h4>
                 <ul className="space-y-2 text-sm">
-                  <li className={`flex items-center gap-2 ${summary ? "text-green-700" : "text-gray-500"}`}>
+                  <li className={`flex items-center gap-2 ${summary ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
                     {summary ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                     Sammanfattning ifylld
                   </li>
-                  <li className={`flex items-center gap-2 ${methodology ? "text-green-700" : "text-gray-500"}`}>
+                  <li className={`flex items-center gap-2 ${methodology ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
                     {methodology ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                     Metodik beskriven
                   </li>
-                  <li className={`flex items-center gap-2 ${rootCauses.length > 0 ? "text-green-700" : "text-gray-500"}`}>
+                  <li className={`flex items-center gap-2 ${rootCauses.length > 0 ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
                     {rootCauses.length > 0 ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                     Minst en rotorsak identifierad ({rootCauses.length} st)
                   </li>
-                  <li className={`flex items-center gap-2 ${actionProposals.length > 0 ? "text-green-700" : "text-gray-500"}`}>
+                  <li className={`flex items-center gap-2 ${actionProposals.length > 0 ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
                     {actionProposals.length > 0 ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                     Åtgärdsförslag registrerade ({actionProposals.length} st)
                   </li>
-                  <li className={`flex items-center gap-2 ${conclusions ? "text-green-700" : "text-gray-500"}`}>
+                  <li className={`flex items-center gap-2 ${conclusions ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
                     {conclusions ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                     Slutsatser formulerade
                   </li>
@@ -393,11 +393,11 @@ export function InvestigationReport({ groupCode, onSubmit, isSubmitted = false }
 
       {/* Sticky submit footer - always visible */}
       {!isSubmitted && (
-        <div className="border-t bg-white p-4 shadow-lg">
+        <div className="border-t bg-white dark:bg-gray-800 p-4 shadow-lg">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
               {isFormValid ? (
-                <span className="text-green-600">Alla obligatoriska fält är ifyllda</span>
+                <span className="text-green-600 dark:text-green-400">Alla obligatoriska fält är ifyllda</span>
               ) : (
                 <span>Fyll i alla obligatoriska fält (*) innan inlämning</span>
               )}

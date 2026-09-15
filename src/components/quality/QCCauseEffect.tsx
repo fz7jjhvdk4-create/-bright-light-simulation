@@ -78,8 +78,8 @@ export function QCCauseEffect({ state, setState, markToolComplete, activeCEDiagr
                 onClick={() => setActiveCEDiagram(idx)}
                 className={`px-3 py-1.5 text-sm rounded-t-lg border border-b-0 ${
                   idx === currentIdx
-                    ? "bg-white font-medium text-yellow-700 border-yellow-300"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200"
+                    ? "bg-white dark:bg-gray-800 font-medium text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-700"
                 }`}
               >
                 {d.problem || `Diagram ${idx + 1}`}
@@ -87,7 +87,7 @@ export function QCCauseEffect({ state, setState, markToolComplete, activeCEDiagr
               {diagrams.length > 1 && (
                 <button
                   onClick={() => deleteDiagram(idx)}
-                  className="ml-0.5 px-1 py-1.5 text-xs text-gray-400 hover:text-red-500 border border-b-0 border-gray-200 rounded-tr-lg bg-gray-50"
+                  className="ml-0.5 px-1 py-1.5 text-xs text-gray-400 dark:text-gray-500 hover:text-red-500 border border-b-0 border-gray-200 dark:border-gray-700 rounded-tr-lg bg-gray-50 dark:bg-gray-900"
                   title="Ta bort diagram"
                 >
                   <Trash2 className="w-3 h-3" />
@@ -97,7 +97,7 @@ export function QCCauseEffect({ state, setState, markToolComplete, activeCEDiagr
           ))}
           <button
             onClick={addNewDiagram}
-            className="px-3 py-1.5 text-sm text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg border border-dashed border-yellow-300"
+            className="px-3 py-1.5 text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-lg border border-dashed border-yellow-300 dark:border-yellow-700"
           >
             <Plus className="w-3 h-3 inline mr-1" />
             Nytt diagram
@@ -105,7 +105,7 @@ export function QCCauseEffect({ state, setState, markToolComplete, activeCEDiagr
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Problem:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Problem:</span>
           <input
             type="text"
             value={current.problem}
@@ -115,18 +115,18 @@ export function QCCauseEffect({ state, setState, markToolComplete, activeCEDiagr
         </div>
 
         {/* Fishbone diagram representation */}
-        <div className="p-4 bg-gray-50 rounded-lg">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <div className="flex items-center justify-center mb-4">
             <div className="flex-1 h-1 bg-gray-400"></div>
-            <div className="px-4 py-2 bg-red-100 border-2 border-red-400 rounded font-medium text-center">
+            <div className="px-4 py-2 bg-red-100 dark:bg-red-900/40 border-2 border-red-400 rounded font-medium text-center">
               {current.problem || "Problem"}
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {current.categories.map((category, catIdx) => (
-              <div key={catIdx} className="border rounded-lg p-3 bg-white">
-                <h5 className="font-medium text-sm mb-2 text-yellow-700">{category.name}</h5>
+              <div key={catIdx} className="border rounded-lg p-3 bg-white dark:bg-gray-800">
+                <h5 className="font-medium text-sm mb-2 text-yellow-700 dark:text-yellow-300">{category.name}</h5>
                 <div className="space-y-1">
                   {category.causes.map((cause, causeIdx) => (
                     <div key={causeIdx} className="flex items-center gap-1">
@@ -168,7 +168,7 @@ export function QCCauseEffect({ state, setState, markToolComplete, activeCEDiagr
                         return { ...d, categories: newCategories };
                       });
                     }}
-                    className="text-xs text-yellow-600 hover:text-yellow-700"
+                    className="text-xs text-yellow-600 dark:text-yellow-400 hover:text-yellow-700"
                   >
                     + Lägg till orsak
                   </button>

@@ -107,7 +107,7 @@ export default function TeacherDashboard() {
   const getStatusBadge = (status: string, phase: number) => {
     if (status === "approved" || phase === 2) {
       return (
-        <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+        <span className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-xs">
           <CheckCircle className="w-3 h-3" />
           Godkänd
         </span>
@@ -115,14 +115,14 @@ export default function TeacherDashboard() {
     }
     if (status === "pending_approval") {
       return (
-        <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+        <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded-full text-xs">
           <Clock className="w-3 h-3" />
           Väntar
         </span>
       );
     }
     return (
-      <span className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+      <span className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs">
         <AlertCircle className="w-3 h-3" />
         Pågående
       </span>
@@ -138,20 +138,20 @@ export default function TeacherDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">Laddar...</div>
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400">Laddar...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-800">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Lärarportal</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Lärarportal</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Bright Light Solutions Simulering
             </p>
           </div>
@@ -165,21 +165,21 @@ export default function TeacherDashboard() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">{groups.length}</div>
-                <div className="text-sm text-gray-500">Totalt grupper</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Totalt grupper</div>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="w-6 h-6 text-yellow-600" />
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded-lg">
+                <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">
@@ -190,33 +190,33 @@ export default function TeacherDashboard() {
                     g.gate4Status === 'pending'
                   ).length}
                 </div>
-                <div className="text-sm text-gray-500">Väntar godkännande</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Väntar godkännande</div>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">
                   {groups.filter((g) => g.gate4Status === 'approved').length}
                 </div>
-                <div className="text-sm text-gray-500">Slutförda</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Slutförda</div>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <FileText className="w-6 h-6 text-purple-600" />
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+                <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
                 <div className="text-2xl font-bold">
                   {groups.reduce((sum, g) => sum + g.proposalsCount, 0)}
                 </div>
-                <div className="text-sm text-gray-500">Åtgärdsförslag</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Åtgärdsförslag</div>
               </div>
             </div>
           </div>
@@ -225,55 +225,55 @@ export default function TeacherDashboard() {
         {/* Search */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Sök på gruppnamn, kod eller student..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
             />
           </div>
         </div>
 
         {/* Groups table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                   Grupp
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
                   Studenter
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                   Gate 1
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                   Gate 2
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                   Gate 3
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                   Gate 4
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                   Intervjuer
                 </th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                   Förslag
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500">
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-500 dark:text-gray-400">
                   Åtgärder
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredGroups.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={9} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                     {searchQuery
                       ? "Inga grupper matchar sökningen"
                       : "Inga grupper registrerade än"}
@@ -283,24 +283,24 @@ export default function TeacherDashboard() {
                 filteredGroups.map((group) => {
                   const getGateBadge = (status: GateStatus) => {
                     if (status === 'approved') {
-                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs"><CheckCircle className="w-3 h-3" /></span>;
+                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-xs"><CheckCircle className="w-3 h-3" /></span>;
                     }
                     if (status === 'pending') {
-                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs"><Clock className="w-3 h-3" /></span>;
+                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded-full text-xs"><Clock className="w-3 h-3" /></span>;
                     }
                     if (status === 'rejected') {
-                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs"><AlertCircle className="w-3 h-3" /></span>;
+                      return <span className="flex items-center justify-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-full text-xs"><AlertCircle className="w-3 h-3" /></span>;
                     }
-                    return <span className="px-2 py-1 bg-gray-100 text-gray-400 rounded-full text-xs">—</span>;
+                    return <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded-full text-xs">—</span>;
                   };
 
                   return (
-                    <tr key={group.id} className="hover:bg-gray-50">
+                    <tr key={group.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{group.name}</div>
-                        <div className="text-sm text-gray-500">{group.code}</div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">{group.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{group.code}</div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                         {group.studentNames}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -335,7 +335,7 @@ export default function TeacherDashboard() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDeleteGroup(group)}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>

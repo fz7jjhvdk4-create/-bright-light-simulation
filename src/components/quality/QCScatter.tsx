@@ -23,7 +23,7 @@ export function QCScatter({ state, setState, markToolComplete }: QCToolProps) {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">X-axel</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">X-axel</label>
             <input
               type="text"
               value={state.scatter.xLabel}
@@ -35,7 +35,7 @@ export function QCScatter({ state, setState, markToolComplete }: QCToolProps) {
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Y-axel</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Y-axel</label>
             <input
               type="text"
               value={state.scatter.yLabel}
@@ -49,10 +49,10 @@ export function QCScatter({ state, setState, markToolComplete }: QCToolProps) {
         </div>
 
         <div className="space-y-2">
-          <div className="text-sm text-gray-600">Datapunkter:</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Datapunkter:</div>
           {points.map((point, idx) => (
             <div key={idx} className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">X:</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">X:</span>
               <input
                 type="number"
                 value={point.x}
@@ -66,7 +66,7 @@ export function QCScatter({ state, setState, markToolComplete }: QCToolProps) {
                 }}
                 className="w-20 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-yellow-500"
               />
-              <span className="text-xs text-gray-500">Y:</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">Y:</span>
               <input
                 type="number"
                 value={point.y}
@@ -114,10 +114,10 @@ export function QCScatter({ state, setState, markToolComplete }: QCToolProps) {
 
         {/* Visual scatter plot */}
         {points.length > 0 && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <div className="relative h-48 border-l-2 border-b-2 border-gray-400 ml-8 mb-6">
-              <span className="absolute -left-8 top-1/2 -rotate-90 text-xs text-gray-600">{state.scatter.yLabel}</span>
-              <span className="absolute bottom-[-24px] left-1/2 text-xs text-gray-600">{state.scatter.xLabel}</span>
+              <span className="absolute -left-8 top-1/2 -rotate-90 text-xs text-gray-600 dark:text-gray-400">{state.scatter.yLabel}</span>
+              <span className="absolute bottom-[-24px] left-1/2 text-xs text-gray-600 dark:text-gray-400">{state.scatter.xLabel}</span>
               {points.map((point, idx) => (
                 <div
                   key={idx}

@@ -93,20 +93,20 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
             {saved ? "Sparat!" : "Spara"}
           </Button>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Använd minst {requiredCount} av de 7 kvalitetsverktygen för att analysera kvalitetsdata.
         </p>
-        <p className={`text-xs min-h-4 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+        <p className={`text-xs min-h-4 ${autosaveStatus === "error" ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>
           {autosaveLabel(autosaveStatus)}
         </p>
         <div className="mt-2 flex items-center gap-2">
-          <div className="flex-1 bg-gray-200 rounded-full h-2">
+          <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all ${completedCount >= requiredCount ? 'bg-green-500' : 'bg-yellow-500'}`}
               style={{ width: `${(completedCount / 7) * 100}%` }}
             />
           </div>
-          <span className={`text-sm font-medium ${completedCount >= requiredCount ? 'text-green-600' : 'text-gray-600'}`}>
+          <span className={`text-sm font-medium ${completedCount >= requiredCount ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}>
             {completedCount}/{requiredCount} klara
           </span>
         </div>
@@ -123,7 +123,7 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
                 <button
                   onClick={() => setActiveTool(isActive ? null : key)}
                   className={`w-full p-4 flex items-center justify-between text-left transition-colors ${
-                    isCompleted ? 'bg-green-50 border-green-200' : 'bg-white hover:bg-gray-50'
+                    isCompleted ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -133,14 +133,14 @@ export function QualityTools7QC({ groupCode }: QualityTools7QCProps) {
                         {tool.name}
                         {isCompleted && <CheckCircle className="w-4 h-4 text-green-500" />}
                       </div>
-                      <div className="text-sm text-gray-500">{tool.description}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{tool.description}</div>
                     </div>
                   </div>
                   {isActive ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                 </button>
 
                 {isActive && (
-                  <div className="p-4 border-t bg-gray-50">
+                  <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">
                     {renderToolContent(key)}
                   </div>
                 )}

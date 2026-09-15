@@ -25,12 +25,12 @@ export function QMRelations({ state, setState, markToolComplete, relFrom, setRel
           className="text-lg font-medium w-full border-b border-transparent hover:border-gray-300 focus:border-yellow-500 focus:outline-none pb-1"
         />
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Lista faktorer och definiera orsak-verkan-relationer mellan dem.
         </p>
 
         <div className="space-y-2">
-          <label className="block text-sm text-gray-600">Faktorer:</label>
+          <label className="block text-sm text-gray-600 dark:text-gray-400">Faktorer:</label>
           {state.relations.items.map((item, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <span className="w-6 h-6 bg-yellow-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
@@ -84,16 +84,16 @@ export function QMRelations({ state, setState, markToolComplete, relFrom, setRel
         </div>
 
         {state.relations.items.length > 1 && (
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <label className="block text-sm text-gray-600 mb-2">Relationer (orsak → verkan):</label>
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">Relationer (orsak → verkan):</label>
             <div className="space-y-2">
               {state.relations.relations.map((rel, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-sm">
-                  <span className="bg-yellow-100 px-2 py-1 rounded">
+                  <span className="bg-yellow-100 dark:bg-yellow-900/40 px-2 py-1 rounded">
                     {state.relations.items[rel.from] || `#${rel.from + 1}`}
                   </span>
                   <span>→</span>
-                  <span className="bg-blue-100 px-2 py-1 rounded">
+                  <span className="bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded">
                     {state.relations.items[rel.to] || `#${rel.to + 1}`}
                   </span>
                   <button
@@ -111,7 +111,7 @@ export function QMRelations({ state, setState, markToolComplete, relFrom, setRel
                 </div>
               ))}
               <div className="space-y-2">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Välj en orsak (Från) och en verkan (Till), klicka sedan på &quot;Lägg till&quot;.
                 </p>
                 <div className="flex items-center gap-2">

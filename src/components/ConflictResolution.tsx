@@ -117,10 +117,10 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
 
   const getTypeColor = (type: Conflict["type"]) => {
     switch (type) {
-      case "interpersonal": return "bg-purple-100 text-purple-800";
-      case "resource": return "bg-blue-100 text-blue-800";
-      case "priority": return "bg-orange-100 text-orange-800";
-      case "change": return "bg-red-100 text-red-800";
+      case "interpersonal": return "bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200";
+      case "resource": return "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200";
+      case "priority": return "bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200";
+      case "change": return "bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200";
     }
   };
 
@@ -130,18 +130,18 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Konflikthantering</h2>
-        <p className="text-gray-600">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Konflikthantering</h2>
+        <p className="text-gray-600 dark:text-gray-400">
           Under implementeringen uppstår konflikter. Välj rätt hanteringsstil för att lösa dem.
         </p>
       </div>
 
       {/* Conflict styles overview */}
-      <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-medium text-blue-800 mb-2">Thomas-Kilmanns konflikthanteringsstilar</h3>
+      <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+        <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Thomas-Kilmanns konflikthanteringsstilar</h3>
         <div className="grid grid-cols-5 gap-2 text-center text-xs">
           {CONFLICT_STYLES.map(style => (
-            <div key={style.id} className="p-2 bg-white rounded">
+            <div key={style.id} className="p-2 bg-white dark:bg-gray-800 rounded">
               <div className="font-medium">{style.name}</div>
             </div>
           ))}
@@ -150,16 +150,16 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
 
       {/* Active conflicts */}
       <div className="mb-8">
-        <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-orange-500" />
           Aktiva konflikter ({activeConflicts.length})
         </h3>
         {activeConflicts.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">Inga aktiva konflikter just nu.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-4">Inga aktiva konflikter just nu.</p>
         ) : (
           <div className="space-y-3">
             {activeConflicts.map(conflict => (
-              <div key={conflict.id} className="border rounded-lg p-4 bg-white hover:border-orange-300 transition-colors">
+              <div key={conflict.id} className="border rounded-lg p-4 bg-white dark:bg-gray-800 hover:border-orange-300 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -168,8 +168,8 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
                       </span>
                     </div>
                     <h4 className="font-medium">{conflict.title}</h4>
-                    <p className="text-sm text-gray-600 mt-1">{conflict.description}</p>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{conflict.description}</p>
+                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
                       <Users className="w-3 h-3" />
                       {conflict.parties.join(" vs ")}
                     </div>
@@ -192,23 +192,23 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
       {/* Resolved conflicts */}
       {resolvedConflicts.length > 0 && (
         <div>
-          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-green-500" />
             Lösta konflikter ({resolvedConflicts.length})
           </h3>
           <div className="space-y-3">
             {resolvedConflicts.map(conflict => (
-              <div key={conflict.id} className="border rounded-lg p-4 bg-gray-50">
+              <div key={conflict.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs px-2 py-0.5 rounded ${getTypeColor(conflict.type)}`}>
                     {getTypeLabel(conflict.type)}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-green-100 text-green-800">
+                  <span className="text-xs px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200">
                     Löst
                   </span>
                 </div>
                 <h4 className="font-medium">{conflict.title}</h4>
-                <p className="text-sm text-gray-600 mt-1">{conflict.resolution}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{conflict.resolution}</p>
               </div>
             ))}
           </div>
@@ -218,11 +218,11 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
       {/* Resolution modal */}
       {activeConflict && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-4 border-b bg-orange-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b bg-orange-50 dark:bg-orange-900/30">
               <h3 className="font-semibold text-lg">{activeConflict.title}</h3>
-              <p className="text-sm text-gray-600">{activeConflict.description}</p>
-              <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
+              <p className="text-sm text-gray-600 dark:text-gray-400">{activeConflict.description}</p>
+              <div className="flex items-center gap-2 mt-2 text-sm text-gray-500 dark:text-gray-400">
                 <Users className="w-4 h-4" />
                 {activeConflict.parties.join(" vs ")}
               </div>
@@ -237,15 +237,15 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
                     onClick={() => setSelectedStyle(style.id)}
                     className={`w-full text-left p-3 border rounded-lg transition-colors ${
                       selectedStyle === style.id
-                        ? "border-orange-500 bg-orange-50"
+                        ? "border-orange-500 bg-orange-50 dark:bg-orange-900/30"
                         : "hover:border-gray-300"
                     }`}
                   >
                     <div className="font-medium">{style.name}</div>
-                    <div className="text-sm text-gray-600">{style.description}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{style.description}</div>
                     <div className="flex gap-4 mt-1 text-xs">
-                      <span className="text-green-600">+ {style.pros}</span>
-                      <span className="text-red-600">- {style.cons}</span>
+                      <span className="text-green-600 dark:text-green-400">+ {style.pros}</span>
+                      <span className="text-red-600 dark:text-red-400">- {style.cons}</span>
                     </div>
                   </button>
                 ))}
@@ -253,7 +253,7 @@ export function ConflictResolution({ groupCode, onResolved }: ConflictResolution
 
               {selectedStyle && (
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Beskriv hur du löser konflikten:
                   </label>
                   <textarea

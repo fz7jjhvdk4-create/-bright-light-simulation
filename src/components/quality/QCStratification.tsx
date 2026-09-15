@@ -23,13 +23,13 @@ export function QCStratification({ state, setState, markToolComplete, rawStratVa
           className="text-lg font-medium w-full border-b border-transparent hover:border-gray-300 focus:border-yellow-500 focus:outline-none pb-1"
         />
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Dela upp data i grupper för att identifiera mönster och skillnader.
         </p>
 
         <div className="space-y-3">
           {state.stratification.groups.map((group, idx) => (
-            <div key={idx} className="p-3 border rounded-lg bg-white">
+            <div key={idx} className="p-3 border rounded-lg bg-white dark:bg-gray-800">
               <div className="flex items-center gap-2 mb-2">
                 <input
                   type="text"
@@ -82,14 +82,14 @@ export function QCStratification({ state, setState, markToolComplete, rawStratVa
               />
               {group.values.length > 0 && (
                 <>
-                  <div className="mt-2 text-xs text-gray-500">
+                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                     N={group.values.length},
                     Medel={(group.values.reduce((a, b) => a + b, 0) / group.values.length).toFixed(2)},
                     Min={Math.min(...group.values).toFixed(1)},
                     Max={Math.max(...group.values).toFixed(1)}
                     {group.values.length > 1 && `, Std=${(Math.sqrt(group.values.reduce((sum, v) => sum + Math.pow(v - group.values.reduce((a, b) => a + b, 0) / group.values.length, 2), 0) / group.values.length)).toFixed(2)}`}
                   </div>
-                  <div className="mt-2 flex items-end gap-0.5 bg-white rounded p-1" style={{ height: '48px' }}>
+                  <div className="mt-2 flex items-end gap-0.5 bg-white dark:bg-gray-800 rounded p-1" style={{ height: '48px' }}>
                     {group.values.map((val, vIdx) => {
                       const maxVal = Math.max(...group.values, 1);
                       const height = (val / maxVal) * 100;

@@ -112,7 +112,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
   const canSubmit = proposals.length >= 3;
 
   if (loading) {
-    return <div className="p-4 text-gray-500">Laddar åtgärdsförslag...</div>;
+    return <div className="p-4 text-gray-500 dark:text-gray-400">Laddar åtgärdsförslag...</div>;
   }
 
   return (
@@ -129,7 +129,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
             Lägg till
           </Button>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Formulera åtgärder för de rotorsaker ni identifierat. Minst 3 åtgärder krävs för inlämning.
         </p>
       </div>
@@ -137,11 +137,11 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
       <div className="flex-1 overflow-y-auto p-4">
         {/* Add form */}
         {showForm && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
             <h4 className="font-medium mb-3">Nytt åtgärdsförslag</h4>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Rotorsak *
                 </label>
                 <select
@@ -159,7 +159,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Beskrivning av åtgärd *
                 </label>
                 <textarea
@@ -173,7 +173,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Ansvarig *
                   </label>
                   <input
@@ -185,7 +185,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Tidplan *
                   </label>
                   <input
@@ -200,7 +200,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Uppskattad kostnad (SEK)
                   </label>
                   <input
@@ -212,7 +212,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Minskning av reklamationskostnad (SEK) *
                   </label>
                   <input
@@ -253,7 +253,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
 
         {/* Proposals list */}
         {proposals.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
             <p>Inga åtgärdsförslag tillagda än.</p>
             <p className="text-sm mt-2">
@@ -265,17 +265,17 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
             {proposals.map((proposal) => (
               <div
                 key={proposal.id}
-                className="p-4 border rounded-lg bg-white hover:border-yellow-200 transition-colors"
+                className="p-4 border rounded-lg bg-white dark:bg-gray-800 hover:border-yellow-200 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
+                      <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 rounded">
                         {getRootCauseName(proposal.rootCauseId)}
                       </span>
                     </div>
-                    <p className="text-gray-900">{proposal.description}</p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
+                    <p className="text-gray-900 dark:text-gray-100">{proposal.description}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-gray-500 dark:text-gray-400">
                       {proposal.responsible && (
                         <span>Ansvarig: {proposal.responsible}</span>
                       )}
@@ -286,13 +286,13 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
                         <span>Kostnad: {proposal.cost.toLocaleString()} SEK</span>
                       )}
                       {proposal.costReduction != null && proposal.costReduction > 0 && (
-                        <span className="text-green-600">Minskning: {proposal.costReduction.toLocaleString()} SEK</span>
+                        <span className="text-green-600 dark:text-green-400">Minskning: {proposal.costReduction.toLocaleString()} SEK</span>
                       )}
                     </div>
                   </div>
                   <button
                     onClick={() => handleDeleteProposal(proposal.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                     title="Ta bort"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -305,10 +305,10 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
       </div>
 
       {/* Submit section */}
-      <div className="p-4 border-t bg-gray-50">
+      <div className="p-4 border-t bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center justify-between">
           <div className="text-sm">
-            <span className={proposals.length >= 3 ? "text-green-600" : "text-gray-500"}>
+            <span className={proposals.length >= 3 ? "text-green-600 dark:text-green-400" : "text-gray-500 dark:text-gray-400"}>
               {proposals.length} av minst 3 åtgärder
             </span>
           </div>
@@ -322,7 +322,7 @@ export function ActionProposals({ groupCode, onSubmit }: ActionProposalsProps) {
           </Button>
         </div>
         {!canSubmit && (
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
             Lägg till minst 3 åtgärdsförslag innan inlämning.
           </p>
         )}

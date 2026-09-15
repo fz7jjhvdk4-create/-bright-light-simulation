@@ -18,7 +18,7 @@ export function QMTree({ state, setState, markToolComplete }: QMToolProps) {
         />
 
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Övergripande mål</label>
+          <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Övergripande mål</label>
           <input
             type="text"
             value={state.tree.goal}
@@ -32,7 +32,7 @@ export function QMTree({ state, setState, markToolComplete }: QMToolProps) {
         </div>
 
         {state.tree.goal && (
-          <div className="p-4 bg-gray-50 rounded-lg overflow-x-auto">
+          <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-x-auto">
             {/* Root node */}
             <div className="flex flex-col items-center">
               <div className="px-4 py-2 bg-yellow-500 text-white rounded-lg font-medium text-center shadow">
@@ -61,7 +61,7 @@ export function QMTree({ state, setState, markToolComplete }: QMToolProps) {
                       <div className="w-0.5 h-4 bg-yellow-300" />
 
                       {/* Branch node */}
-                      <div className="w-full border-2 border-yellow-400 rounded-lg p-2 bg-white shadow-sm">
+                      <div className="w-full border-2 border-yellow-400 rounded-lg p-2 bg-white dark:bg-gray-800 shadow-sm">
                         <div className="flex items-center gap-1">
                           <input
                             type="text"
@@ -100,7 +100,7 @@ export function QMTree({ state, setState, markToolComplete }: QMToolProps) {
                         {branch.subBranches.map((sub, subIdx) => (
                           <div key={subIdx} className="flex items-center gap-1 w-full">
                             <div className="w-4 h-0.5 bg-gray-300 flex-shrink-0" />
-                            <div className="flex-1 flex items-center gap-1 border rounded px-2 py-1 bg-white text-sm">
+                            <div className="flex-1 flex items-center gap-1 border rounded px-2 py-1 bg-white dark:bg-gray-800 text-sm">
                               <input
                                 type="text"
                                 value={sub}
@@ -124,7 +124,7 @@ export function QMTree({ state, setState, markToolComplete }: QMToolProps) {
                                     tree: { ...prev.tree, branches: newBranches }
                                   }));
                                 }}
-                                className="text-gray-400 hover:text-red-500 flex-shrink-0"
+                                className="text-gray-400 dark:text-gray-500 hover:text-red-500 flex-shrink-0"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
@@ -142,7 +142,7 @@ export function QMTree({ state, setState, markToolComplete }: QMToolProps) {
                             tree: { ...prev.tree, branches: newBranches }
                           }));
                         }}
-                        className="text-xs text-gray-500 hover:text-yellow-600 mt-1"
+                        className="text-xs text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 mt-1"
                       >
                         + Lägg till åtgärd
                       </button>

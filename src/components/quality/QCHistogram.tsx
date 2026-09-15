@@ -82,13 +82,13 @@ export function QCHistogram({ state, setState, markToolComplete }: QCToolProps) 
         </div>
 
         {/* Visual histogram */}
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
           <div className="flex items-end gap-1" style={{ height: '160px' }}>
             {state.histogram.bins.map((bin, idx) => {
               const barHeight = maxCount > 0 ? (bin.count / maxCount) * 100 : 0;
               return (
                 <div key={idx} className="flex-1 flex flex-col items-center justify-end" style={{ height: '100%' }}>
-                  <div className="text-xs text-gray-500 mb-1">{bin.count}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{bin.count}</div>
                   <div
                     className="w-full bg-blue-500 rounded-t"
                     style={{ height: `${barHeight}%`, minHeight: bin.count > 0 ? '4px' : '0' }}

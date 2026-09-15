@@ -17,13 +17,13 @@ export function QMAffinity({ state, setState, markToolComplete }: QMToolProps) {
           className="text-lg font-medium w-full border-b border-transparent hover:border-gray-300 focus:border-yellow-500 focus:outline-none pb-1"
         />
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Gruppera relaterade idéer och observationer för att hitta mönster.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {state.affinity.groups.map((group, groupIdx) => (
-            <div key={groupIdx} className="border rounded-lg p-3 bg-yellow-50">
+            <div key={groupIdx} className="border rounded-lg p-3 bg-yellow-50 dark:bg-yellow-900/30">
               <div className="flex items-center gap-2 mb-2">
                 <input
                   type="text"
@@ -36,7 +36,7 @@ export function QMAffinity({ state, setState, markToolComplete }: QMToolProps) {
                       affinity: { ...prev.affinity, groups: newGroups }
                     }));
                   }}
-                  className="flex-1 font-medium bg-transparent border-b border-yellow-300 focus:border-yellow-500 focus:outline-none"
+                  className="flex-1 font-medium bg-transparent border-b border-yellow-300 dark:border-yellow-700 focus:border-yellow-500 focus:outline-none"
                 />
                 <button
                   onClick={() => {
@@ -54,7 +54,7 @@ export function QMAffinity({ state, setState, markToolComplete }: QMToolProps) {
 
               <div className="space-y-1">
                 {group.items.map((item, itemIdx) => (
-                  <div key={itemIdx} className="flex items-center gap-1 bg-white rounded p-1">
+                  <div key={itemIdx} className="flex items-center gap-1 bg-white dark:bg-gray-800 rounded p-1">
                     <input
                       type="text"
                       value={item}
@@ -78,7 +78,7 @@ export function QMAffinity({ state, setState, markToolComplete }: QMToolProps) {
                           affinity: { ...prev.affinity, groups: newGroups }
                         }));
                       }}
-                      className="text-gray-400 hover:text-red-500"
+                      className="text-gray-400 dark:text-gray-500 hover:text-red-500"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -93,7 +93,7 @@ export function QMAffinity({ state, setState, markToolComplete }: QMToolProps) {
                       affinity: { ...prev.affinity, groups: newGroups }
                     }));
                   }}
-                  className="text-xs text-yellow-700 hover:text-yellow-800 w-full text-left py-1"
+                  className="text-xs text-yellow-700 dark:text-yellow-300 hover:text-yellow-800 w-full text-left py-1"
                 >
                   + Lägg till idé
                 </button>
@@ -111,7 +111,7 @@ export function QMAffinity({ state, setState, markToolComplete }: QMToolProps) {
                 }
               }));
             }}
-            className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center text-gray-500 hover:border-yellow-400 hover:text-yellow-600 transition-colors"
+            className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors"
           >
             <Plus className="w-5 h-5 mr-1" />
             Ny grupp

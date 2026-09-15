@@ -150,7 +150,7 @@ export function ExportPanel({
   return (
     <div className="p-6">
       <h3 className="text-lg font-semibold mb-2">Exportera projekt</h3>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         Ladda ner dina projektdokument för inlämning eller arkivering.
       </p>
 
@@ -158,12 +158,12 @@ export function ExportPanel({
         {/* Final report */}
         <div className="flex items-center justify-between p-4 border rounded-lg hover:border-yellow-300 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <FileText className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
+              <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <div className="font-medium">Slutrapport</div>
-              <div className="text-sm text-gray-500">Komplett PDF med sammanfattning</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Komplett PDF med sammanfattning</div>
             </div>
           </div>
           <Button
@@ -185,12 +185,12 @@ export function ExportPanel({
         {/* Activity log */}
         <div className="flex items-center justify-between p-4 border rounded-lg hover:border-yellow-300 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <FileText className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <div className="font-medium">Aktivitetslogg</div>
-              <div className="text-sm text-gray-500">JSON-format med alla aktiviteter</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">JSON-format med alla aktiviteter</div>
             </div>
           </div>
           <Button
@@ -209,12 +209,12 @@ export function ExportPanel({
         {/* Proposals Excel */}
         <div className="flex items-center justify-between p-4 border rounded-lg hover:border-yellow-300 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <FileSpreadsheet className="w-5 h-5 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
+              <FileSpreadsheet className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
               <div className="font-medium">Åtgärdsförslag</div>
-              <div className="text-sm text-gray-500">Excel-fil med alla förslag</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Excel-fil med alla förslag</div>
             </div>
           </div>
           <Button
@@ -232,15 +232,15 @@ export function ExportPanel({
         </div>
 
         {/* Full ZIP export */}
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-200 rounded-lg">
-                <FileArchive className="w-6 h-6 text-yellow-700" />
+              <div className="p-2 bg-yellow-200 dark:bg-yellow-800 rounded-lg">
+                <FileArchive className="w-6 h-6 text-yellow-700 dark:text-yellow-300" />
               </div>
               <div>
                 <div className="font-semibold">Komplett export (ZIP)</div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   Alla dokument samlade i en ZIP-fil
                 </div>
               </div>

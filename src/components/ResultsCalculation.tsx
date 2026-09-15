@@ -107,14 +107,14 @@ export function ResultsCalculation({ groupCode, proposals }: ResultsCalculationP
             Exportera rapport
           </Button>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Se förväntade resultat baserat på era åtgärdsförslag och hur ni hanterat händelser.
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
         {/* Main result */}
-        <div className={`p-6 rounded-lg border-2 mb-6 ${goalMet ? "border-green-300 bg-green-50" : "border-yellow-300 bg-yellow-50"}`}>
+        <div className={`p-6 rounded-lg border-2 mb-6 ${goalMet ? "border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30" : "border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/30"}`}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               {goalMet ? (
@@ -126,16 +126,16 @@ export function ResultsCalculation({ groupCode, proposals }: ResultsCalculationP
                 <h4 className="text-2xl font-bold">
                   {reductionPercent}% reduktion
                 </h4>
-                <p className={`text-sm ${goalMet ? "text-green-600" : "text-yellow-600"}`}>
+                <p className={`text-sm ${goalMet ? "text-green-600 dark:text-green-400" : "text-yellow-600 dark:text-yellow-400"}`}>
                   {goalMet ? "Målet på 50% är uppnått!" : "Målet på 50% är inte uppnått"}
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {savings.toFixed(1)} MSEK
               </div>
-              <div className="text-sm text-gray-500">Besparing per år</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Besparing per år</div>
             </div>
           </div>
 
@@ -145,7 +145,7 @@ export function ResultsCalculation({ groupCode, proposals }: ResultsCalculationP
               <span>Progress mot mål</span>
               <span>{reductionPercent}% / 50%</span>
             </div>
-            <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all ${goalMet ? "bg-green-500" : "bg-yellow-500"}`}
                 style={{ width: `${Math.min(100, (reductionPercent / 50) * 100)}%` }}
@@ -156,22 +156,22 @@ export function ResultsCalculation({ groupCode, proposals }: ResultsCalculationP
 
         {/* Stats grid */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="p-4 bg-white border rounded-lg">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-white dark:bg-gray-800 border rounded-lg">
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
               <TrendingDown className="w-4 h-4" />
               <span className="text-sm">Reduktion</span>
             </div>
             <div className="text-2xl font-bold">{reductionPercent}%</div>
           </div>
-          <div className="p-4 bg-white border rounded-lg">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-white dark:bg-gray-800 border rounded-lg">
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
               <DollarSign className="w-4 h-4" />
               <span className="text-sm">ROI</span>
             </div>
             <div className="text-2xl font-bold">{roi.toFixed(1)}x</div>
           </div>
-          <div className="p-4 bg-white border rounded-lg">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
+          <div className="p-4 bg-white dark:bg-gray-800 border rounded-lg">
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
               <Target className="w-4 h-4" />
               <span className="text-sm">Åtgärdskostnad</span>
             </div>
@@ -191,7 +191,7 @@ export function ResultsCalculation({ groupCode, proposals }: ResultsCalculationP
                 <div
                   key={rc.id}
                   className={`p-3 rounded-lg border ${
-                    addressed ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+                    addressed ? "bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800" : "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -203,11 +203,11 @@ export function ResultsCalculation({ groupCode, proposals }: ResultsCalculationP
                       ) : (
                         <div className="w-5 h-5 rounded-full bg-gray-300" />
                       )}
-                      <span className={addressed ? "font-medium" : "text-gray-500"}>
+                      <span className={addressed ? "font-medium" : "text-gray-500 dark:text-gray-400"}>
                         {rc.name}
                       </span>
                     </div>
-                    <span className={`font-medium ${addressed ? "text-green-600" : "text-gray-400"}`}>
+                    <span className={`font-medium ${addressed ? "text-green-600 dark:text-green-400" : "text-gray-400 dark:text-gray-500"}`}>
                       {Math.round(rc.impact * 100)}%
                     </span>
                   </div>
@@ -219,15 +219,15 @@ export function ResultsCalculation({ groupCode, proposals }: ResultsCalculationP
 
         {/* Tips for missed root causes */}
         {!goalMet && missedRootCauses.length > 0 && (
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
               <div>
-                <h4 className="font-medium text-yellow-800">Tips för att nå målet</h4>
-                <p className="text-sm text-yellow-700 mt-1">
+                <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Tips för att nå målet</h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
                   Ni har inte adresserat följande rotorsaker:
                 </p>
-                <ul className="mt-2 text-sm text-yellow-700 list-disc list-inside">
+                <ul className="mt-2 text-sm text-yellow-700 dark:text-yellow-300 list-disc list-inside">
                   {missedRootCauses.map((rc) => (
                     <li key={rc.id}>
                       {rc.name} ({Math.round(rc.impact * 100)}% potential)

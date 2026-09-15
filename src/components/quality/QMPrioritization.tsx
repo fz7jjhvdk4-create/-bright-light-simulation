@@ -28,7 +28,7 @@ export function QMPrioritization({ state, setState, markToolComplete }: QMToolPr
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-gray-600 mb-2">Kriterier (kommaseparerade)</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">Kriterier (kommaseparerade)</label>
             <input
               type="text"
               value={state.prioritization.criteria.join(", ")}
@@ -47,16 +47,16 @@ export function QMPrioritization({ state, setState, markToolComplete }: QMToolPr
               placeholder="Effekt, Kostnad, Tid..."
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
             />
-            <div className="mt-2 space-y-1 text-xs text-gray-500">
-              <p className="font-medium text-gray-600">Poängskala (0-10):</p>
+            <div className="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+              <p className="font-medium text-gray-600 dark:text-gray-400">Poängskala (0-10):</p>
               <p><span className="font-medium">Effekt:</span> 10 = stor positiv effekt på kvalitet, 1 = liten effekt</p>
               <p><span className="font-medium">Kostnad:</span> 10 = låg kostnad (billig), 1 = hög kostnad (dyr)</p>
               <p><span className="font-medium">Tid:</span> 10 = snabb att genomföra, 1 = lång tid</p>
-              <p className="text-gray-400 italic">Högre poäng = bättre. Anpassa kriterierna efter ert projekt.</p>
+              <p className="text-gray-400 dark:text-gray-500 italic">Högre poäng = bättre. Anpassa kriterierna efter ert projekt.</p>
             </div>
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-2">Alternativ</label>
+            <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">Alternativ</label>
             <Button
               size="sm"
               variant="outline"
@@ -82,7 +82,7 @@ export function QMPrioritization({ state, setState, markToolComplete }: QMToolPr
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="border p-2 bg-gray-50">Alternativ</th>
+                  <th className="border p-2 bg-gray-50 dark:bg-gray-900">Alternativ</th>
                   {state.prioritization.criteria.map((crit, idx) => {
                     const explanations: Record<string, string> = {
                       "Effekt": "10 = stor positiv effekt, 1 = liten effekt",
@@ -90,14 +90,14 @@ export function QMPrioritization({ state, setState, markToolComplete }: QMToolPr
                       "Tid": "10 = snabb att genomföra, 1 = lång tid"
                     };
                     return (
-                      <th key={idx} className="border p-2 bg-gray-50 min-w-[80px] cursor-help" title={explanations[crit] || `Poäng 0-10 för ${crit}`}>
+                      <th key={idx} className="border p-2 bg-gray-50 dark:bg-gray-900 min-w-[80px] cursor-help" title={explanations[crit] || `Poäng 0-10 för ${crit}`}>
                         {crit}
-                        {explanations[crit] && <span className="text-gray-400 ml-1">ⓘ</span>}
+                        {explanations[crit] && <span className="text-gray-400 dark:text-gray-500 ml-1">ⓘ</span>}
                       </th>
                     );
                   })}
-                  <th className="border p-2 bg-yellow-50 font-bold">Summa</th>
-                  <th className="border p-2 bg-gray-50 w-10"></th>
+                  <th className="border p-2 bg-yellow-50 dark:bg-yellow-900/30 font-bold">Summa</th>
+                  <th className="border p-2 bg-gray-50 dark:bg-gray-900 w-10"></th>
                 </tr>
               </thead>
               <tbody>
@@ -138,7 +138,7 @@ export function QMPrioritization({ state, setState, markToolComplete }: QMToolPr
                         />
                       </td>
                     ))}
-                    <td className="border p-2 text-center font-bold bg-yellow-50">
+                    <td className="border p-2 text-center font-bold bg-yellow-50 dark:bg-yellow-900/30">
                       {calculateScore(optIdx)}
                     </td>
                     <td className="border p-2">
@@ -164,11 +164,11 @@ export function QMPrioritization({ state, setState, markToolComplete }: QMToolPr
         )}
 
         {sortedOptions.length > 0 && (
-          <div className="p-4 bg-green-50 rounded-lg">
-            <h5 className="font-medium text-green-800 mb-2">Prioritering:</h5>
+          <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
+            <h5 className="font-medium text-green-800 dark:text-green-200 mb-2">Prioritering:</h5>
             <ol className="list-decimal list-inside space-y-1">
               {sortedOptions.map((opt, idx) => (
-                <li key={opt.idx} className={`text-sm ${idx === 0 ? 'font-bold text-green-700' : 'text-gray-600'}`}>
+                <li key={opt.idx} className={`text-sm ${idx === 0 ? 'font-bold text-green-700 dark:text-green-300' : 'text-gray-600 dark:text-gray-400'}`}>
                   {opt.name} ({opt.score} poäng)
                 </li>
               ))}

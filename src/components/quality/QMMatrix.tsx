@@ -17,7 +17,7 @@ export function QMMatrix({ state, setState, markToolComplete }: QMToolProps) {
           className="text-lg font-medium w-full border-b border-transparent hover:border-gray-300 focus:border-yellow-500 focus:outline-none pb-1"
         />
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Använd symboler för att visa styrkan i samband: ◎ (stark), ○ (medel), △ (svag), tom (inget).
         </p>
 
@@ -25,9 +25,9 @@ export function QMMatrix({ state, setState, markToolComplete }: QMToolProps) {
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                <th className="border p-2 bg-gray-50"></th>
+                <th className="border p-2 bg-gray-50 dark:bg-gray-900"></th>
                 {state.matrix.colLabels.map((col, colIdx) => (
-                  <th key={colIdx} className="border p-2 bg-gray-50 min-w-[100px]">
+                  <th key={colIdx} className="border p-2 bg-gray-50 dark:bg-gray-900 min-w-[100px]">
                     <input
                       type="text"
                       value={col}
@@ -43,7 +43,7 @@ export function QMMatrix({ state, setState, markToolComplete }: QMToolProps) {
                     />
                   </th>
                 ))}
-                <th className="border p-2 bg-gray-50 w-10">
+                <th className="border p-2 bg-gray-50 dark:bg-gray-900 w-10">
                   <button
                     onClick={() => {
                       const newCols = [...state.matrix.colLabels, `Alt ${state.matrix.colLabels.length + 1}`];
@@ -53,7 +53,7 @@ export function QMMatrix({ state, setState, markToolComplete }: QMToolProps) {
                         matrix: { ...prev.matrix, colLabels: newCols, values: newValues }
                       }));
                     }}
-                    className="text-yellow-600 hover:text-yellow-700"
+                    className="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -63,7 +63,7 @@ export function QMMatrix({ state, setState, markToolComplete }: QMToolProps) {
             <tbody>
               {state.matrix.rowLabels.map((row, rowIdx) => (
                 <tr key={rowIdx}>
-                  <td className="border p-2 font-medium bg-gray-50">
+                  <td className="border p-2 font-medium bg-gray-50 dark:bg-gray-900">
                     <input
                       type="text"
                       value={row}
@@ -127,7 +127,7 @@ export function QMMatrix({ state, setState, markToolComplete }: QMToolProps) {
                         matrix: { ...prev.matrix, rowLabels: newRows, values: newValues }
                       }));
                     }}
-                    className="text-yellow-600 hover:text-yellow-700 text-sm"
+                    className="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 text-sm"
                   >
                     <Plus className="w-4 h-4 inline mr-1" />
                     Lägg till rad

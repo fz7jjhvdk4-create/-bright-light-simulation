@@ -23,9 +23,9 @@ export function QCChecksheet({ state, setState, markToolComplete }: QCToolProps)
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                <th className="border p-2 bg-gray-50">Feltyp</th>
+                <th className="border p-2 bg-gray-50 dark:bg-gray-900">Feltyp</th>
                 {state.checksheet.categories.map((cat, i) => (
-                  <th key={i} className="border p-2 bg-gray-50 min-w-[80px]">
+                  <th key={i} className="border p-2 bg-gray-50 dark:bg-gray-900 min-w-[80px]">
                     <input
                       type="text"
                       value={cat}
@@ -41,7 +41,7 @@ export function QCChecksheet({ state, setState, markToolComplete }: QCToolProps)
                     />
                   </th>
                 ))}
-                <th className="border p-2 bg-gray-50">Summa</th>
+                <th className="border p-2 bg-gray-50 dark:bg-gray-900">Summa</th>
               </tr>
             </thead>
             <tbody>
@@ -66,12 +66,12 @@ export function QCChecksheet({ state, setState, markToolComplete }: QCToolProps)
                       />
                     </td>
                   ))}
-                  <td className="border p-2 text-center font-medium bg-gray-50">
+                  <td className="border p-2 text-center font-medium bg-gray-50 dark:bg-gray-900">
                     {row.reduce((a, b) => a + b, 0)}
                   </td>
                 </tr>
               ))}
-              <tr className="bg-gray-50">
+              <tr className="bg-gray-50 dark:bg-gray-900">
                 <td className="border p-2 font-medium">Totalt</td>
                 {state.checksheet.categories.map((_, colIdx) => (
                   <td key={colIdx} className="border p-2 text-center font-medium">

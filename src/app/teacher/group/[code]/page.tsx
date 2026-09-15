@@ -307,17 +307,17 @@ export default function TeacherGroupDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">Laddar...</div>
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400">Laddar...</div>
       </div>
     );
   }
 
   if (!group) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Gruppen hittades inte</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">Gruppen hittades inte</p>
           <Button onClick={() => router.push("/teacher/dashboard")}>
             Tillbaka till dashboard
           </Button>
@@ -327,21 +327,21 @@ export default function TeacherGroupDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-800">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <button
             onClick={() => router.push("/teacher/dashboard")}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Tillbaka till dashboard
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{group.name}</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{group.name}</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Kod: {group.code} • Studenter: {group.studentNames} • Fas: {group.phase}
               </p>
             </div>
@@ -362,10 +362,10 @@ export default function TeacherGroupDetailPage() {
                 { num: 4, name: "Gate 4", status: group.gate4Status },
               ].map((gate) => {
                 const getGateStyle = (status: GateStatus) => {
-                  if (status === 'approved') return "bg-green-100 text-green-700";
-                  if (status === 'pending') return "bg-yellow-100 text-yellow-700";
-                  if (status === 'rejected') return "bg-red-100 text-red-700";
-                  return "bg-gray-100 text-gray-400";
+                  if (status === 'approved') return "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300";
+                  if (status === 'pending') return "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300";
+                  if (status === 'rejected') return "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300";
+                  return "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500";
                 };
                 const getGateIcon = (status: GateStatus) => {
                   if (status === 'approved') return <CheckCircle className="w-3 h-3" />;
@@ -392,32 +392,32 @@ export default function TeacherGroupDetailPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
             <div className="text-2xl font-bold">{interviews.length}</div>
-            <div className="text-sm text-gray-500">Intervjuer</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Intervjuer</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
             <div className="text-2xl font-bold">{downloads.length}</div>
-            <div className="text-sm text-gray-500">Nedladdade filer</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Nedladdade filer</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
             <div className="text-2xl font-bold">{proposals.length}</div>
-            <div className="text-sm text-gray-500">Åtgärdsförslag</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Åtgärdsförslag</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
             <div className="text-2xl font-bold">{activityLog.length}</div>
-            <div className="text-sm text-gray-500">Aktiviteter</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Aktiviteter</div>
           </div>
         </div>
 
         {/* Approval section */}
         {group.status === "pending_approval" && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold text-yellow-800 mb-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-4">
               Gruppen väntar på godkännande
             </h3>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Feedback (valfritt)
               </label>
               <textarea
@@ -425,7 +425,7 @@ export default function TeacherGroupDetailPage() {
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="Skriv feedback till studenterna..."
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
               />
             </div>
             <div className="flex gap-4">
@@ -441,7 +441,7 @@ export default function TeacherGroupDetailPage() {
                 variant="outline"
                 onClick={() => handleApproval(false)}
                 disabled={isSubmitting}
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                className="border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
               >
                 <XCircle className="w-4 h-4 mr-2" />
                 Avslå
@@ -452,21 +452,21 @@ export default function TeacherGroupDetailPage() {
 
         {/* Pending gate approval banner */}
         {(group.gate1Status === 'pending' || group.gate2Status === 'pending' || group.gate3Status === 'pending' || group.gate4Status === 'pending') && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold text-yellow-800 mb-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-4">
               {group.gate1Status === 'pending' && "Gate 1: Projektdirektiv väntar på godkännande"}
               {group.gate2Status === 'pending' && "Gate 2: Projektplan väntar på godkännande"}
               {group.gate3Status === 'pending' && "Gate 3: Utredningsrapport väntar på godkännande"}
               {group.gate4Status === 'pending' && "Gate 4: Slutredovisning väntar på godkännande"}
             </h3>
-            <p className="text-sm text-yellow-700 mb-4">
+            <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
               {group.gate1Status === 'pending' && "Granska projektdirektivet och godkänn för att låsa upp Fas 2 (Projektplan)."}
               {group.gate2Status === 'pending' && "Granska projektplanen och godkänn för att låsa upp Fas 3 (Utredning med intervjuer)."}
               {group.gate3Status === 'pending' && "Granska utredningsrapporten och godkänn för att låsa upp Fas 4 (Redovisning)."}
               {group.gate4Status === 'pending' && "Granska slutredovisningen och godkänn för att slutföra projektet."}
             </p>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Feedback (valfritt)
               </label>
               <textarea
@@ -474,7 +474,7 @@ export default function TeacherGroupDetailPage() {
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="Skriv feedback till studenterna..."
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
               />
             </div>
             <div className="flex gap-4">
@@ -496,7 +496,7 @@ export default function TeacherGroupDetailPage() {
                   handleGateApproval(gateNum as 1 | 2 | 3 | 4, false);
                 }}
                 disabled={isSubmitting}
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                className="border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
               >
                 <XCircle className="w-4 h-4 mr-2" />
                 Avslå (begär komplettering)
@@ -506,83 +506,83 @@ export default function TeacherGroupDetailPage() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
           <div className="border-b px-4">
             <div className="flex gap-4 overflow-x-auto">
               <button
                 onClick={() => setActiveTab("projectplan")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "projectplan"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
                 Gate 1 (Projektdirektiv)
                 {group.gate1Status === 'pending' && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 text-xs rounded">Väntar</span>
                 )}
                 {group.gate1Status === 'approved' && (
-                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600 dark:text-green-400" /></span>
                 )}
               </button>
               <button
                 onClick={() => setActiveTab("gate2")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "gate2"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
                 Gate 2 (Projektplan)
                 {group.gate2Status === 'pending' && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 text-xs rounded">Väntar</span>
                 )}
                 {group.gate2Status === 'approved' && (
-                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600 dark:text-green-400" /></span>
                 )}
               </button>
               <button
                 onClick={() => setActiveTab("investigation")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "investigation"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
                 Gate 3 (Utredning)
                 {group.gate3Status === 'pending' && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 text-xs rounded">Väntar</span>
                 )}
                 {group.gate3Status === 'approved' && (
-                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600 dark:text-green-400" /></span>
                 )}
               </button>
               <button
                 onClick={() => setActiveTab("gate4")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "gate4"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <ClipboardList className="w-4 h-4 inline mr-1" />
                 Gate 4 (Slutredovisning)
                 {group.gate4Status === 'pending' && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Väntar</span>
+                  <span className="ml-1 px-1.5 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 text-xs rounded">Väntar</span>
                 )}
                 {group.gate4Status === 'approved' && (
-                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600" /></span>
+                  <span className="ml-1"><CheckCircle className="w-3 h-3 inline text-green-600 dark:text-green-400" /></span>
                 )}
               </button>
               <button
                 onClick={() => setActiveTab("interviews")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "interviews"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <Users className="w-4 h-4 inline mr-1" />
@@ -592,8 +592,8 @@ export default function TeacherGroupDetailPage() {
                 onClick={() => setActiveTab("data")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "data"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
@@ -603,8 +603,8 @@ export default function TeacherGroupDetailPage() {
                 onClick={() => setActiveTab("activity")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "activity"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <MessageSquare className="w-4 h-4 inline mr-1" />
@@ -614,8 +614,8 @@ export default function TeacherGroupDetailPage() {
                 onClick={() => setActiveTab("labreport")}
                 className={`py-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === "labreport"
-                    ? "border-yellow-500 text-yellow-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    ? "border-yellow-500 text-yellow-600 dark:text-yellow-400"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-1" />
@@ -630,55 +630,55 @@ export default function TeacherGroupDetailPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Projektdefinition</h3>
                   {group.projectPlanApproved ? (
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                    <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-sm font-medium flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       Godkänd
                     </span>
                   ) : (
-                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 rounded-full text-sm font-medium">
                       Ej godkänd
                     </span>
                   )}
                 </div>
 
                 {!projectDefinition ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p>Studenterna har inte skickat in någon projektdefinition än.</p>
                     <p className="text-sm mt-2">Delfas: {group.subPhase}</p>
                   </div>
                 ) : (
                   <>
                     <div className="space-y-4 mb-6">
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Syfte</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.purpose || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                        <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Syfte</h4>
+                        <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{projectDefinition.purpose || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                       </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Mål (SMART)</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.goals || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                        <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Mål (SMART)</h4>
+                        <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{projectDefinition.goals || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                       </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Omfattning</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.scope || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                        <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Omfattning</h4>
+                        <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{projectDefinition.scope || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                       </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Avgränsningar</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.exclusions || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                        <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Avgränsningar</h4>
+                        <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{projectDefinition.exclusions || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                       </div>
-                      <div className="p-4 border rounded-lg bg-gray-50">
-                        <h4 className="font-medium text-gray-700 mb-1">Framgångskriterier</h4>
-                        <p className="text-gray-600 whitespace-pre-wrap">{projectDefinition.success_criteria || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                        <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Framgångskriterier</h4>
+                        <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{projectDefinition.success_criteria || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                       </div>
                     </div>
 
                     {!group.projectPlanApproved && group.gate1Status !== 'approved' && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <h4 className="font-medium text-yellow-800 mb-2">Godkänn projektdirektiv</h4>
-                        <p className="text-sm text-yellow-700 mb-4">
+                      <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                        <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Godkänn projektdirektiv</h4>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
                           Granska projektdirektivet och godkänn för att låsa upp Fas 2 (Projektplan).
                         </p>
                         <div className="mb-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Feedback (valfritt)
                           </label>
                           <textarea
@@ -686,7 +686,7 @@ export default function TeacherGroupDetailPage() {
                             onChange={(e) => setFeedback(e.target.value)}
                             placeholder="Skriv feedback till studenterna..."
                             rows={2}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
                           />
                         </div>
                         <div className="flex gap-4">
@@ -702,7 +702,7 @@ export default function TeacherGroupDetailPage() {
                             variant="outline"
                             onClick={() => handleGateApproval(1, false)}
                             disabled={isSubmitting}
-                            className="border-red-300 text-red-600 hover:bg-red-50"
+                            className="border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                           >
                             <XCircle className="w-4 h-4 mr-2" />
                             Avslå
@@ -720,40 +720,40 @@ export default function TeacherGroupDetailPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Gate 2: Projektplan</h3>
                   {group.gate2Status === 'approved' ? (
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                    <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-sm font-medium flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       Godkänd
                     </span>
                   ) : group.gate2Status === 'pending' ? (
-                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded-full text-sm font-medium">
                       Väntar på godkännande
                     </span>
                   ) : group.gate2Status === 'rejected' ? (
-                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-full text-sm font-medium">
                       Avvisad
                     </span>
                   ) : (
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
                       Ej inlämnad
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                   Projektplanen inkluderar WBS, Gantt-schema, intressentanalys och riskanalys.
                   Studenterna arbetar med dessa verktyg i simuleringen.
                 </p>
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <h4 className="font-medium text-gray-700 mb-1">Intervjuer genomförda</h4>
+                  <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Intervjuer genomförda</h4>
                     <p className="text-2xl font-bold">{interviews.length}</p>
                   </div>
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <h4 className="font-medium text-gray-700 mb-1">Datafiler nedladdade</h4>
+                  <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Datafiler nedladdade</h4>
                     <p className="text-2xl font-bold">{downloads.length}</p>
                   </div>
                 </div>
                 {group.phase < 2 && (
-                  <div className="text-center py-4 text-gray-500">
+                  <div className="text-center py-4 text-gray-500 dark:text-gray-400">
                     <p>Studenterna har ännu inte nått Fas 2.</p>
                   </div>
                 )}
@@ -765,20 +765,20 @@ export default function TeacherGroupDetailPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Gate 3: Utredningsrapport</h3>
                   {group.gate3Status === 'approved' ? (
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                    <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-sm font-medium flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       Godkänd
                     </span>
                   ) : group.gate3Status === 'pending' ? (
-                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded-full text-sm font-medium">
                       Väntar på godkännande
                     </span>
                   ) : group.gate3Status === 'rejected' ? (
-                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-full text-sm font-medium">
                       Avvisad
                     </span>
                   ) : (
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
                       Ej inlämnad
                     </span>
                   )}
@@ -787,11 +787,11 @@ export default function TeacherGroupDetailPage() {
                 {/* Investigation tools overview */}
                 {investigationTools && (
                   <div className="mb-6 space-y-4">
-                    <h4 className="font-semibold text-gray-800 border-b pb-2">Använda analysverktyg</h4>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 border-b pb-2">Använda analysverktyg</h4>
 
                     {/* 7QC Tools */}
-                    <div className="p-4 border rounded-lg bg-blue-50">
-                      <h5 className="font-medium text-blue-800 mb-2">7 QC-verktyg ({investigationTools.tools7qc?.completedTools?.length || 0}/7 använda)</h5>
+                    <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                      <h5 className="font-medium text-blue-800 dark:text-blue-200 mb-2">7 QC-verktyg ({investigationTools.tools7qc?.completedTools?.length || 0}/7 använda)</h5>
                       {investigationTools.tools7qc?.completedTools && investigationTools.tools7qc.completedTools.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {investigationTools.tools7qc.completedTools.map((tool) => {
@@ -805,20 +805,20 @@ export default function TeacherGroupDetailPage() {
                               stratification: "Stratifiering"
                             };
                             return (
-                              <span key={tool} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm">
+                              <span key={tool} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded text-sm">
                                 {toolNames[tool] || tool}
                               </span>
                             );
                           })}
                         </div>
                       ) : (
-                        <p className="text-sm text-blue-600 italic">Inga 7QC-verktyg använda</p>
+                        <p className="text-sm text-blue-600 dark:text-blue-400 italic">Inga 7QC-verktyg använda</p>
                       )}
                     </div>
 
                     {/* 7QM Tools */}
-                    <div className="p-4 border rounded-lg bg-purple-50">
-                      <h5 className="font-medium text-purple-800 mb-2">7 QM-verktyg ({investigationTools.tools7qm?.completedTools?.length || 0}/7 använda)</h5>
+                    <div className="p-4 border rounded-lg bg-purple-50 dark:bg-purple-900/30">
+                      <h5 className="font-medium text-purple-800 dark:text-purple-200 mb-2">7 QM-verktyg ({investigationTools.tools7qm?.completedTools?.length || 0}/7 använda)</h5>
                       {investigationTools.tools7qm?.completedTools && investigationTools.tools7qm.completedTools.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {investigationTools.tools7qm.completedTools.map((tool) => {
@@ -832,41 +832,41 @@ export default function TeacherGroupDetailPage() {
                               prioritization: "Prioriteringsmatris"
                             };
                             return (
-                              <span key={tool} className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm">
+                              <span key={tool} className="px-2 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded text-sm">
                                 {toolNames[tool] || tool}
                               </span>
                             );
                           })}
                         </div>
                       ) : (
-                        <p className="text-sm text-purple-600 italic">Inga 7QM-verktyg använda</p>
+                        <p className="text-sm text-purple-600 dark:text-purple-400 italic">Inga 7QM-verktyg använda</p>
                       )}
                     </div>
 
                     {/* 5 Why */}
                     {investigationTools.fiveWhy && (
-                      <div className="p-4 border rounded-lg bg-orange-50">
-                        <h5 className="font-medium text-orange-800 mb-2">5 Varför-analys</h5>
+                      <div className="p-4 border rounded-lg bg-orange-50 dark:bg-orange-900/30">
+                        <h5 className="font-medium text-orange-800 dark:text-orange-200 mb-2">5 Varför-analys</h5>
                         {investigationTools.fiveWhy.problem && (
                           <div className="mb-2">
-                            <span className="text-sm font-medium text-orange-700">Problem: </span>
-                            <span className="text-sm text-orange-600">{investigationTools.fiveWhy.problem}</span>
+                            <span className="text-sm font-medium text-orange-700 dark:text-orange-300">Problem: </span>
+                            <span className="text-sm text-orange-600 dark:text-orange-400">{investigationTools.fiveWhy.problem}</span>
                           </div>
                         )}
                         {investigationTools.fiveWhy.responses && investigationTools.fiveWhy.responses.length > 0 && (
                           <div className="space-y-1 mb-2">
                             {investigationTools.fiveWhy.responses.map((response, i) => (
                               <div key={i} className="text-sm">
-                                <span className="font-medium text-orange-700">Varför {i + 1}: </span>
-                                <span className="text-orange-600">{response}</span>
+                                <span className="font-medium text-orange-700 dark:text-orange-300">Varför {i + 1}: </span>
+                                <span className="text-orange-600 dark:text-orange-400">{response}</span>
                               </div>
                             ))}
                           </div>
                         )}
                         {investigationTools.fiveWhy.rootCause && (
-                          <div className="mt-2 p-2 bg-orange-100 rounded">
-                            <span className="text-sm font-medium text-orange-800">Rotorsak: </span>
-                            <span className="text-sm text-orange-700">{investigationTools.fiveWhy.rootCause}</span>
+                          <div className="mt-2 p-2 bg-orange-100 dark:bg-orange-900/40 rounded">
+                            <span className="text-sm font-medium text-orange-800 dark:text-orange-200">Rotorsak: </span>
+                            <span className="text-sm text-orange-700 dark:text-orange-300">{investigationTools.fiveWhy.rootCause}</span>
                           </div>
                         )}
                       </div>
@@ -876,46 +876,46 @@ export default function TeacherGroupDetailPage() {
 
                 {/* Investigation report */}
                 {!investigationReport && !investigationTools ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p>Studenterna har inte skickat in någon utredningsrapport än.</p>
                     <p className="text-sm mt-2">Delfas: {group.subPhase}</p>
                   </div>
                 ) : investigationReport ? (
                   <div className="space-y-4 mb-6">
-                    <h4 className="font-semibold text-gray-800 border-b pb-2">Utredningsrapport</h4>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <h4 className="font-medium text-gray-700 mb-1">Sammanfattning</h4>
-                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.summary || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 border-b pb-2">Utredningsrapport</h4>
+                    <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                      <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Sammanfattning</h4>
+                      <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{investigationReport.summary || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <h4 className="font-medium text-gray-700 mb-1">Metodik</h4>
-                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.methodology || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                    <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                      <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Metodik</h4>
+                      <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{investigationReport.methodology || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <h4 className="font-medium text-gray-700 mb-2">Identifierade rotorsaker ({investigationReport.root_causes?.length || 0})</h4>
+                    <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                      <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Identifierade rotorsaker ({investigationReport.root_causes?.length || 0})</h4>
                       {investigationReport.root_causes && investigationReport.root_causes.length > 0 ? (
                         <div className="space-y-3">
                           {investigationReport.root_causes.map((rc, index) => (
-                            <div key={rc.id} className="p-3 bg-white border rounded">
-                              <h5 className="font-medium text-gray-800">{index + 1}. {rc.title || "Utan titel"}</h5>
-                              <p className="text-gray-600 text-sm mt-1">{rc.description}</p>
+                            <div key={rc.id} className="p-3 bg-white dark:bg-gray-800 border rounded">
+                              <h5 className="font-medium text-gray-800 dark:text-gray-200">{index + 1}. {rc.title || "Utan titel"}</h5>
+                              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">{rc.description}</p>
                               {rc.evidence && (
-                                <p className="text-gray-500 text-xs mt-1 italic">Bevis: {rc.evidence}</p>
+                                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1 italic">Bevis: {rc.evidence}</p>
                               )}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <em className="text-gray-400">Inga rotorsaker dokumenterade</em>
+                        <em className="text-gray-400 dark:text-gray-500">Inga rotorsaker dokumenterade</em>
                       )}
                     </div>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <h4 className="font-medium text-gray-700 mb-1">Slutsatser</h4>
-                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.conclusions || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                    <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                      <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Slutsatser</h4>
+                      <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{investigationReport.conclusions || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                     </div>
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <h4 className="font-medium text-gray-700 mb-1">Rekommendationer</h4>
-                      <p className="text-gray-600 whitespace-pre-wrap">{investigationReport.recommendations || <em className="text-gray-400">Ej ifyllt</em>}</p>
+                    <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                      <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Rekommendationer</h4>
+                      <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{investigationReport.recommendations || <em className="text-gray-400 dark:text-gray-500">Ej ifyllt</em>}</p>
                     </div>
                   </div>
                 ) : null}
@@ -927,27 +927,27 @@ export default function TeacherGroupDetailPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Gate 4: Slutredovisning — Åtgärdsmatris</h3>
                   {group.gate4Status === 'approved' ? (
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1">
+                    <span className="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-sm font-medium flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       Godkänd
                     </span>
                   ) : group.gate4Status === 'pending' ? (
-                    <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded-full text-sm font-medium">
                       Väntar på godkännande
                     </span>
                   ) : group.gate4Status === 'rejected' ? (
-                    <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 rounded-full text-sm font-medium">
                       Avvisad
                     </span>
                   ) : (
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
                       Ej inlämnad
                     </span>
                   )}
                 </div>
 
                 {proposals.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p>Inga åtgärdsförslag inlämnade än.</p>
                   </div>
                 ) : (
@@ -955,46 +955,46 @@ export default function TeacherGroupDetailPage() {
                     <div className="overflow-x-auto mb-6">
                       <table className="w-full border-collapse text-sm">
                         <thead>
-                          <tr className="bg-gray-50">
-                            <th className="border p-3 text-left font-semibold text-gray-700">Rotorsak</th>
-                            <th className="border p-3 text-left font-semibold text-gray-700">Aktivitet</th>
-                            <th className="border p-3 text-left font-semibold text-gray-700">Ansvarig</th>
-                            <th className="border p-3 text-left font-semibold text-gray-700">Tidplan</th>
-                            <th className="border p-3 text-right font-semibold text-gray-700">Kostnad (SEK)</th>
-                            <th className="border p-3 text-right font-semibold text-gray-700">Förväntad besparing (SEK)</th>
+                          <tr className="bg-gray-50 dark:bg-gray-900">
+                            <th className="border p-3 text-left font-semibold text-gray-700 dark:text-gray-300">Rotorsak</th>
+                            <th className="border p-3 text-left font-semibold text-gray-700 dark:text-gray-300">Aktivitet</th>
+                            <th className="border p-3 text-left font-semibold text-gray-700 dark:text-gray-300">Ansvarig</th>
+                            <th className="border p-3 text-left font-semibold text-gray-700 dark:text-gray-300">Tidplan</th>
+                            <th className="border p-3 text-right font-semibold text-gray-700 dark:text-gray-300">Kostnad (SEK)</th>
+                            <th className="border p-3 text-right font-semibold text-gray-700 dark:text-gray-300">Förväntad besparing (SEK)</th>
                           </tr>
                         </thead>
                         <tbody>
                           {proposals.map((proposal) => (
-                            <tr key={proposal.id} className="hover:bg-gray-50">
+                            <tr key={proposal.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                               <td className="border p-3">
-                                <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded">
+                                <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 rounded">
                                   {getRootCauseName(proposal.rootCauseId)}
                                 </span>
                               </td>
-                              <td className="border p-3 text-gray-900">{proposal.description}</td>
-                              <td className="border p-3 text-gray-700">{proposal.responsible || <em className="text-gray-400">—</em>}</td>
-                              <td className="border p-3 text-gray-700">{proposal.timeline || <em className="text-gray-400">—</em>}</td>
-                              <td className="border p-3 text-right text-gray-700">
+                              <td className="border p-3 text-gray-900 dark:text-gray-100">{proposal.description}</td>
+                              <td className="border p-3 text-gray-700 dark:text-gray-300">{proposal.responsible || <em className="text-gray-400 dark:text-gray-500">—</em>}</td>
+                              <td className="border p-3 text-gray-700 dark:text-gray-300">{proposal.timeline || <em className="text-gray-400 dark:text-gray-500">—</em>}</td>
+                              <td className="border p-3 text-right text-gray-700 dark:text-gray-300">
                                 {proposal.cost != null && proposal.cost > 0
                                   ? proposal.cost.toLocaleString("sv-SE")
-                                  : <em className="text-gray-400">—</em>}
+                                  : <em className="text-gray-400 dark:text-gray-500">—</em>}
                               </td>
-                              <td className="border p-3 text-right font-medium text-green-700">
+                              <td className="border p-3 text-right font-medium text-green-700 dark:text-green-300">
                                 {proposal.costReduction != null && proposal.costReduction > 0
                                   ? proposal.costReduction.toLocaleString("sv-SE")
-                                  : <em className="text-gray-400">—</em>}
+                                  : <em className="text-gray-400 dark:text-gray-500">—</em>}
                               </td>
                             </tr>
                           ))}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-gray-50 font-semibold">
+                          <tr className="bg-gray-50 dark:bg-gray-900 font-semibold">
                             <td className="border p-3" colSpan={4}>Totalt</td>
                             <td className="border p-3 text-right">
                               {proposals.reduce((sum, p) => sum + (p.cost || 0), 0).toLocaleString("sv-SE")}
                             </td>
-                            <td className="border p-3 text-right text-green-700">
+                            <td className="border p-3 text-right text-green-700 dark:text-green-300">
                               {proposals.reduce((sum, p) => sum + (p.costReduction || 0), 0).toLocaleString("sv-SE")}
                             </td>
                           </tr>
@@ -1003,19 +1003,19 @@ export default function TeacherGroupDetailPage() {
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
-                      <div className="p-4 border rounded-lg bg-gray-50 text-center">
-                        <div className="text-sm text-gray-500 mb-1">Antal åtgärder</div>
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900 text-center">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Antal åtgärder</div>
                         <div className="text-2xl font-bold">{proposals.length}</div>
                       </div>
-                      <div className="p-4 border rounded-lg bg-gray-50 text-center">
-                        <div className="text-sm text-gray-500 mb-1">Total kostnad</div>
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900 text-center">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total kostnad</div>
                         <div className="text-2xl font-bold">
                           {proposals.reduce((sum, p) => sum + (p.cost || 0), 0).toLocaleString("sv-SE")} SEK
                         </div>
                       </div>
-                      <div className="p-4 border rounded-lg bg-green-50 text-center">
-                        <div className="text-sm text-green-600 mb-1">Förväntad total besparing</div>
-                        <div className="text-2xl font-bold text-green-700">
+                      <div className="p-4 border rounded-lg bg-green-50 dark:bg-green-900/30 text-center">
+                        <div className="text-sm text-green-600 dark:text-green-400 mb-1">Förväntad total besparing</div>
+                        <div className="text-2xl font-bold text-green-700 dark:text-green-300">
                           {proposals.reduce((sum, p) => sum + (p.costReduction || 0), 0).toLocaleString("sv-SE")} SEK
                         </div>
                       </div>
@@ -1029,7 +1029,7 @@ export default function TeacherGroupDetailPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">Genomförda intervjuer</h3>
                 {interviews.length === 0 ? (
-                  <p className="text-gray-500">Inga intervjuer genomförda än.</p>
+                  <p className="text-gray-500 dark:text-gray-400">Inga intervjuer genomförda än.</p>
                 ) : (
                   <div className="space-y-2">
                     {interviews.map((interview) => (
@@ -1040,7 +1040,7 @@ export default function TeacherGroupDetailPage() {
                         <span className="font-medium">
                           {getRoleName(interview.roleId)}
                         </span>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
                           {interview.questionsAsked} frågor •{" "}
                           {new Date(interview.startedAt).toLocaleDateString("sv-SE")}
                         </div>
@@ -1055,7 +1055,7 @@ export default function TeacherGroupDetailPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">Nedladdade datafiler</h3>
                 {downloads.length === 0 ? (
-                  <p className="text-gray-500">Inga filer nedladdade än.</p>
+                  <p className="text-gray-500 dark:text-gray-400">Inga filer nedladdade än.</p>
                 ) : (
                   <div className="space-y-2">
                     {downloads.map((download) => (
@@ -1064,7 +1064,7 @@ export default function TeacherGroupDetailPage() {
                         className="flex items-center justify-between p-3 border rounded-lg"
                       >
                         <span className="font-medium">{download.fileId}</span>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {new Date(download.timestamp).toLocaleString("sv-SE")}
                         </span>
                       </div>
@@ -1078,22 +1078,22 @@ export default function TeacherGroupDetailPage() {
               <div>
                 <h3 className="text-lg font-semibold mb-4">Aktivitetslogg</h3>
                 {activityLog.length === 0 ? (
-                  <p className="text-gray-500">Ingen aktivitet loggad än.</p>
+                  <p className="text-gray-500 dark:text-gray-400">Ingen aktivitet loggad än.</p>
                 ) : (
                   <div className="space-y-2">
                     {activityLog.map((log) => (
                       <div
                         key={log.id}
-                        className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg text-sm"
+                        className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm"
                       >
-                        <div className="text-gray-400 whitespace-nowrap">
+                        <div className="text-gray-400 dark:text-gray-500 whitespace-nowrap">
                           {new Date(log.timestamp).toLocaleString("sv-SE")}
                         </div>
                         <div className="flex-1">
-                          <span className="font-medium text-gray-700">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">
                             {log.action}
                           </span>
-                          <span className="text-gray-500 ml-2">{log.detail}</span>
+                          <span className="text-gray-500 dark:text-gray-400 ml-2">{log.detail}</span>
                         </div>
                       </div>
                     ))}

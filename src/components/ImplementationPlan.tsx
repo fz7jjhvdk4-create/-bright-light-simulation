@@ -189,7 +189,7 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
             </Button>
           </div>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Planera implementeringen av era åtgärder. Dra i staplarna för att justera tid.
         </p>
       </div>
@@ -197,11 +197,11 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
       <div className="flex-1 overflow-auto p-4">
         {/* Add form */}
         {showForm && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
             <h4 className="font-medium mb-3">Ny aktivitet</h4>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Aktivitet
                 </label>
                 <input
@@ -214,7 +214,7 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Ansvarig
                   </label>
                   <input
@@ -226,7 +226,7 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Start (vecka)
                   </label>
                   <input
@@ -239,7 +239,7 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Slut (vecka)
                   </label>
                   <input
@@ -276,7 +276,7 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
 
         {/* Timeline header */}
         <div className="mb-4">
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
             <Calendar className="w-4 h-4" />
             <span>Tidslinje: 24 veckor (6 månader)</span>
           </div>
@@ -284,7 +284,7 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
             <div className="w-48 shrink-0" />
             <div className="flex-1 flex">
               {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="flex-1 text-center text-xs text-gray-500 border-l border-gray-200">
+                <div key={i} className="flex-1 text-center text-xs text-gray-500 dark:text-gray-400 border-l border-gray-200 dark:border-gray-700">
                   Månad {i + 1}
                 </div>
               ))}
@@ -307,13 +307,13 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
                       <div className="text-sm font-medium truncate" title={action.name}>
                         {action.name}
                       </div>
-                      <div className="text-xs text-gray-500 truncate">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {action.responsible || "Ej angiven"}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex-1 h-8 bg-gray-100 rounded relative">
+                <div className="flex-1 h-8 bg-gray-100 dark:bg-gray-800 rounded relative">
                   <div
                     className={`absolute h-full rounded ${getStatusColor(action.status)} opacity-80 hover:opacity-100 transition-opacity cursor-pointer`}
                     style={{
@@ -339,16 +339,16 @@ export function ImplementationPlan({ groupCode, approvedProposals }: Implementat
                   {Array.from({ length: 6 }, (_, i) => (
                     <div
                       key={i}
-                      className="absolute top-0 bottom-0 border-l border-gray-200"
+                      className="absolute top-0 bottom-0 border-l border-gray-200 dark:border-gray-700"
                       style={{ left: `${(i * 4 / totalWeeks) * 100}%` }}
                     />
                   ))}
                 </div>
                 <button
                   onClick={() => deleteAction(action.id)}
-                  className="ml-2 p-1 opacity-0 group-hover:opacity-100 hover:bg-red-100 rounded transition-all"
+                  className="ml-2 p-1 opacity-0 group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/50 rounded transition-all"
                 >
-                  <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                  <Trash2 className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-red-500" />
                 </button>
               </div>
             );

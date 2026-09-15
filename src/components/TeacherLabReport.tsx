@@ -94,9 +94,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function TextField({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div className="mb-3">
-      <div className="text-sm font-medium text-gray-700">{label}</div>
-      <div className="text-sm text-gray-900 whitespace-pre-wrap">
-        {value?.trim() ? value : <span className="text-gray-400 italic">Ej ifyllt</span>}
+      <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</div>
+      <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+        {value?.trim() ? value : <span className="text-gray-400 dark:text-gray-500 italic">Ej ifyllt</span>}
       </div>
     </div>
   );
@@ -112,7 +112,7 @@ function ToolChips({ completed, names }: { completed: string[]; names: Record<st
           <span
             key={key}
             className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-              done ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-400"
+              done ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300" : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500"
             }`}
           >
             {names[key]}{done ? " ✓" : ""}
@@ -164,12 +164,12 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
       </div>
     );
   }
   if (error || !report) {
-    return <div className="p-6 text-red-600 text-sm">{error || "Ingen rapportdata"}</div>;
+    return <div className="p-6 text-red-600 dark:text-red-400 text-sm">{error || "Ingen rapportdata"}</div>;
   }
 
   // Group questions by role, in interview order
@@ -204,7 +204,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Samlad bild av gruppens arbete — planering, verktygsanvändning, intervjuer och lösning.
         </p>
         <Button size="sm" variant="outline" onClick={handleExportPDF}>
@@ -213,12 +213,12 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
         </Button>
       </div>
 
-      <div id="lab-report-content" className="bg-white p-6 rounded-lg border">
+      <div id="lab-report-content" className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-xl font-bold">Labbrapport — {report.group.name} ({report.group.code})</h2>
-          <p className="text-sm text-gray-600">Studenter: {report.group.studentNames}</p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">Studenter: {report.group.studentNames}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Fas {report.group.phase} · Gates:{" "}
             {gates.map((s, i) => `G${i + 1} ${s === "approved" ? "✓" : s === "pending" ? "⏳" : s === "rejected" ? "✗" : "–"}`).join("  ")}
             {" "}· {new Date().toLocaleDateString("sv-SE")}
@@ -234,9 +234,9 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
               { value: completed7qc.length + completed7qm.length, label: "verktyg avklarade" },
               { value: report.proposals.length, label: "åtgärdsförslag" },
             ].map(({ value, label }) => (
-              <div key={label} className="bg-gray-50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-gray-800">{value}</div>
-                <div className="text-xs text-gray-500">{label}</div>
+              <div key={label} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">{value}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
               </div>
             ))}
           </div>
@@ -253,7 +253,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
               <TextField label="Framgångskriterier" value={report.projectDefinition.success_criteria} />
             </>
           ) : (
-            <p className="text-sm text-gray-400 italic">Ingen projektdefinition sparad.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 italic">Ingen projektdefinition sparad.</p>
           )}
         </Section>
 
@@ -264,18 +264,18 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
 
           {paretoItems.length > 0 && (
             <div className="mb-4">
-              <div className="text-sm font-medium text-gray-700 mb-1">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Paretodiagram: {pareto?.title}
               </div>
               <table className="text-sm w-full max-w-md">
                 <thead>
-                  <tr className="text-left text-xs text-gray-500 border-b">
+                  <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b">
                     <th className="py-1">Feltyp</th><th>Antal</th><th>Andel</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paretoItems.map(item => (
-                    <tr key={item.name} className="border-b border-gray-100">
+                    <tr key={item.name} className="border-b border-gray-100 dark:border-gray-800">
                       <td className="py-1">{item.name}</td>
                       <td>{item.count}</td>
                       <td>{paretoTotal > 0 ? `${Math.round((item.count / paretoTotal) * 100)} %` : "–"}</td>
@@ -290,7 +290,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
             .filter(d => d.categories.some(c => c.causes.length > 0))
             .map(diagram => (
               <div key={diagram.id} className="mb-4">
-                <div className="text-sm font-medium text-gray-700 mb-1">Ishikawa: {diagram.problem}</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ishikawa: {diagram.problem}</div>
                 <ul className="text-sm list-disc pl-5">
                   {diagram.categories.filter(c => c.causes.length > 0).map(c => (
                     <li key={c.name}><strong>{c.name}:</strong> {c.causes.join(", ")}</li>
@@ -301,7 +301,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
 
           {fiveWhy?.problem && (
             <div className="mb-4">
-              <div className="text-sm font-medium text-gray-700 mb-1">5 Varför: {fiveWhy.problem}</div>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">5 Varför: {fiveWhy.problem}</div>
               <ol className="text-sm list-decimal pl-5">
                 {(fiveWhy.whys ?? []).filter(w => w.trim()).map((why, i) => <li key={i}>{why}</li>)}
               </ol>
@@ -316,7 +316,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
 
           {(report.tools.tools7qm?.affinity?.groups ?? []).some(g => g.items.length > 0) && (
             <div className="mb-4">
-              <div className="text-sm font-medium text-gray-700 mb-1">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Affinitetsdiagram: {report.tools.tools7qm?.affinity?.title}
               </div>
               <ul className="text-sm list-disc pl-5">
@@ -329,7 +329,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
 
           {(report.tools.tools7qm?.tree?.branches ?? []).some(b => b.subBranches.length > 0) && (
             <div className="mb-4">
-              <div className="text-sm font-medium text-gray-700 mb-1">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Träddiagram: {report.tools.tools7qm?.tree?.goal || report.tools.tools7qm?.tree?.title}
               </div>
               <ul className="text-sm list-disc pl-5">
@@ -349,7 +349,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
               <TextField label="Metod" value={report.investigationReport.methodology} />
               {report.investigationReport.root_causes.length > 0 && (
                 <div className="mb-3">
-                  <div className="text-sm font-medium text-gray-700 mb-1">Identifierade rotorsaker</div>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Identifierade rotorsaker</div>
                   <ul className="text-sm list-disc pl-5">
                     {report.investigationReport.root_causes.map((rc, i) => (
                       <li key={i}><strong>{rc.title}</strong>{rc.evidence ? ` — bevis: ${rc.evidence}` : ""}</li>
@@ -361,27 +361,27 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
               <TextField label="Rekommendationer" value={report.investigationReport.recommendations} />
             </>
           ) : (
-            <p className="text-sm text-gray-400 italic">Ingen utredningsrapport sparad.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 italic">Ingen utredningsrapport sparad.</p>
           )}
         </Section>
 
         {/* Interviews */}
         <Section title="4. Intervjuer — ställda frågor">
           {report.interviews.length === 0 ? (
-            <p className="text-sm text-gray-400 italic">Inga intervjuer genomförda.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 italic">Inga intervjuer genomförda.</p>
           ) : (
             report.interviews.map(interview => {
               const role = getRoleById(interview.roleId);
               const questions = questionsByRole.get(interview.roleId) ?? [];
               return (
                 <div key={interview.roleId} className="mb-4">
-                  <div className="text-sm font-medium text-gray-700">
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {role ? `${role.name} (${role.title})` : interview.roleId}
-                    <span className="ml-2 text-xs text-gray-400">
+                    <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
                       {interview.questionsAsked}/{MAX_INTERVIEW_QUESTIONS} frågor
                     </span>
                   </div>
-                  <ol className="text-sm list-decimal pl-5 text-gray-800">
+                  <ol className="text-sm list-decimal pl-5 text-gray-800 dark:text-gray-200">
                     {questions.map((q, i) => <li key={i}>{q}</li>)}
                   </ol>
                 </div>
@@ -393,13 +393,13 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
         {/* Solution */}
         <Section title="5. Lösning — Åtgärder och resultat">
           {report.proposals.length === 0 ? (
-            <p className="text-sm text-gray-400 italic">Inga åtgärdsförslag ännu.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 italic">Inga åtgärdsförslag ännu.</p>
           ) : (
             <>
               <div className="overflow-x-auto mb-3">
                 <table className="text-sm w-full">
                   <thead>
-                    <tr className="text-left text-xs text-gray-500 border-b">
+                    <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b">
                       <th className="py-1 pr-2">Rotorsak</th>
                       <th className="pr-2">Åtgärd</th>
                       <th className="pr-2">Ansvarig</th>
@@ -409,7 +409,7 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
                   </thead>
                   <tbody>
                     {report.proposals.map((p, i) => (
-                      <tr key={i} className="border-b border-gray-100 align-top">
+                      <tr key={i} className="border-b border-gray-100 dark:border-gray-800 align-top">
                         <td className="py-1 pr-2 whitespace-nowrap">{getRootCauseById(p.rootCauseId)?.name ?? p.rootCauseId}</td>
                         <td className="pr-2">{p.description}</td>
                         <td className="pr-2">{p.responsible || "–"}</td>
@@ -421,17 +421,17 @@ export function TeacherLabReport({ groupCode }: { groupCode: string }) {
                 </table>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
                   <div className="text-xl font-bold">{totalCost.toLocaleString("sv-SE")} kr</div>
-                  <div className="text-xs text-gray-500">total åtgärdskostnad (budget 800 000 kr)</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">total åtgärdskostnad (budget 800 000 kr)</div>
                 </div>
-                <div className={`rounded-lg p-3 ${reductionPercent >= 50 ? "bg-green-50" : "bg-yellow-50"}`}>
+                <div className={`rounded-lg p-3 ${reductionPercent >= 50 ? "bg-green-50 dark:bg-green-900/30" : "bg-yellow-50 dark:bg-yellow-900/30"}`}>
                   <div className="text-xl font-bold">{reductionPercent} %</div>
-                  <div className="text-xs text-gray-500">beräknad reklamationsminskning (mål 50 %)</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">beräknad reklamationsminskning (mål 50 %)</div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
                   <div className="text-xl font-bold">{projectedSavings.toFixed(1)} MSEK</div>
-                  <div className="text-xs text-gray-500">beräknad årlig besparing</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">beräknad årlig besparing</div>
                 </div>
               </div>
             </>

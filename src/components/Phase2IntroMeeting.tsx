@@ -87,16 +87,16 @@ export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       {/* Header */}
-      <div className="border-b px-6 py-4 bg-green-50">
+      <div className="border-b px-6 py-4 bg-green-50 dark:bg-green-900/30">
         <div className="flex items-center gap-3">
           <span className="text-3xl">👩‍💼</span>
           <div>
             <h2 className="font-bold text-lg">Uppstartsmöte Fas 2 med Maria Ek</h2>
-            <p className="text-sm text-gray-600">VD, Bright Light Solutions AB</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">VD, Bright Light Solutions AB</p>
           </div>
-          <div className="ml-auto flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+          <div className="ml-auto flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded-full text-sm">
             <CheckCircle className="w-4 h-4" />
             Utredning godkänd
           </div>
@@ -104,19 +104,19 @@ export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete
       </div>
 
       {/* Info banner */}
-      <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
-        <p className="text-sm text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-800 px-6 py-3">
+        <p className="text-sm text-blue-800 dark:text-blue-200">
           <strong>Fas 2: Implementering</strong> - Era åtgärdsförslag är godkända!
           Diskutera implementeringsstrategin med Maria innan ni börjar planera.
         </p>
       </div>
 
       {/* Approved proposals summary */}
-      <div className="bg-gray-50 border-b px-6 py-3">
-        <p className="text-xs font-medium text-gray-500 uppercase mb-2">Godkända åtgärder</p>
+      <div className="bg-gray-50 dark:bg-gray-900 border-b px-6 py-3">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Godkända åtgärder</p>
         <div className="flex flex-wrap gap-2">
           {proposals.map((p, idx) => (
-            <span key={p.id} className="px-2 py-1 bg-white border rounded text-xs">
+            <span key={p.id} className="px-2 py-1 bg-white dark:bg-gray-800 border rounded text-xs">
               {idx + 1}. {p.description.substring(0, 40)}...
             </span>
           ))}
@@ -134,11 +134,11 @@ export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete
               className={`max-w-[80%] rounded-lg px-4 py-3 ${
                 message.role === "user"
                   ? "bg-green-500 text-white"
-                  : "bg-gray-100 text-gray-900"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               }`}
             >
               {message.role === "assistant" && (
-                <p className="text-xs text-gray-500 mb-1 font-medium">Maria Ek</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Maria Ek</p>
               )}
               {message.content}
             </div>
@@ -146,7 +146,7 @@ export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete
         ))}
         {isSending && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg px-4 py-3 text-gray-500">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-3 text-gray-500 dark:text-gray-400">
               <span className="animate-pulse">Maria skriver...</span>
             </div>
           </div>
@@ -155,7 +155,7 @@ export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete
       </div>
 
       {/* Input */}
-      <div className="border-t p-4 bg-gray-50">
+      <div className="border-t p-4 bg-gray-50 dark:bg-gray-900">
         <div className="flex gap-2 mb-3">
           <input
             type="text"
@@ -163,7 +163,7 @@ export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ställ en fråga till Maria..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
             disabled={isSending}
           />
           <Button onClick={handleSend} disabled={isSending || !input.trim()} className="bg-green-600 hover:bg-green-700">
@@ -172,7 +172,7 @@ export function Phase2IntroMeeting({ groupName, groupCode, proposals, onComplete
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {questionCount} frågor ställda
           </span>
           <Button

@@ -221,7 +221,7 @@ Rapport genererad av BLS Simuleringssystem
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400 dark:text-gray-500" />
       </div>
     );
   }
@@ -229,17 +229,17 @@ Rapport genererad av BLS Simuleringssystem
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Slutrapport</h2>
-        <p className="text-gray-600">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Slutrapport</h2>
+        <p className="text-gray-600 dark:text-gray-400">
           Sammanfatta projektet och dokumentera lärdomar för framtiden.
         </p>
-        <p className={`text-sm mt-1 min-h-5 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+        <p className={`text-sm mt-1 min-h-5 ${autosaveStatus === "error" ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>
           {autosaveLabel(autosaveStatus)}
         </p>
       </div>
 
       {/* Results summary card */}
-      <div className={`p-6 rounded-lg border-2 mb-6 ${goalMet ? "border-green-300 bg-green-50" : "border-yellow-300 bg-yellow-50"}`}>
+      <div className={`p-6 rounded-lg border-2 mb-6 ${goalMet ? "border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30" : "border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/30"}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {goalMet ? (
@@ -249,17 +249,17 @@ Rapport genererad av BLS Simuleringssystem
             )}
             <div>
               <h3 className="text-2xl font-bold">{reductionPercent}% reduktion</h3>
-              <p className={goalMet ? "text-green-600" : "text-yellow-600"}>
+              <p className={goalMet ? "text-green-600 dark:text-green-400" : "text-yellow-600 dark:text-yellow-400"}>
                 {goalMet ? "Målet på 50% är uppnått!" : "Målet på 50% uppnåddes inte"}
               </p>
             </div>
           </div>
           <div className="text-right">
-            <div className="flex items-center gap-2 text-green-600">
+            <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
               <DollarSign className="w-6 h-6" />
               <span className="text-3xl font-bold">{savings.toFixed(1)} MSEK</span>
             </div>
-            <p className="text-sm text-gray-500">Förväntad årlig besparing</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Förväntad årlig besparing</p>
           </div>
         </div>
       </div>
@@ -268,7 +268,7 @@ Rapport genererad av BLS Simuleringssystem
       <div className="space-y-6">
         <section>
           <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-600" />
+            <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             Sammanfattning för ledningen
           </h3>
           <textarea
@@ -294,12 +294,12 @@ Rapport genererad av BLS Simuleringssystem
         <section>
           <h3 className="text-lg font-semibold mb-2">Budgetsammanfattning</h3>
           <div className="grid grid-cols-2 gap-4 mb-3">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500">Total budget</p>
+            <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total budget</p>
               <p className="text-xl font-bold">800 000 SEK</p>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500">Förbrukad</p>
+            <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Förbrukad</p>
               <p className="text-xl font-bold">{totalProposalCost.toLocaleString()} SEK</p>
             </div>
           </div>
@@ -336,26 +336,26 @@ Rapport genererad av BLS Simuleringssystem
       </div>
 
       {/* Validation */}
-      <div className="mt-6 bg-gray-50 rounded-lg p-4">
+      <div className="mt-6 bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
         <h4 className="font-medium mb-3">Checklista</h4>
         <ul className="space-y-2 text-sm">
-          <li className={`flex items-center gap-2 ${executiveSummary ? "text-green-700" : "text-gray-500"}`}>
+          <li className={`flex items-center gap-2 ${executiveSummary ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
             <CheckCircle className={`w-4 h-4 ${executiveSummary ? "" : "opacity-30"}`} />
             Sammanfattning för ledningen
           </li>
-          <li className={`flex items-center gap-2 ${resultsVsGoals ? "text-green-700" : "text-gray-500"}`}>
+          <li className={`flex items-center gap-2 ${resultsVsGoals ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
             <CheckCircle className={`w-4 h-4 ${resultsVsGoals ? "" : "opacity-30"}`} />
             Resultat vs mål
           </li>
-          <li className={`flex items-center gap-2 ${budgetSummary ? "text-green-700" : "text-gray-500"}`}>
+          <li className={`flex items-center gap-2 ${budgetSummary ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
             <CheckCircle className={`w-4 h-4 ${budgetSummary ? "" : "opacity-30"}`} />
             Budgetsammanfattning
           </li>
-          <li className={`flex items-center gap-2 ${lessonsLearned ? "text-green-700" : "text-gray-500"}`}>
+          <li className={`flex items-center gap-2 ${lessonsLearned ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
             <CheckCircle className={`w-4 h-4 ${lessonsLearned ? "" : "opacity-30"}`} />
             Lärdomar dokumenterade
           </li>
-          <li className={`flex items-center gap-2 ${recommendations ? "text-green-700" : "text-gray-500"}`}>
+          <li className={`flex items-center gap-2 ${recommendations ? "text-green-700 dark:text-green-300" : "text-gray-500 dark:text-gray-400"}`}>
             <CheckCircle className={`w-4 h-4 ${recommendations ? "" : "opacity-30"}`} />
             Rekommendationer
           </li>

@@ -19,11 +19,11 @@ interface StakeholderAnalysisProps {
 }
 
 const quadrantInfo: Record<Quadrant, { name: string; description: string; color: string; borderColor: string }> = {
-  manage_closely: { name: "Hantera aktivt", description: "Hög makt, högt intresse", color: "bg-red-100", borderColor: "border-red-300" },
-  keep_satisfied: { name: "Håll nöjd", description: "Hög makt, lågt intresse", color: "bg-yellow-100", borderColor: "border-yellow-300" },
-  keep_informed: { name: "Håll informerad", description: "Låg makt, högt intresse", color: "bg-blue-100", borderColor: "border-blue-300" },
-  monitor: { name: "Bevaka", description: "Låg makt, lågt intresse", color: "bg-gray-100", borderColor: "border-gray-300" },
-  unassigned: { name: "Ej placerade", description: "Dra till en ruta", color: "bg-white", borderColor: "border-gray-200" }
+  manage_closely: { name: "Hantera aktivt", description: "Hög makt, högt intresse", color: "bg-red-100 dark:bg-red-900/40", borderColor: "border-red-300 dark:border-red-700" },
+  keep_satisfied: { name: "Håll nöjd", description: "Hög makt, lågt intresse", color: "bg-yellow-100 dark:bg-yellow-900/40", borderColor: "border-yellow-300 dark:border-yellow-700" },
+  keep_informed: { name: "Håll informerad", description: "Låg makt, högt intresse", color: "bg-blue-100 dark:bg-blue-900/40", borderColor: "border-blue-300 dark:border-blue-700" },
+  monitor: { name: "Bevaka", description: "Låg makt, lågt intresse", color: "bg-gray-100 dark:bg-gray-800", borderColor: "border-gray-300 dark:border-gray-600" },
+  unassigned: { name: "Ej placerade", description: "Dra till en ruta", color: "bg-white dark:bg-gray-800", borderColor: "border-gray-200 dark:border-gray-700" }
 };
 
 export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
@@ -131,16 +131,16 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
         draggable
         onDragStart={(e) => handleDragStart(e, stakeholder.roleId)}
         onDragEnd={handleDragEnd}
-        className={`flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm border cursor-move hover:shadow-md transition-shadow ${
+        className={`flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border cursor-move hover:shadow-md transition-shadow ${
           draggedRole === stakeholder.roleId ? "opacity-50" : ""
         }`}
       >
         <span className="text-lg">{role.avatar}</span>
         <div className="flex-1 min-w-0">
           <div className="font-medium text-sm break-words">{role.name}</div>
-          <div className="text-xs text-gray-500 break-words">{role.title}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 break-words">{role.title}</div>
           {showStrategy && stakeholder.strategy && (
-            <div className="text-xs text-gray-600 mt-1 italic break-words">{stakeholder.strategy}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 italic break-words">{stakeholder.strategy}</div>
           )}
         </div>
       </div>
@@ -162,11 +162,11 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
         }`}
       >
         <div className="font-medium text-sm mb-1">{info.name}</div>
-        <div className="text-xs text-gray-600 mb-3">{info.description}</div>
+        <div className="text-xs text-gray-600 dark:text-gray-400 mb-3">{info.description}</div>
         <div className="space-y-2">
           {stakeholdersInQuadrant.map(s => renderStakeholderChip(s, true))}
           {stakeholdersInQuadrant.length === 0 && (
-            <div className="text-xs text-gray-400 italic text-center py-4">
+            <div className="text-xs text-gray-400 dark:text-gray-500 italic text-center py-4">
               Dra intressenter hit
             </div>
           )}
@@ -197,7 +197,7 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Dra intressenterna till rätt ruta baserat på deras makt och intresse.
         </p>
       </div>
@@ -206,12 +206,12 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
         {/* Unassigned stakeholders */}
         {unassignedStakeholders.length > 0 && (
           <div className="mb-6">
-            <h4 className="font-medium mb-3 text-gray-700">Intressenter att placera:</h4>
+            <h4 className="font-medium mb-3 text-gray-700 dark:text-gray-300">Intressenter att placera:</h4>
             <div
               onDragOver={(e) => handleDragOver(e, "unassigned")}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, "unassigned")}
-              className={`p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 ${
+              className={`p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 ${
                 dragOverQuadrant === "unassigned" ? "ring-2 ring-yellow-500 border-yellow-500" : ""
               }`}
             >
@@ -227,14 +227,14 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
           <h4 className="font-medium mb-3 text-center">Makt/intresse-matris</h4>
           <div className="flex gap-2">
             {/* Y-axis label */}
-            <div className="hidden sm:flex flex-col justify-between items-center py-4 text-xs text-gray-500">
+            <div className="hidden sm:flex flex-col justify-between items-center py-4 text-xs text-gray-500 dark:text-gray-400">
               <span>Hög makt ↑</span>
               <span>Låg makt ↓</span>
             </div>
             {/* Matrix grid */}
             <div className="flex-1">
               {/* X-axis labels */}
-              <div className="flex justify-between text-xs text-gray-500 mb-1 px-1">
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1 px-1">
                 <span>← Lågt intresse</span>
                 <span>Högt intresse →</span>
               </div>
@@ -261,11 +261,11 @@ export function StakeholderAnalysis({ groupCode }: StakeholderAnalysisProps) {
                   const role = roles.find(r => r.id === stakeholder.roleId);
                   if (!role) return null;
                   return (
-                    <div key={stakeholder.roleId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div key={stakeholder.roleId} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                       <span className="text-lg">{role.avatar}</span>
                       <div className="flex-shrink-0 w-32">
                         <div className="font-medium text-sm">{role.name}</div>
-                        <div className="text-xs text-gray-500">{quadrantInfo[stakeholder.quadrant].name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{quadrantInfo[stakeholder.quadrant].name}</div>
                       </div>
                       <input
                         type="text"

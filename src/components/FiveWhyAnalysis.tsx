@@ -313,8 +313,8 @@ Formatera ditt svar som JSON med följande struktur:
             {saved ? t('saved') : t('save')}
           </Button>
         </div>
-        <p className="text-sm text-gray-500">{t('subtitle')}</p>
-        <p className={`text-xs min-h-4 ${autosaveStatus === "error" ? "text-red-600" : "text-gray-400"}`}>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('subtitle')}</p>
+        <p className={`text-xs min-h-4 ${autosaveStatus === "error" ? "text-red-600 dark:text-red-400" : "text-gray-400 dark:text-gray-500"}`}>
           {autosaveLabel(autosaveStatus)}
         </p>
       </div>
@@ -332,8 +332,8 @@ Formatera ditt svar som JSON med följande struktur:
                 style={getStepStyle(0)}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <Target className="w-5 h-5 text-yellow-600" />
-                  <h2 className="text-lg font-bold text-gray-800">{t('defineProblem')}</h2>
+                  <Target className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">{t('defineProblem')}</h2>
                 </div>
 
                 {currentStep === 0 ? (
@@ -365,7 +365,7 @@ Formatera ditt svar som JSON med följande struktur:
                           <button
                             key={key}
                             onClick={() => setProblem(t(example))}
-                            className="px-3 py-1 text-xs rounded-full border border-gray-300 hover:bg-yellow-50 hover:border-yellow-400 transition-colors text-gray-700"
+                            className="px-3 py-1 text-xs rounded-full border border-gray-300 dark:border-gray-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 hover:border-yellow-400 transition-colors text-gray-700 dark:text-gray-300"
                           >
                             {t(key)}
                           </button>
@@ -381,7 +381,7 @@ Formatera ditt svar som JSON med följande struktur:
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-gray-700">{problem}</p>
+                  <p className="text-gray-700 dark:text-gray-300">{problem}</p>
                 )}
               </div>
             </div>
@@ -398,7 +398,7 @@ Formatera ditt svar som JSON med följande struktur:
                       <div className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-white text-sm bg-yellow-500">
                         {num}
                       </div>
-                      <h2 className="text-lg font-bold text-gray-800">{t('whyNumber')}{num}</h2>
+                      <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">{t('whyNumber')}{num}</h2>
                     </div>
 
                     {currentStep === num ? (
@@ -410,10 +410,10 @@ Formatera ditt svar som JSON med följande struktur:
                               <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-bounce mx-0.5" style={{ animationDelay: '150ms' }}></div>
                               <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-bounce mx-0.5" style={{ animationDelay: '300ms' }}></div>
                             </div>
-                            <span className="text-sm text-gray-600">Tänker...</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">Tänker...</span>
                           </div>
                         ) : (
-                          <p className="mb-3 text-sm text-gray-600">
+                          <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
                             {followUpQuestions[num - 1] ||
                              (num === 1 ? t('whyHappen').replace('{problem}', problem) :
                               t('whyOccur').replace('{answer}', whys[num - 2]))}
@@ -444,7 +444,7 @@ Formatera ditt svar som JSON med följande struktur:
                         </div>
                       </div>
                     ) : currentStep > num ? (
-                      <p className="text-gray-700">{whys[num - 1]}</p>
+                      <p className="text-gray-700 dark:text-gray-300">{whys[num - 1]}</p>
                     ) : null}
                   </div>
                 )}
@@ -459,7 +459,7 @@ Formatera ditt svar som JSON med följande struktur:
                   <div className="w-2 h-2 rounded-full bg-yellow-500 animate-bounce mx-1" style={{ animationDelay: '150ms' }}></div>
                   <div className="w-2 h-2 rounded-full bg-yellow-500 animate-bounce mx-1" style={{ animationDelay: '300ms' }}></div>
                 </div>
-                <p className="text-lg text-gray-600">{t('analyzingResponses')}</p>
+                <p className="text-lg text-gray-600 dark:text-gray-400">{t('analyzingResponses')}</p>
               </div>
             )}
 
@@ -474,32 +474,32 @@ Formatera ditt svar som JSON med följande struktur:
                 ref={resultsRef}
               >
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('discoveryComplete')}</h2>
-                  <p className="text-gray-600">{t('foundAtRoot')}</p>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-2">{t('discoveryComplete')}</h2>
+                  <p className="text-gray-600 dark:text-gray-400">{t('foundAtRoot')}</p>
                 </div>
 
                 <div className="space-y-4">
                   {/* Root Cause */}
-                  <div className="bg-white rounded-xl p-5 shadow-lg border-2 border-yellow-400">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border-2 border-yellow-400">
                     <div className="flex items-center gap-3 mb-3">
-                      <AlertCircle className="w-5 h-5 text-yellow-600" />
-                      <h3 className="text-lg font-bold text-gray-800">{t('rootCause')}</h3>
+                      <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                      <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{t('rootCause')}</h3>
                     </div>
-                    <p className="text-gray-700">{analysis.rootCause}</p>
+                    <p className="text-gray-700 dark:text-gray-300">{analysis.rootCause}</p>
                   </div>
 
                   {/* Solutions */}
                   {analysis.solutions && analysis.solutions.length > 0 && (
-                    <div className="bg-white rounded-xl p-5 shadow-lg">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg">
                       <div className="flex items-center gap-3 mb-4">
-                        <Lightbulb className="w-5 h-5 text-yellow-600" />
-                        <h3 className="text-lg font-bold text-gray-800">{t('solutions')}</h3>
+                        <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{t('solutions')}</h3>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {analysis.solutions.map((solution, index) => (
-                          <div key={index} className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                            <h4 className="font-bold mb-2 text-gray-800">{solution.title}</h4>
-                            <p className="text-sm text-gray-600">{solution.description}</p>
+                          <div key={index} className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                            <h4 className="font-bold mb-2 text-gray-800 dark:text-gray-200">{solution.title}</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{solution.description}</p>
                           </div>
                         ))}
                       </div>
@@ -508,13 +508,13 @@ Formatera ditt svar som JSON med följande struktur:
 
                   {/* Insights */}
                   {analysis.insights && analysis.insights.length > 0 && (
-                    <div className="bg-white rounded-xl p-5 shadow-lg">
-                      <h3 className="text-lg font-bold mb-3 text-gray-800">{t('keyInsights')}</h3>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg">
+                      <h3 className="text-lg font-bold mb-3 text-gray-800 dark:text-gray-200">{t('keyInsights')}</h3>
                       <div className="space-y-2">
                         {analysis.insights.map((insight, index) => (
                           <div key={index} className="flex items-start gap-3">
                             <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0 text-green-500" />
-                            <p className="text-gray-700">{insight}</p>
+                            <p className="text-gray-700 dark:text-gray-300">{insight}</p>
                           </div>
                         ))}
                       </div>

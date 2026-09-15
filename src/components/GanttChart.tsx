@@ -214,18 +214,18 @@ export function GanttChart({ groupCode }: GanttChartProps) {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Dra i staplarna för att flytta aktiviteter, dra i högerkanten för att ändra längd — eller skriv start och antal veckor direkt i fälten. Klicka på en stapel eller ett namn för fler alternativ.
         </p>
       </div>
 
-      <div id="gantt-content" className="flex-1 overflow-hidden p-4 bg-white" ref={contentRef}>
+      <div id="gantt-content" className="flex-1 overflow-hidden p-4 bg-white dark:bg-gray-800" ref={contentRef}>
         {/* Scroll controls */}
         <div className="flex items-center justify-between mb-4">
           <Button size="sm" variant="outline" onClick={() => scroll("left")}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-gray-500">Projekttid: 26 veckor (6 månader)</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Projekttid: 26 veckor (6 månader)</span>
           <Button size="sm" variant="outline" onClick={() => scroll("right")}>
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -239,11 +239,11 @@ export function GanttChart({ groupCode }: GanttChartProps) {
         >
           <div style={{ minWidth: `${TOTAL_WEEKS * WEEK_WIDTH + 340}px` }}>
             {/* Header row with weeks */}
-            <div className="flex border-b bg-gray-50 sticky top-0">
+            <div className="flex border-b bg-gray-50 dark:bg-gray-900 sticky top-0">
               <div className="w-[340px] min-w-[340px] p-2 font-medium text-sm border-r flex items-end gap-2">
                 <span className="flex-1">Aktivitet</span>
-                <span className="w-14 text-center text-xs text-gray-500 font-normal">Start</span>
-                <span className="w-14 text-center text-xs text-gray-500 font-normal">Veckor</span>
+                <span className="w-14 text-center text-xs text-gray-500 dark:text-gray-400 font-normal">Start</span>
+                <span className="w-14 text-center text-xs text-gray-500 dark:text-gray-400 font-normal">Veckor</span>
                 <span className="w-4" />
               </div>
               <div className="flex">
@@ -255,7 +255,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
                     }`}
                     style={{ width: WEEK_WIDTH }}
                   >
-                    <div className="bg-gray-100 py-1 border-b text-gray-600">
+                    <div className="bg-gray-100 dark:bg-gray-800 py-1 border-b text-gray-600 dark:text-gray-400">
                       {(i + 1) % 4 === 1 ? getMonthLabel(i + 1) : ""}
                     </div>
                     <div className="py-1">V{i + 1}</div>
@@ -266,12 +266,12 @@ export function GanttChart({ groupCode }: GanttChartProps) {
 
             {/* Task rows */}
             {tasks.map((task) => (
-              <div key={task.id} className="flex border-b hover:bg-gray-50 group">
+              <div key={task.id} className="flex border-b hover:bg-gray-50 dark:hover:bg-gray-800 group">
                 {/* Task name + always-visible time fields (issues #1/#2) */}
                 <div className="w-[340px] min-w-[340px] p-2 border-r flex items-center gap-2">
                   <div className={`w-3 h-3 rounded flex-shrink-0 ${task.color}`} />
                   <span
-                    className="flex-1 text-sm cursor-pointer hover:text-yellow-600 truncate min-w-0"
+                    className="flex-1 text-sm cursor-pointer hover:text-yellow-600 dark:hover:text-yellow-400 truncate min-w-0"
                     onClick={() => setEditingTask(task.id)}
                     title={`${task.name} — klicka för att redigera`}
                   >
@@ -287,7 +287,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
                     aria-label={`Startvecka för ${task.name}`}
                   />
                   {task.isMilestone ? (
-                    <span className="w-14 text-center text-xs text-gray-400" title="Milstolpe har ingen längd">—</span>
+                    <span className="w-14 text-center text-xs text-gray-400 dark:text-gray-500" title="Milstolpe har ingen längd">—</span>
                   ) : (
                     <input
                       type="number"
@@ -301,7 +301,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
                   )}
                   <button
                     onClick={() => deleteTask(task.id)}
-                    className="w-4 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-xs"
+                    className="w-4 opacity-0 group-hover:opacity-100 text-gray-400 dark:text-gray-500 hover:text-red-500 text-xs"
                     title="Ta bort aktivitet"
                   >
                     ✕
@@ -380,7 +380,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
 
         {/* Task editor */}
         {editingTask && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
             <h4 className="font-medium mb-3">Redigera aktivitet</h4>
             {(() => {
               const task = tasks.find(t => t.id === editingTask);
@@ -388,7 +388,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
               return (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Namn</label>
+                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Namn</label>
                     <input
                       type="text"
                       value={task.name}
@@ -397,7 +397,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Startvecka</label>
+                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Startvecka</label>
                     <input
                       type="number"
                       min={1}
@@ -408,7 +408,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Längd (veckor)</label>
+                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Längd (veckor)</label>
                     <input
                       type="number"
                       min={0}
@@ -419,7 +419,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Milstolpe</label>
+                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">Milstolpe</label>
                     <label className="flex items-center gap-2 mt-2">
                       <input
                         type="checkbox"
@@ -441,7 +441,7 @@ export function GanttChart({ groupCode }: GanttChartProps) {
               <Button
                 size="sm"
                 variant="outline"
-                className="text-red-600"
+                className="text-red-600 dark:text-red-400"
                 onClick={() => {
                   deleteTask(editingTask);
                   setEditingTask(null);

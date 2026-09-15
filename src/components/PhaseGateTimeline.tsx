@@ -21,10 +21,10 @@ interface PhaseGateTimelineProps {
 }
 
 const PHASES = [
-  { num: 1, name: "Projektdefinition", activeClass: "bg-blue-100 text-blue-700" },
-  { num: 2, name: "Projektplan", activeClass: "bg-purple-100 text-purple-700" },
-  { num: 3, name: "Utredning", activeClass: "bg-orange-100 text-orange-700" },
-  { num: 4, name: "Redovisning", activeClass: "bg-green-100 text-green-700" },
+  { num: 1, name: "Projektdefinition", activeClass: "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300" },
+  { num: 2, name: "Projektplan", activeClass: "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300" },
+  { num: 3, name: "Utredning", activeClass: "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300" },
+  { num: 4, name: "Redovisning", activeClass: "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300" },
 ];
 
 const GATE_LABELS: Record<number, string> = {
@@ -83,14 +83,14 @@ export function PhaseGateTimeline({ group, effectivePhase, viewingPhase, onNavig
         const canNavigate = isCompleted || isActive;
 
         const bgColor = isViewing && viewingPhase !== null
-          ? "bg-blue-200 text-blue-800 ring-2 ring-blue-400"
+          ? "bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 ring-2 ring-blue-400"
           : isCompleted
-          ? "bg-green-100 text-green-700"
+          ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
           : isPending
-          ? "bg-yellow-100 text-yellow-700"
+          ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300"
           : isActive
           ? phase.activeClass
-          : "bg-gray-100 text-gray-400";
+          : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500";
 
         return (
           <div key={phase.num} className="flex items-center">

@@ -32,7 +32,7 @@ export function QCControlChart({ state, setState, markToolComplete }: QCToolProp
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">UCL (Övre gräns)</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">UCL (Övre gräns)</label>
             <input
               type="number"
               value={state.controlChart.ucl || ""}
@@ -45,7 +45,7 @@ export function QCControlChart({ state, setState, markToolComplete }: QCToolProp
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">CL (Mittlinje)</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">CL (Mittlinje)</label>
             <input
               type="number"
               value={state.controlChart.cl || ""}
@@ -58,7 +58,7 @@ export function QCControlChart({ state, setState, markToolComplete }: QCToolProp
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">LCL (Undre gräns)</label>
+            <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">LCL (Undre gräns)</label>
             <input
               type="number"
               value={state.controlChart.lcl || ""}
@@ -73,7 +73,7 @@ export function QCControlChart({ state, setState, markToolComplete }: QCToolProp
         </div>
 
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mätvärden (kommaseparerade)</label>
+          <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Mätvärden (kommaseparerade)</label>
           <input
             type="text"
             value={measurements.join(", ")}
@@ -91,7 +91,7 @@ export function QCControlChart({ state, setState, markToolComplete }: QCToolProp
 
         {/* Visual control chart */}
         {measurements.length > 0 && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <div className="relative h-40">
               {/* UCL line */}
               <div
@@ -105,7 +105,7 @@ export function QCControlChart({ state, setState, markToolComplete }: QCToolProp
                 className="absolute w-full border-t-2 border-green-500"
                 style={{ top: `${((maxVal - (state.controlChart.cl || mean)) / range) * 100}%` }}
               >
-                <span className="absolute right-0 text-xs text-green-600 -top-3">CL</span>
+                <span className="absolute right-0 text-xs text-green-600 dark:text-green-400 -top-3">CL</span>
               </div>
               {/* LCL line */}
               <div

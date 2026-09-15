@@ -4,16 +4,19 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 255, 255, 255;
+  --background-rgb: 255, 255, 255;
+  --border-default: #e5e7eb; /* gray-200 */
+  color-scheme: light;
+}
+
+.dark {
+  --foreground-rgb: 237, 233, 225;
+  --background-rgb: 17, 24, 39; /* gray-900 */
+  --border-default: #374151; /* gray-700 */
+  color-scheme: dark;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: rgb(var(--background-rgb));
 }

@@ -90,36 +90,36 @@ export function BudgetAllocation({
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Budgetallokering</h2>
-        <p className="text-gray-600">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Budgetallokering</h2>
+        <p className="text-gray-600 dark:text-gray-400">
           Fördela projektbudgeten mellan era godkända åtgärder.
         </p>
       </div>
 
       {/* Budget summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-blue-600 font-medium">Total budget</p>
-          <p className="text-2xl font-bold text-blue-800">{totalBudget.toLocaleString()} SEK</p>
+        <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 text-center">
+          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Total budget</p>
+          <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{totalBudget.toLocaleString()} SEK</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-4 text-center">
-          <p className="text-sm text-green-600 font-medium">Allokerat</p>
-          <p className="text-2xl font-bold text-green-800">{totalAllocated.toLocaleString()} SEK</p>
+        <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4 text-center">
+          <p className="text-sm text-green-600 dark:text-green-400 font-medium">Allokerat</p>
+          <p className="text-2xl font-bold text-green-800 dark:text-green-200">{totalAllocated.toLocaleString()} SEK</p>
         </div>
-        <div className={`rounded-lg p-4 text-center ${isOverBudget ? 'bg-red-50' : 'bg-gray-50'}`}>
-          <p className={`text-sm font-medium ${isOverBudget ? 'text-red-600' : 'text-gray-600'}`}>
+        <div className={`rounded-lg p-4 text-center ${isOverBudget ? 'bg-red-50 dark:bg-red-900/30' : 'bg-gray-50 dark:bg-gray-900'}`}>
+          <p className={`text-sm font-medium ${isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}`}>
             {isOverBudget ? 'Överskridet' : 'Kvar'}
           </p>
-          <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-800' : 'text-gray-800'}`}>
+          <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-800 dark:text-red-200' : 'text-gray-800 dark:text-gray-200'}`}>
             {Math.abs(remaining).toLocaleString()} SEK
           </p>
         </div>
       </div>
 
       {isOverBudget && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-          <p className="text-sm text-red-700">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <p className="text-sm text-red-700 dark:text-red-300">
             Budgeten är överskriden med {Math.abs(remaining).toLocaleString()} SEK.
             Justera allokeringarna eller diskutera med styrgruppen om utökad budget.
           </p>
@@ -131,28 +131,28 @@ export function BudgetAllocation({
         {proposals.map((proposal, index) => {
           const allocation = allocations.find(a => a.proposalId === proposal.id);
           return (
-            <div key={proposal.id} className="border rounded-lg p-4 bg-white">
+            <div key={proposal.id} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <span className="text-sm font-medium text-gray-500">Åtgärd {index + 1}</span>
-                  <p className="text-gray-900">{proposal.description}</p>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Åtgärd {index + 1}</span>
+                  <p className="text-gray-900 dark:text-gray-100">{proposal.description}</p>
                   {proposal.responsible && (
-                    <p className="text-sm text-gray-500">Ansvarig: {proposal.responsible}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Ansvarig: {proposal.responsible}</p>
                   )}
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-500">Uppskattat</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Uppskattat</p>
                   <p className="font-medium">{(proposal.cost || 0).toLocaleString()} SEK</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Allokerad budget (SEK)
                   </label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <input
                       type="number"
                       value={allocation?.allocated || 0}
@@ -162,7 +162,7 @@ export function BudgetAllocation({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Anteckningar
                   </label>
                   <input
@@ -182,12 +182,12 @@ export function BudgetAllocation({
       {/* Progress bar */}
       <div className="mb-6">
         <div className="flex justify-between text-sm mb-1">
-          <span className="text-gray-600">Budgetanvändning</span>
-          <span className={isOverBudget ? 'text-red-600' : 'text-gray-600'}>
+          <span className="text-gray-600 dark:text-gray-400">Budgetanvändning</span>
+          <span className={isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}>
             {Math.round((totalAllocated / totalBudget) * 100)}%
           </span>
         </div>
-        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all ${isOverBudget ? 'bg-red-500' : 'bg-green-500'}`}
             style={{ width: `${Math.min((totalAllocated / totalBudget) * 100, 100)}%` }}

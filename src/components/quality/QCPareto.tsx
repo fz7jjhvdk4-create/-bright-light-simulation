@@ -64,7 +64,7 @@ export function QCPareto({ state, setState, markToolComplete }: QCToolProps) {
         className="text-lg font-medium w-full border-b border-transparent hover:border-gray-300 focus:border-yellow-500 focus:outline-none pb-1"
       />
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         Antalen per feltyp hittar ni i <strong>Reklamationer.xlsx</strong> (kolumnen Feltyp).
         Staplarna sorteras automatiskt i fallande ordning och den röda kurvan visar kumulativ
         andel — där den korsar 80&nbsp;%-linjen ser ni vilka feltyper som står för merparten av problemen.
@@ -146,9 +146,9 @@ export function QCPareto({ state, setState, markToolComplete }: QCToolProps) {
       </div>
 
       {/* Pareto chart: descending bars + cumulative curve + 80% line */}
-      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
         {total === 0 ? (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg py-10 text-center text-sm text-gray-400">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg py-10 text-center text-sm text-gray-400 dark:text-gray-500">
             Fyll i antal per feltyp så ritas paretodiagrammet här.
           </div>
         ) : (
@@ -168,17 +168,17 @@ export function QCPareto({ state, setState, markToolComplete }: QCToolProps) {
                   <line
                     x1={PAD_LEFT} y1={yCount(axisMax * frac)}
                     x2={width - PAD_RIGHT} y2={yCount(axisMax * frac)}
-                    stroke="#E5E7EB" strokeWidth="1"
+                    className="stroke-gray-200 dark:stroke-gray-700" strokeWidth="1"
                   />
                   <text
                     x={PAD_LEFT - 6} y={yCount(axisMax * frac) + 3.5}
-                    fontSize="10" fill="#9CA3AF" textAnchor="end"
+                    fontSize="10" className="fill-gray-400 dark:fill-gray-500" textAnchor="end"
                   >
                     {Math.round(axisMax * frac)}
                   </text>
                 </g>
               ))}
-              <text x={PAD_LEFT - 6} y={yCount(0) + 3.5} fontSize="10" fill="#9CA3AF" textAnchor="end">0</text>
+              <text x={PAD_LEFT - 6} y={yCount(0) + 3.5} fontSize="10" className="fill-gray-400 dark:fill-gray-500" textAnchor="end">0</text>
 
               {/* 80% reference line */}
               <line
@@ -209,11 +209,11 @@ export function QCPareto({ state, setState, markToolComplete }: QCToolProps) {
                       <title>{`${item.name}: ${item.count} st`}</title>
                     </rect>
                     {item.count > 0 && (
-                      <text x={cx} y={yCount(item.count) - 5} fontSize="10.5" fill="#6B7280" textAnchor="middle">
+                      <text x={cx} y={yCount(item.count) - 5} fontSize="10.5" className="fill-gray-500 dark:fill-gray-400" textAnchor="middle">
                         {item.count}
                       </text>
                     )}
-                    <text x={cx} y={PAD_TOP + CHART_H + 16} fontSize="10" fill="#374151" textAnchor="middle">
+                    <text x={cx} y={PAD_TOP + CHART_H + 16} fontSize="10" className="fill-gray-700 dark:fill-gray-300" textAnchor="middle">
                       {label}
                       <title>{item.name}</title>
                     </text>
@@ -241,26 +241,26 @@ export function QCPareto({ state, setState, markToolComplete }: QCToolProps) {
               ))}
 
               {/* Axes */}
-              <line x1={PAD_LEFT} y1={PAD_TOP} x2={PAD_LEFT} y2={PAD_TOP + CHART_H} stroke="#9CA3AF" strokeWidth="1.2" />
-              <line x1={PAD_LEFT} y1={PAD_TOP + CHART_H} x2={width - PAD_RIGHT} y2={PAD_TOP + CHART_H} stroke="#9CA3AF" strokeWidth="1.2" />
-              <line x1={width - PAD_RIGHT} y1={PAD_TOP} x2={width - PAD_RIGHT} y2={PAD_TOP + CHART_H} stroke="#9CA3AF" strokeWidth="1.2" />
+              <line x1={PAD_LEFT} y1={PAD_TOP} x2={PAD_LEFT} y2={PAD_TOP + CHART_H} className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="1.2" />
+              <line x1={PAD_LEFT} y1={PAD_TOP + CHART_H} x2={width - PAD_RIGHT} y2={PAD_TOP + CHART_H} className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="1.2" />
+              <line x1={width - PAD_RIGHT} y1={PAD_TOP} x2={width - PAD_RIGHT} y2={PAD_TOP + CHART_H} className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="1.2" />
 
               {/* Right axis labels (%) */}
               {[0, 50, 100].map(pct => (
-                <text key={pct} x={width - PAD_RIGHT + 6} y={yPercent(pct) + 3.5} fontSize="10" fill="#9CA3AF">
+                <text key={pct} x={width - PAD_RIGHT + 6} y={yPercent(pct) + 3.5} fontSize="10" className="fill-gray-400 dark:fill-gray-500">
                   {pct}
                 </text>
               ))}
 
               {/* Axis titles */}
               <text
-                x={14} y={PAD_TOP + CHART_H / 2} fontSize="10" fill="#6B7280" textAnchor="middle"
+                x={14} y={PAD_TOP + CHART_H / 2} fontSize="10" className="fill-gray-500 dark:fill-gray-400" textAnchor="middle"
                 transform={`rotate(-90 14 ${PAD_TOP + CHART_H / 2})`}
               >
                 Antal
               </text>
               <text
-                x={width - 12} y={PAD_TOP + CHART_H / 2} fontSize="10" fill="#6B7280" textAnchor="middle"
+                x={width - 12} y={PAD_TOP + CHART_H / 2} fontSize="10" className="fill-gray-500 dark:fill-gray-400" textAnchor="middle"
                 transform={`rotate(90 ${width - 12} ${PAD_TOP + CHART_H / 2})`}
               >
                 Kumulativ andel

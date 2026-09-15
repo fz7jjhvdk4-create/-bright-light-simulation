@@ -78,21 +78,21 @@ export function IntroMeeting({ groupName, groupCode, onComplete }: IntroMeetingP
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow-lg">
       {/* Header */}
-      <div className="border-b px-6 py-4 bg-yellow-50">
+      <div className="border-b px-6 py-4 bg-yellow-50 dark:bg-yellow-900/30">
         <div className="flex items-center gap-3">
           <span className="text-3xl">👩‍💼</span>
           <div>
             <h2 className="font-bold text-lg">Uppdragsmöte med Maria Ek</h2>
-            <p className="text-sm text-gray-600">VD, Bright Light Solutions AB</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">VD, Bright Light Solutions AB</p>
           </div>
         </div>
       </div>
 
       {/* Info banner */}
-      <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
-        <p className="text-sm text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-800 px-6 py-3">
+        <p className="text-sm text-blue-800 dark:text-blue-200">
           <strong>Fas 1: Uppdragsmöte</strong> - Lyssna på Maria och ställ frågor för att förstå uppdraget.
           När ni känner er redo, klicka på &quot;Gå vidare till projektplanering&quot;.
         </p>
@@ -109,11 +109,11 @@ export function IntroMeeting({ groupName, groupCode, onComplete }: IntroMeetingP
               className={`max-w-[80%] rounded-lg px-4 py-3 ${
                 message.role === "user"
                   ? "bg-yellow-500 text-white"
-                  : "bg-gray-100 text-gray-900"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               }`}
             >
               {message.role === "assistant" && (
-                <p className="text-xs text-gray-500 mb-1 font-medium">Maria Ek</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">Maria Ek</p>
               )}
               {message.content}
             </div>
@@ -121,7 +121,7 @@ export function IntroMeeting({ groupName, groupCode, onComplete }: IntroMeetingP
         ))}
         {isSending && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg px-4 py-3 text-gray-500">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-3 text-gray-500 dark:text-gray-400">
               <span className="animate-pulse">Maria skriver...</span>
             </div>
           </div>
@@ -130,7 +130,7 @@ export function IntroMeeting({ groupName, groupCode, onComplete }: IntroMeetingP
       </div>
 
       {/* Input */}
-      <div className="border-t p-4 bg-gray-50">
+      <div className="border-t p-4 bg-gray-50 dark:bg-gray-900">
         <div className="flex gap-2 mb-3">
           <input
             type="text"
@@ -138,7 +138,7 @@ export function IntroMeeting({ groupName, groupCode, onComplete }: IntroMeetingP
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ställ en fråga till Maria..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
             disabled={isSending}
           />
           <Button onClick={handleSend} disabled={isSending || !input.trim()}>
@@ -148,7 +148,7 @@ export function IntroMeeting({ groupName, groupCode, onComplete }: IntroMeetingP
 
         {/* Continue button - show after at least 1 question or initial message read */}
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             {questionCount} frågor ställda
           </span>
           <Button

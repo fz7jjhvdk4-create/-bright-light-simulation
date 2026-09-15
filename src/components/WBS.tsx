@@ -157,15 +157,15 @@ export function WBS({ groupCode }: WBSProps) {
     return (
       <div key={item.id}>
         <div
-          className={`flex items-center gap-2 p-2 hover:bg-gray-50 rounded-lg group ${
-            level === 0 ? "bg-yellow-50 border border-yellow-200" : ""
+          className={`flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg group ${
+            level === 0 ? "bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800" : ""
           }`}
           style={{ paddingLeft: `${paddingLeft + 8}px` }}
         >
           {hasChildren ? (
             <button
               onClick={() => toggleExpand(item.id)}
-              className="p-1 hover:bg-gray-200 rounded"
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
             >
               {item.expanded ? (
                 <ChevronDown className="w-4 h-4" />
@@ -199,19 +199,19 @@ export function WBS({ groupCode }: WBSProps) {
           ) : (
             <>
               {level > 0 && (
-                <span className="text-sm text-gray-500 font-mono">{item.id}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">{item.id}</span>
               )}
               <span
-                className="flex-1 cursor-pointer hover:text-yellow-600"
+                className="flex-1 cursor-pointer hover:text-yellow-600 dark:hover:text-yellow-400"
                 onClick={() => startEdit(item)}
               >
                 {item.name}
               </span>
-              <span className="text-sm text-gray-500">{item.duration}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{item.duration}</span>
               <div className="opacity-0 group-hover:opacity-100 flex gap-1">
                 <button
                   onClick={() => addChild(item.id)}
-                  className="p-1 hover:bg-gray-200 rounded text-gray-500"
+                  className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded text-gray-500 dark:text-gray-400"
                   title="Lägg till underaktivitet"
                 >
                   <Plus className="w-4 h-4" />
@@ -219,7 +219,7 @@ export function WBS({ groupCode }: WBSProps) {
                 {level > 0 && (
                   <button
                     onClick={() => deleteItem(item.id)}
-                    className="p-1 hover:bg-red-100 rounded text-gray-500 hover:text-red-500"
+                    className="p-1 hover:bg-red-100 dark:hover:bg-red-900/50 rounded text-gray-500 dark:text-gray-400 hover:text-red-500"
                     title="Ta bort"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -258,16 +258,16 @@ export function WBS({ groupCode }: WBSProps) {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Strukturera projektet i faser och aktiviteter. Klicka på text för att redigera, + för att lägga till underaktiviteter.
         </p>
       </div>
 
-      <div id="wbs-content" className="flex-1 overflow-y-auto p-4 bg-white">
+      <div id="wbs-content" className="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-800">
         {wbs[0]?.children.length === 0 && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-800 dark:text-blue-200">
             <p className="font-medium mb-2">Tips för er WBS:</p>
-            <ul className="list-disc list-inside space-y-1 text-blue-700">
+            <ul className="list-disc list-inside space-y-1 text-blue-700 dark:text-blue-300">
               <li>Börja med att bryta ner projektet i faser (t.ex. Utredning, Analys, Implementering)</li>
               <li>Bryt ner varje fas i konkreta aktiviteter</li>
               <li>Ange tidsuppskattning för varje aktivitet</li>
