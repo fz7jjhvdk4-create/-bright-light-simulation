@@ -27,6 +27,7 @@ import { FiveWhyAnalysis } from "@/components/FiveWhyAnalysis";
 import { QualityTools7QC } from "@/components/QualityTools7QC";
 import { QualityTools7QM } from "@/components/QualityTools7QM";
 import { PhaseGateTimeline } from "@/components/PhaseGateTimeline";
+import { Gate3Checklist } from "@/components/Gate3Checklist";
 import { useGroupData } from "@/hooks/useGroupData";
 import { useInterviewChat } from "@/hooks/useInterviewChat";
 import { MAX_INTERVIEW_QUESTIONS } from "@/lib/interview";
@@ -92,6 +93,9 @@ export default function SimulationPage() {
 
   // Phase viewing state (for navigating back to completed phases)
   const [viewingPhase, setViewingPhase] = useState<number | null>(null);
+
+  // Gate 3 requirements (live checklist; the server re-checks on submit)
+  const [gate3RequirementsMet, setGate3RequirementsMet] = useState(false);
 
   // Phase 2 state
   const [currentWeek, setCurrentWeek] = useState(1);
@@ -914,36 +918,19 @@ export default function SimulationPage() {
                             När ni har genomfört intervjuer, använt analysverktyg och hittat rotorsaker,
                             skicka in för lärarens godkännande. Efter godkännande får ni tillgång till Fas 4 (Redovisning).
                           </p>
-                          <div className="text-xs text-orange-600 dark:text-orange-400 mb-3 space-y-1">
-                            <p>Krav för godkännande:</p>
-                            <ul className="list-disc list-inside pl-2">
-                              <li>Minst 6 roller intervjuade ({interviews.length}/6)</li>
-                              <li>Minst 4 st 7QC-verktyg använda</li>
-                              <li>Minst 2 st 7QM-verktyg använda</li>
-                              <li>5 Varför-analys genomförd</li>
-                            </ul>
-                          </div>
+                          <Gate3Checklist
+                            groupCode={group.code}
+                            interviewsCount={interviews.length}
+                            onEvaluated={setGate3RequirementsMet}
+                          />
                           <Button
+                            disabled={!gate3RequirementsMet}
+                            title={gate3RequirementsMet ? undefined : "Uppfyll kraven ovan för att kunna skicka in"}
                             onClick={async () => {
                               if (confirm("Är ni säkra på att ni vill skicka in utredningen för godkännande?")) {
                                 try {
-                                  // Save investigation tools data to database
-                                  const tools7qcRaw = localStorage.getItem(`7qc-${group.code}`);
-                                  const tools7qmRaw = localStorage.getItem(`7qm-${group.code}`);
-                                  const fiveWhyRaw = localStorage.getItem(`five-why-${group.code}`);
-                                  const problemsRaw = localStorage.getItem(`problems-${group.code}`);
-
-                                  await fetch(`/api/groups/${group.code}/investigation-tools`, {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                      tools7qc: tools7qcRaw ? JSON.parse(tools7qcRaw) : null,
-                                      tools7qm: tools7qmRaw ? JSON.parse(tools7qmRaw) : null,
-                                      fiveWhy: fiveWhyRaw ? JSON.parse(fiveWhyRaw) : null,
-                                      problems: problemsRaw ? JSON.parse(problemsRaw) : null,
-                                    }),
-                                  });
-
+                                  // Tool data autosaves to the server; the API re-checks the
+                                  // requirements so the gate can't be submitted early
                                   const response = await fetch(`/api/groups/${group.code}/submit-gate`, {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },

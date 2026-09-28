@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGroupByCode, logActivity } from '@/lib/db';
+import { evaluateGate3 } from '@/lib/gate-requirements';
 import { sql } from '@vercel/postgres';
 
 export const dynamic = 'force-dynamic';
@@ -30,6 +31,32 @@ export async function POST(
         { error: `Gruppen måste vara i fas ${gateNumber} för att skicka in Gate ${gateNumber}` },
         { status: 400 }
       );
+    }
+
+    // Gate 3 has hard requirements — enforced here so they can't be bypassed
+    if (gateNumber === 3) {
+      const [interviewsResult, toolsResult] = await Promise.all([
+        sql`SELECT COUNT(*) as count FROM interviews WHERE group_id = ${group.id}`,
+        sql`SELECT tools_7qc, tools_7qm FROM investigation_tools_data WHERE group_id = ${group.id}`,
+      ]);
+      const interviewsCount = parseInt(interviewsResult.rows[0].count);
+      const toolsRow = toolsResult.rows[0];
+      const completed7qc: string[] = toolsRow?.tools_7qc
+        ? (JSON.parse(toolsRow.tools_7qc).completedTools ?? []) : [];
+      const completed7qm: string[] = toolsRow?.tools_7qm
+        ? (JSON.parse(toolsRow.tools_7qm).completedTools ?? []) : [];
+
+      const { items, allMet } = evaluateGate3(interviewsCount, completed7qc, completed7qm);
+      if (!allMet) {
+        const missing = items
+          .filter(item => !item.met)
+          .map(item => `${item.label}: ${item.current} av ${item.required}`)
+          .join(', ');
+        return NextResponse.json(
+          { error: `Kraven för Gate 3 är inte uppfyllda ännu — ${missing}. Fortsätt utredningen och försök igen.` },
+          { status: 400 }
+        );
+      }
     }
 
     // Update gate status to pending
