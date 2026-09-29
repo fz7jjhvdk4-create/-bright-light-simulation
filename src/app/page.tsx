@@ -66,8 +66,8 @@ export default function Home() {
             Ert uppdrag
           </h3>
           <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4">
-            Reklamationskostnaderna har ökat från 1.2 till 4.8 MSEK på 18
-            månader. Ert uppdrag är att utreda problemet, identifiera
+            Reklamationskostnaderna har fyrdubblats på två år – från 1.2 till
+            4.8 MSEK. Ert uppdrag är att utreda problemet, identifiera
             rotorsakerna och föreslå åtgärder.
           </p>
           <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">

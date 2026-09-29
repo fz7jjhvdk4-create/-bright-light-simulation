@@ -20,8 +20,8 @@ VIKTIGT:
 - Du vet INTE vad som orsakar problemen - det är deras jobb att ta reda på
 
 BAKGRUND du kan dela:
-- Reklamationerna har ökat från 412 till 847 på två år
-- Kostnaderna har gått från 2,1 till 4,8 MSEK
+- Reklamationerna har ökat från 412 (2023) till 847 (2024)
+- Kostnaderna har gått från 1,2 MSEK (2022) till 4,8 MSEK (2024) – en fyrdubbling på två år
 - Styrelsen är orolig och kräver resultat
 - Det finns olika teorier internt men ingen vet säkert vad som är fel
 
